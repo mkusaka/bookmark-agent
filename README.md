@@ -52,7 +52,11 @@ pnpm db:migrate
 
 4. Seed initial data:
 ```bash
+# Import all bookmarks
 pnpm db:seed
+
+# Import only the oldest 100 bookmarks
+pnpm db:seed -- --limit=100
 ```
 
 5. Start the development server:
