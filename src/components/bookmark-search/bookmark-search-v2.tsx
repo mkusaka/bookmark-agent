@@ -550,25 +550,25 @@ export function BookmarkSearchV2({
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="w-[140px]">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
+                        <Button variant="ghost" className="h-8 data-[state=open]:bg-accent w-full justify-start">
                           User {sortField === "user" && `(${sortOrder === "desc" ? "↓" : "↑"})`}
                           <ChevronsUpDown className="ml-2 h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start">
+                      <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleSortChange("user")}>
                           Sort by User
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="w-[120px]">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
+                        <Button variant="ghost" className="h-8 data-[state=open]:bg-accent w-full justify-start">
                           {sortField === "bookmarkedAt"
                             ? "Bookmarked"
                             : sortField === "createdAt"
@@ -579,7 +579,7 @@ export function BookmarkSearchV2({
                           <ChevronsUpDown className="ml-2 h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start">
+                      <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleSortChange("bookmarkedAt")}>
                           Sort by Bookmark Date
                         </DropdownMenuItem>
@@ -589,7 +589,7 @@ export function BookmarkSearchV2({
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
+                  <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -697,7 +697,7 @@ export function BookmarkSearchV2({
                           <div className="text-sm font-medium">{bookmark.user.name}</div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-sm text-muted-foreground text-center">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="cursor-help">
@@ -718,13 +718,13 @@ export function BookmarkSearchV2({
                       </TableCell>
                       <TableCell>
                         <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-2 gap-1"
                           onClick={() => window.open(bookmark.url, "_blank")}
                         >
-                          <ExternalLink className="h-4 w-4" />
-                          <span className="sr-only">Open bookmark</span>
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          Open
                         </Button>
                       </TableCell>
                     </TableRow>
