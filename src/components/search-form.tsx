@@ -39,7 +39,7 @@ export function SearchForm({
 }: SearchFormProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const form = useForm<SearchFormValues>({
     defaultValues: initialValues,

@@ -1,6 +1,5 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -24,15 +23,17 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   ChevronsUpDown,
-  ExternalLink,
-  MoreHorizontal,
-  Copy,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 import type { Bookmark } from '@/types/bookmark';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { 
+  BookmarkCheckbox, 
+  SelectAllCheckbox, 
+  BookmarkActions
+} from './bookmark-list-actions';
 
 interface BookmarkListProps {
   bookmarks: Bookmark[];
@@ -79,10 +80,7 @@ export function BookmarkList({
           <TableHeader>
             <TableRow>
               <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap">
-                <Checkbox
-                  aria-label="Select all"
-                  className="translate-y-[2px]"
-                />
+                <SelectAllCheckbox bookmarkCount={bookmarks.length} />
               </TableHead>
               <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap">
                 <Link href={`?sortBy=title&order=${currentSort.field === 'title' && currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
@@ -143,10 +141,7 @@ export function BookmarkList({
               bookmarks.map((bookmark) => (
                 <TableRow key={bookmark.id}>
                   <TableCell className="p-2 align-middle whitespace-nowrap">
-                    <Checkbox
-                      aria-label="Select row"
-                      className="translate-y-[2px]"
-                    />
+                    <BookmarkCheckbox bookmarkId={bookmark.id} />
                   </TableCell>
                   <TableCell className="p-2 align-middle max-w-[500px]">
                     <div className="flex flex-col gap-2">
@@ -272,27 +267,7 @@ export function BookmarkList({
                     </Tooltip>
                   </TableCell>
                   <TableCell className="p-2 align-middle whitespace-nowrap">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className="h-8 w-8 p-0"
-                        >
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => window.open(bookmark.url, '_blank')}>
-                          <ExternalLink className="mr-2 h-4 w-4" />
-                          Open in new tab
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigator.clipboard.writeText(bookmark.url)}>
-                          <Copy className="mr-2 h-4 w-4" />
-                          Copy link
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <BookmarkActions url={bookmark.url} />
                   </TableCell>
                 </TableRow>
               ))
