@@ -101,15 +101,7 @@ export class HatenaBookmarkImporter {
         
         // Use generator to fetch bookmarks page by page
         const fetchBookmarksFromStart = async function* (this: HatenaBookmarkImporter) {
-          let skippedCount = 0;
           let page = 0;
-          
-          // Calculate starting page if skip is specified
-          if (skipCount > 0) {
-            page = Math.floor(skipCount / itemsPerPage);
-            skippedCount = page * itemsPerPage;
-            console.log(`Starting from page ${page} (already skipped ${skippedCount} complete pages)`);
-          }
           
           while (true) {
             console.log(`Fetching page ${page}...`);
@@ -120,12 +112,6 @@ export class HatenaBookmarkImporter {
             }
             
             for (const bookmark of response.item.bookmarks) {
-              // Skip items if needed
-              if (skippedCount < skipCount) {
-                skippedCount++;
-                continue;
-              }
-              
               yield bookmark;
             }
             
@@ -139,7 +125,19 @@ export class HatenaBookmarkImporter {
         // Import bookmarks using the generator
         const bookmarkGenerator = fetchBookmarksFromStart();
         
+        let processedCount = 0;
+        
         for await (const hatenaBookmark of bookmarkGenerator) {
+          processedCount++;
+          
+          // Skip the first N bookmarks without DB access
+          if (skipCount > 0 && processedCount <= skipCount) {
+            if (processedCount % 100 === 0) {
+              console.log(`Skipped ${processedCount}/${skipCount} bookmarks...`);
+            }
+            continue;
+          }
+          
           if (totalImported >= targetCount) {
             break;
           }
@@ -150,7 +148,13 @@ export class HatenaBookmarkImporter {
               totalImported++;
               
               if (totalImported % 10 === 0) {
-                console.log(`Imported ${totalImported}/${targetCount} bookmarks...`);
+                const actualProgress = skipCount > 0 ? totalImported + skipCount : totalImported;
+                const actualTarget = skipCount > 0 && targetCount !== Number.MAX_SAFE_INTEGER 
+                  ? targetCount + skipCount 
+                  : targetCount === Number.MAX_SAFE_INTEGER 
+                    ? 'all' 
+                    : targetCount;
+                console.log(`Imported ${actualProgress}/${actualTarget} bookmarks (${totalImported} newly imported)...`);
               }
             }
           } catch (error) {
