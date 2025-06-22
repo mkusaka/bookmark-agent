@@ -37,7 +37,8 @@ export class HatenaBookmarkImporter {
       // If both limit and totalCount are provided, calculate the starting page for oldest bookmarks
       if (limit && totalCount) {
         // Calculate which page contains the oldest bookmarks we want
-        startPage = Math.floor((totalCount - limit) / itemsPerPage);
+        // Use ceil to ensure we start from the correct page when the last page is incomplete
+        startPage = Math.ceil((totalCount - limit) / itemsPerPage);
         targetCount = limit;
         currentPage = startPage;
         console.log(`Total bookmarks: ${totalCount}, limiting to ${limit} oldest bookmarks`);
