@@ -20,8 +20,7 @@ export async function GET(request: NextRequest) {
     // Get all unique hatena IDs
     const uniqueUsers = await db
       .selectDistinct({ hatenaId: users.hatenaId })
-      .from(users)
-      .where(users.hatenaId);
+      .from(users);
 
     const results = [];
     const importer = new HatenaBookmarkImporter();
