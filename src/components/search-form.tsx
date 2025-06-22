@@ -1,7 +1,7 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
-import { useCallback, useTransition } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useCallback, useTransition, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ export function SearchForm({
 }: SearchFormProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
 
   const form = useForm<SearchFormValues>({
@@ -47,6 +48,30 @@ export function SearchForm({
 
   const { register, watch, setValue, reset } = form;
   const formValues = watch();
+  
+  // Sync form with URL params when they change
+  useEffect(() => {
+    const domainsParam = searchParams.get('domains');
+    const tagsParam = searchParams.get('tags');
+    const usersParam = searchParams.get('users');
+    const qParam = searchParams.get('q');
+    
+    if (domainsParam !== null) {
+      const domainValues = domainsParam ? domainsParam.split(',').filter(Boolean) : [];
+      setValue('domains', domainValues);
+    }
+    if (tagsParam !== null) {
+      const tagValues = tagsParam ? tagsParam.split(',').filter(Boolean) : [];
+      setValue('tags', tagValues);
+    }
+    if (usersParam !== null) {
+      const userValues = usersParam ? usersParam.split(',').filter(Boolean) : [];
+      setValue('users', userValues);
+    }
+    if (qParam !== null) {
+      setValue('q', qParam || '');
+    }
+  }, [searchParams, setValue]);
 
   // Update URL when form changes
   const updateURL = useCallback(() => {

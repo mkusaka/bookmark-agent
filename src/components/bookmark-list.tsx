@@ -83,16 +83,16 @@ export function BookmarkList({
     <BookmarkListClient bookmarks={bookmarks}>
       <TooltipProvider>
         <div className="rounded-md border">
-          <Table>
+          <Table className="w-full">
             <TableHeader>
               <TableRow>
-                <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap">
+                <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[50px]">
                   <SelectAllCheckbox 
                     bookmarkIds={bookmarks.map(b => b.id)} 
                     bookmarkCount={bookmarks.length}
                   />
                 </TableHead>
-              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap">
+              <TableHead className="h-10 px-2 text-left align-middle font-medium">
                 <Link href={`?sortBy=title&order=${currentSort.field === 'title' && currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
                   <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
                     Bookmark{' '}
@@ -143,7 +143,7 @@ export function BookmarkList({
           <TableBody>
             {bookmarks.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   No bookmarks found
                 </TableCell>
               </TableRow>
@@ -155,7 +155,7 @@ export function BookmarkList({
                       bookmarkId={bookmark.id} 
                     />
                   </TableCell>
-                  <TableCell className="p-2 align-middle max-w-[500px]">
+                  <TableCell className="p-2 align-middle">
                     <div className="flex flex-col gap-2">
                       <div className="flex items-start gap-2">
                         <FilterLink
