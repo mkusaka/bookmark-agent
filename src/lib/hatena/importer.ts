@@ -57,9 +57,9 @@ export class HatenaBookmarkImporter {
             }
             
             // Add delay to avoid rate limiting
-            if (pageIndex > 0) {
-              await new Promise(resolve => setTimeout(resolve, 1000));
-            }
+            // if (pageIndex > 0) {
+            //   await new Promise(resolve => setTimeout(resolve, 1000));
+            // }
           }
         }.bind(this);
         
