@@ -200,7 +200,7 @@ export class HatenaBookmarkImporter {
     });
 
     if (existingBookmark) {
-      console.log(`Bookmark already exists: ${hatenaBookmark.url}`);
+      console.log(`[${new Date().toISOString()}] Bookmark already exists: ${hatenaBookmark.url}`);
       return 'skipped';
     }
 
