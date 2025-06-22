@@ -15,30 +15,27 @@ export async function getBookmarks(
   console.log('sort:', sort);
   
   try {
-    // Build where conditions
-    const conditions = [];
-
-    // Add cursor condition if provided
+    // Build where conditions (without cursor)
+    const filterConditions = [];
+    
+    // Cursor condition (kept separate)
+    let cursorCondition = null;
     if (cursor) {
       const [bookmarkedAt, id] = cursor.split('_');
       if (sort.order === 'desc') {
-        conditions.push(
-          or(
-            lte(bookmarks.bookmarkedAt, new Date(bookmarkedAt)),
-            and(
-              eq(bookmarks.bookmarkedAt, new Date(bookmarkedAt)),
-              lte(bookmarks.id, id)
-            )
+        cursorCondition = or(
+          lte(bookmarks.bookmarkedAt, new Date(bookmarkedAt)),
+          and(
+            eq(bookmarks.bookmarkedAt, new Date(bookmarkedAt)),
+            lte(bookmarks.id, id)
           )
         );
       } else {
-        conditions.push(
-          or(
-            gte(bookmarks.bookmarkedAt, new Date(bookmarkedAt)),
-            and(
-              eq(bookmarks.bookmarkedAt, new Date(bookmarkedAt)),
-              gte(bookmarks.id, id)
-            )
+        cursorCondition = or(
+          gte(bookmarks.bookmarkedAt, new Date(bookmarkedAt)),
+          and(
+            eq(bookmarks.bookmarkedAt, new Date(bookmarkedAt)),
+            gte(bookmarks.id, id)
           )
         );
       }
@@ -49,7 +46,7 @@ export async function getBookmarks(
       const searchPattern = `%${filters.searchQuery}%`;
       console.log('Applying search filter:', searchPattern);
       // First, let's use simple ILIKE search
-      conditions.push(
+      filterConditions.push(
         or(
           ilike(entries.title, searchPattern),
           ilike(bookmarks.comment, searchPattern),
@@ -61,21 +58,21 @@ export async function getBookmarks(
     // Domain filter
     if (filters.selectedDomains && filters.selectedDomains.length > 0) {
       console.log('Applying domain filter:', filters.selectedDomains);
-      conditions.push(inArray(bookmarks.domain, filters.selectedDomains));
+      filterConditions.push(inArray(bookmarks.domain, filters.selectedDomains));
     }
 
     // User filter
     if (filters.selectedUsers && filters.selectedUsers.length > 0) {
       console.log('Applying user filter:', filters.selectedUsers);
-      conditions.push(inArray(bookmarks.userId, filters.selectedUsers));
+      filterConditions.push(inArray(bookmarks.userId, filters.selectedUsers));
     }
 
     // Date range filter
     if (filters.dateRange?.from) {
-      conditions.push(gte(bookmarks.bookmarkedAt, filters.dateRange.from));
+      filterConditions.push(gte(bookmarks.bookmarkedAt, filters.dateRange.from));
     }
     if (filters.dateRange?.to) {
-      conditions.push(lte(bookmarks.bookmarkedAt, filters.dateRange.to));
+      filterConditions.push(lte(bookmarks.bookmarkedAt, filters.dateRange.to));
     }
 
     // Apply tag filter if needed - get bookmark IDs first
@@ -105,7 +102,13 @@ export async function getBookmarks(
       }
       
       // Add tag filter to conditions
-      conditions.push(inArray(bookmarks.id, bookmarkIdsWithTags));
+      filterConditions.push(inArray(bookmarks.id, bookmarkIdsWithTags));
+    }
+
+    // Combine filter conditions with cursor condition for query
+    const allConditions = [...filterConditions];
+    if (cursorCondition) {
+      allConditions.push(cursorCondition);
     }
 
     // Build the query
@@ -118,7 +121,7 @@ export async function getBookmarks(
       .from(bookmarks)
       .leftJoin(users, eq(bookmarks.userId, users.id))
       .leftJoin(entries, eq(bookmarks.entryId, entries.id))
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .where(allConditions.length > 0 ? and(...allConditions) : undefined)
 
       .orderBy(
         sort.order === 'desc' 
@@ -138,7 +141,8 @@ export async function getBookmarks(
       .limit(limit + 1); // Fetch one extra to check if there's a next page
 
     // Execute the query
-    console.log('Total conditions:', conditions.length);
+    console.log('Total filter conditions:', filterConditions.length);
+    console.log('Has cursor condition:', !!cursorCondition);
     console.log('Executing query...');
     const results = await query;
     console.log('Results count:', results.length);
@@ -187,13 +191,13 @@ export async function getBookmarks(
       previousCursor = `${firstBookmark.bookmarkedAt.toISOString()}_${firstBookmark.id}`;
     }
 
-    // Get total count
+    // Get total count (using only filter conditions, not cursor)
     const countQuery = db
       .select({ count: sql<number>`count(*)` })
       .from(bookmarks)
       .leftJoin(users, eq(bookmarks.userId, users.id))
       .leftJoin(entries, eq(bookmarks.entryId, entries.id))
-      .where(conditions.length > 0 ? and(...conditions) : undefined);
+      .where(filterConditions.length > 0 ? and(...filterConditions) : undefined);
 
     const [{ count }] = await countQuery;
 
