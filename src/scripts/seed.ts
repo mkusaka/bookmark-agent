@@ -20,6 +20,10 @@ async function main() {
         type: 'string',
         short: 'l',
       },
+      skip: {
+        type: 'string',
+        short: 's',
+      },
       total: {
         type: 'string',
         short: 't',
@@ -39,22 +43,30 @@ Usage: pnpm db:seed [options]
 
 Options:
   -l, --limit <number>  Limit the number of bookmarks to import
+  -s, --skip <number>   Skip the first N bookmarks
   -t, --total <number>  Total number of bookmarks (used with --limit to import oldest bookmarks)
   -h, --help           Show help
 
 Examples:
   pnpm db:seed                        # Import all bookmarks
   pnpm db:seed --limit 100            # Import the newest 100 bookmarks
+  pnpm db:seed --skip 50 --limit 100  # Skip 50, then import 100 bookmarks
   pnpm db:seed -l 100 -t 5000         # Import the oldest 100 bookmarks from 5000 total
 `);
     process.exit(0);
   }
 
   const limit = values.limit ? parseInt(values.limit, 10) : undefined;
+  const skip = values.skip ? parseInt(values.skip, 10) : undefined;
   const totalCount = values.total ? parseInt(values.total, 10) : undefined;
 
   if (limit && isNaN(limit)) {
     console.error('Invalid limit value. Must be a number.');
+    process.exit(1);
+  }
+
+  if (skip && isNaN(skip)) {
+    console.error('Invalid skip value. Must be a number.');
     process.exit(1);
   }
 
@@ -66,6 +78,10 @@ Examples:
   console.log(`Starting import for user: ${hatenaUserId}`);
   if (limit && totalCount) {
     console.log(`Total bookmarks: ${totalCount}, limiting to ${limit} oldest bookmarks`);
+  } else if (skip && limit) {
+    console.log(`Skipping ${skip} bookmarks, then importing ${limit} bookmarks`);
+  } else if (skip) {
+    console.log(`Skipping ${skip} bookmarks, then importing all remaining`);
   } else if (limit) {
     console.log(`Limiting to ${limit} bookmarks`);
   }
@@ -75,7 +91,7 @@ Examples:
   const importer = new HatenaBookmarkImporter();
   
   try {
-    const totalImported = await importer.importUserBookmarks(hatenaUserId, limit, totalCount);
+    const totalImported = await importer.importUserBookmarks(hatenaUserId, limit, totalCount, skip);
     console.log(`Successfully imported ${totalImported} bookmarks`);
   } catch (error) {
     console.error('Import failed:', error);

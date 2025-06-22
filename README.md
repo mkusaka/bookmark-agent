@@ -60,6 +60,11 @@ pnpm db:seed --limit 100
 # or
 pnpm db:seed -l 100
 
+# Skip first 50, then import 100 bookmarks
+pnpm db:seed --skip 50 --limit 100
+# or
+pnpm db:seed -s 50 -l 100
+
 # Import the oldest 100 bookmarks (requires total count)
 pnpm db:seed --limit 100 --total 5000
 # or

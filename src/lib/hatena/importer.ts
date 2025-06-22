@@ -11,7 +11,7 @@ export class HatenaBookmarkImporter {
     this.client = new HatenaBookmarkClient();
   }
 
-  async importUserBookmarks(hatenaId: string, limit?: number, totalCount?: number) {
+  async importUserBookmarks(hatenaId: string, limit?: number, totalCount?: number, skip?: number) {
     try {
       // Get or create user
       let user = await db.query.users.findFirst({
@@ -80,9 +80,27 @@ export class HatenaBookmarkImporter {
           }
         }
       } else {
-        // Normal import from the beginning
-        targetCount = limit || Number.MAX_SAFE_INTEGER;
-        console.log(limit ? `Limiting to ${limit} bookmarks` : 'Importing all bookmarks');
+        // Normal import from the beginning with optional skip
+        const targetCount = limit || Number.MAX_SAFE_INTEGER;
+        let skippedCount = 0;
+        const skipCount = skip || 0;
+        
+        if (skip && limit) {
+          console.log(`Skipping ${skip} bookmarks, then importing ${limit} bookmarks`);
+        } else if (skip) {
+          console.log(`Skipping ${skip} bookmarks, then importing all remaining`);
+        } else if (limit) {
+          console.log(`Limiting to ${limit} bookmarks`);
+        } else {
+          console.log('Importing all bookmarks');
+        }
+        
+        // Calculate starting page if skip is specified
+        if (skip) {
+          currentPage = Math.floor(skipCount / itemsPerPage);
+          skippedCount = currentPage * itemsPerPage;
+          console.log(`Starting from page ${currentPage} (already skipped ${skippedCount} complete pages)`);
+        }
         
         while (totalImported < targetCount) {
           console.log(`Fetching page ${currentPage}...`);
@@ -92,11 +110,18 @@ export class HatenaBookmarkImporter {
             break;
           }
 
-          for (const hatenaBookmark of response.item.bookmarks) {
+          for (let i = 0; i < response.item.bookmarks.length; i++) {
+            // Skip items on the first page if needed
+            if (skippedCount < skipCount) {
+              skippedCount++;
+              continue;
+            }
+            
             if (totalImported >= targetCount) {
               break;
             }
 
+            const hatenaBookmark = response.item.bookmarks[i];
             try {
               const result = await this.importSingleBookmark(hatenaBookmark, user.id);
               if (result !== 'skipped') {
