@@ -36,37 +36,48 @@ export class HatenaBookmarkImporter {
 
       // If both limit and totalCount are provided, calculate the starting page for oldest bookmarks
       if (limit && totalCount) {
-        // Calculate which page contains the oldest bookmarks we want
-        // Use ceil to ensure we start from the correct page when the last page is incomplete
-        startPage = Math.ceil((totalCount - limit) / itemsPerPage);
+        // For oldest bookmarks, we'll fetch from the last page backwards
+        const lastPageIndex = Math.floor((totalCount - 1) / itemsPerPage);
+        const itemsOnLastPage = totalCount % itemsPerPage || itemsPerPage;
+        
+        // We'll collect bookmarks from the end, so we need to process pages in reverse
+        // This will be handled in the main loop
         targetCount = limit;
-        currentPage = startPage;
         console.log(`Total bookmarks: ${totalCount}, limiting to ${limit} oldest bookmarks`);
-        console.log(`Starting from page ${startPage}`);
+        console.log(`Will fetch from last page (${lastPageIndex}) backwards`);
       } else if (limit) {
         targetCount = limit;
         console.log(`Limiting to ${limit} bookmarks`);
       }
 
       // Import bookmarks
-      while (totalImported < targetCount) {
-        console.log(`Fetching page ${currentPage}...`);
-        const response = await this.client.fetchUserBookmarks(hatenaId, currentPage);
+      if (limit && totalCount) {
+        // For oldest bookmarks, fetch from the last page backwards
+        const lastPageIndex = Math.floor((totalCount - 1) / itemsPerPage);
+        const collectedBookmarks: HatenaBookmark[] = [];
         
-        if (response.item.bookmarks.length === 0) {
-          break;
-        }
-
-        // If we're getting oldest bookmarks, reverse the order within each page
-        const bookmarksToImport = (limit && totalCount) 
-          ? response.item.bookmarks.reverse() 
-          : response.item.bookmarks;
-
-        for (const hatenaBookmark of bookmarksToImport) {
-          if (totalImported >= targetCount) {
-            break;
+        // Collect bookmarks from the end until we have enough
+        for (let pageIndex = lastPageIndex; pageIndex >= 0 && collectedBookmarks.length < limit; pageIndex--) {
+          console.log(`Fetching page ${pageIndex}...`);
+          const response = await this.client.fetchUserBookmarks(hatenaId, pageIndex);
+          
+          if (response.item.bookmarks.length === 0) {
+            continue;
           }
-
+          
+          // Add bookmarks in reverse order (oldest first within the page)
+          collectedBookmarks.push(...response.item.bookmarks.reverse());
+          
+          // Add delay to avoid rate limiting
+          if (pageIndex > 0 && collectedBookmarks.length < limit) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+        
+        // Import only the requested number of oldest bookmarks
+        const bookmarksToImport = collectedBookmarks.slice(0, limit);
+        
+        for (const hatenaBookmark of bookmarksToImport) {
           try {
             await this.importSingleBookmark(hatenaBookmark, user.id);
             totalImported++;
@@ -78,12 +89,39 @@ export class HatenaBookmarkImporter {
             console.error(`Error importing bookmark: ${hatenaBookmark.url}`, error);
           }
         }
+      } else {
+        // Normal import from the beginning
+        while (totalImported < targetCount) {
+          console.log(`Fetching page ${currentPage}...`);
+          const response = await this.client.fetchUserBookmarks(hatenaId, currentPage);
+          
+          if (response.item.bookmarks.length === 0) {
+            break;
+          }
 
-        currentPage++;
-        
-        // Add delay to avoid rate limiting
-        if (totalImported < targetCount) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          for (const hatenaBookmark of response.item.bookmarks) {
+            if (totalImported >= targetCount) {
+              break;
+            }
+
+            try {
+              await this.importSingleBookmark(hatenaBookmark, user.id);
+              totalImported++;
+              
+              if (totalImported % 10 === 0) {
+                console.log(`Imported ${totalImported}/${targetCount} bookmarks...`);
+              }
+            } catch (error) {
+              console.error(`Error importing bookmark: ${hatenaBookmark.url}`, error);
+            }
+          }
+
+          currentPage++;
+          
+          // Add delay to avoid rate limiting
+          if (totalImported < targetCount) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
         }
       }
 
