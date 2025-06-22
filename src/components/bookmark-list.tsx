@@ -82,9 +82,8 @@ export function BookmarkList({
   return (
     <BookmarkListClient bookmarks={bookmarks}>
       <TooltipProvider>
-        <div className="rounded-md border overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table className="min-w-[800px]">
+        <div className="rounded-md border">
+          <Table className="w-full table-fixed">
             <TableHeader>
               <TableRow>
                 <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[50px]">
@@ -93,7 +92,7 @@ export function BookmarkList({
                     bookmarkCount={bookmarks.length}
                   />
                 </TableHead>
-              <TableHead className="h-10 px-2 text-left align-middle font-medium">
+              <TableHead className="h-10 px-2 text-left align-middle font-medium w-[50%]">
                 <Link href={`?sortBy=title&order=${currentSort.field === 'title' && currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
                   <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
                     Bookmark{' '}
@@ -156,10 +155,10 @@ export function BookmarkList({
                       bookmarkId={bookmark.id} 
                     />
                   </TableCell>
-                  <TableCell className="p-2 align-middle">
+                  <TableCell className="p-2 align-middle overflow-hidden">
                     <div className="flex flex-col gap-2">
-                      <div className="flex items-start gap-2">
-                        <div className="shrink-0">
+                      <div className="flex items-start gap-2 min-w-0">
+                        <div className="shrink-0 max-w-[120px]">
                           <FilterLink
                             type="domains"
                             value={bookmark.domain}
@@ -168,19 +167,21 @@ export function BookmarkList({
                             currentParams={currentParams}
                           />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start gap-2">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="font-medium text-sm truncate block flex-1">
-                                  {bookmark.entry?.title || bookmark.url}
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-[600px]">
-                                <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                            <div className="flex gap-1 flex-wrap shrink-0">
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="font-medium text-sm truncate block">
+                                    {bookmark.entry?.title || bookmark.url}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-[600px]">
+                                  <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                            <div className="flex gap-1 flex-wrap">
                             {bookmark.tags.slice(0, 3).map((tag) => (
                               <FilterLink
                                 key={tag.id}
@@ -280,8 +281,7 @@ export function BookmarkList({
               ))
             )}
           </TableBody>
-            </Table>
-          </div>
+          </Table>
         </div>
 
         <div className="flex items-center justify-between px-2 py-3">

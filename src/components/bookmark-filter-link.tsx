@@ -55,7 +55,7 @@ export function FilterLink({ type, value, label, isSelected, currentParams }: Fi
     : (isSelected ? "default" : "secondary");
     
   const className = type === 'domains'
-    ? "font-mono text-xs shrink-0 cursor-pointer hover:bg-accent transition-colors max-w-[150px] truncate"
+    ? "font-mono text-xs cursor-pointer hover:bg-accent transition-colors truncate block"
     : "text-xs cursor-pointer hover:bg-accent transition-colors";
   
   return (
