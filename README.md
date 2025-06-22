@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bookmark Agent
 
-## Getting Started
+A Next.js application for managing and searching Hatena bookmarks with advanced filtering capabilities.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- 🔍 Full-text search across bookmarks
+- 🏷️ Filter by domains, tags, and users
+- 📅 Date range filtering
+- 🔄 Automatic bookmark synchronization (every 10 minutes)
+- 📊 Cursor-based pagination
+- 🌙 Dark mode support
+
+## Prerequisites
+
+- Node.js 18+
+- PostgreSQL (or Docker for local development)
+- Hatena account
+
+## Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+DATABASE_URL=your_neon_database_url
+LOCAL_DATABASE_URL=postgresql://postgres:password@localhost:5432/bookmark_agent
+HATENA_USER_ID=your_hatena_user_id
+CRON_SECRET=your_random_secret_string
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+To generate a secure `CRON_SECRET`:
+```bash
+node scripts/generate-cron-secret.js
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Install dependencies:
+```bash
+pnpm install
+```
 
-## Learn More
+2. Start the database (Docker):
+```bash
+docker-compose up -d
+```
 
-To learn more about Next.js, take a look at the following resources:
+3. Run database migrations:
+```bash
+pnpm db:migrate
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. Seed initial data:
+```bash
+pnpm db:seed
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. Start the development server:
+```bash
+pnpm dev
+```
 
-## Deploy on Vercel
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Database Commands
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Generate migrations
+pnpm db:generate
+
+# Run migrations
+pnpm db:migrate
+
+# Seed data
+pnpm db:seed
+
+# Open Drizzle Studio
+pnpm db:studio
+```
+
+## Cron Jobs
+
+The application automatically synchronizes bookmarks every 10 minutes when deployed to Vercel.
+
+To manually trigger sync:
+```bash
+curl -X GET http://localhost:3000/api/cron/sync-bookmarks \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── api/
+│   │   └── cron/          # Cron job endpoints
+│   └── search/            # Search page
+├── components/            # React components
+├── db/                    # Database schema and configuration
+├── lib/
+│   ├── hatena/           # Hatena API client
+│   └── search-params-schema.ts  # URL parameter validation
+└── types/                # TypeScript types
+```
+
+## Technologies
+
+- Next.js 15 (App Router)
+- TypeScript
+- PostgreSQL with Drizzle ORM
+- Tailwind CSS
+- shadcn/ui components
+- React Hook Form
+- Zod validation
+
+## Deployment
+
+This application is designed to be deployed on Vercel with Neon PostgreSQL.
+
+1. Push to GitHub
+2. Connect to Vercel
+3. Set environment variables
+4. Deploy
+
+The cron jobs will be automatically configured based on `vercel.json`.

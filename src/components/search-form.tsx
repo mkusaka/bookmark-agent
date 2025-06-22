@@ -1,7 +1,7 @@
 'use client';
 
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useCallback, useTransition, useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useCallback, useTransition, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import {
   CirclePlus,
   X,
   CalendarIcon,
+  Loader2,
 } from 'lucide-react';
 import { type SearchFormValues } from '@/lib/search-params-schema';
 import type { DateRange } from 'react-day-picker';
@@ -40,39 +41,15 @@ export function SearchForm({
 }: SearchFormProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<SearchFormValues>({
     defaultValues: initialValues,
+    values: initialValues, // Always sync with props
   });
 
   const { register, watch, setValue, reset } = form;
   const formValues = watch();
-  
-  // Sync form with URL params when they change
-  useEffect(() => {
-    const domainsParam = searchParams.get('domains');
-    const tagsParam = searchParams.get('tags');
-    const usersParam = searchParams.get('users');
-    const qParam = searchParams.get('q');
-    
-    if (domainsParam !== null) {
-      const domainValues = domainsParam ? domainsParam.split(',').filter(Boolean) : [];
-      setValue('domains', domainValues);
-    }
-    if (tagsParam !== null) {
-      const tagValues = tagsParam ? tagsParam.split(',').filter(Boolean) : [];
-      setValue('tags', tagValues);
-    }
-    if (usersParam !== null) {
-      const userValues = usersParam ? usersParam.split(',').filter(Boolean) : [];
-      setValue('users', userValues);
-    }
-    if (qParam !== null) {
-      setValue('q', qParam || '');
-    }
-  }, [searchParams, setValue]);
 
   // Update URL when form changes
   const updateURL = useCallback(() => {
@@ -309,6 +286,14 @@ export function SearchForm({
           Reset
           <X className="ml-2 h-4 w-4" />
         </Button>
+      )}
+      
+      {/* Loading indicator */}
+      {isPending && (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="text-sm">Loading...</span>
+        </div>
       )}
     </div>
   );

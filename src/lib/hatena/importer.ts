@@ -134,27 +134,61 @@ export class HatenaBookmarkImporter {
         throw new Error(`User not found: ${hatenaId}`);
       }
 
-      // Fetch first page to get latest bookmarks
       console.log(`Fetching latest bookmarks for user: ${hatenaId}`);
-      const response = await this.client.fetchUserBookmarks(hatenaId);
-
+      
       let imported = 0;
       let skipped = 0;
+      let page = 0;
+      let hasMore = true;
+      let shouldContinue = true;
 
-      for (const hatenaBookmark of response.item.bookmarks) {
-        const bookmarkDate = new Date(hatenaBookmark.created);
+      while (hasMore && shouldContinue) {
+        // Fetch bookmarks page by page
+        const response = await this.client.fetchUserBookmarks(hatenaId, page);
         
-        // Skip if bookmark is older than sinceDate
-        if (sinceDate && bookmarkDate < sinceDate) {
-          skipped++;
-          continue;
+        if (response.item.bookmarks.length === 0) {
+          hasMore = false;
+          break;
         }
 
-        try {
-          await this.importSingleBookmark(hatenaBookmark, user.id);
-          imported++;
-        } catch (error) {
-          console.error(`Error importing bookmark: ${hatenaBookmark.url}`, error);
+        for (const hatenaBookmark of response.item.bookmarks) {
+          const bookmarkDate = new Date(hatenaBookmark.created);
+          
+          // Stop processing if we've reached bookmarks older than sinceDate
+          if (sinceDate && bookmarkDate <= sinceDate) {
+            shouldContinue = false;
+            break;
+          }
+
+          // Check if bookmark already exists
+          const existingBookmark = await db.query.bookmarks.findFirst({
+            where: (bookmarks, { and, eq }) => and(
+              eq(bookmarks.userId, user.id),
+              eq(bookmarks.url, hatenaBookmark.url)
+            ),
+          });
+
+          if (existingBookmark) {
+            // If we found an existing bookmark, we can stop here
+            // as we've likely already imported all newer bookmarks
+            console.log(`Found existing bookmark, stopping: ${hatenaBookmark.url}`);
+            shouldContinue = false;
+            break;
+          }
+
+          try {
+            await this.importSingleBookmark(hatenaBookmark, user.id);
+            imported++;
+          } catch (error) {
+            console.error(`Error importing bookmark: ${hatenaBookmark.url}`, error);
+          }
+        }
+
+        page++;
+        
+        // Add a small delay to avoid rate limiting
+        if (hasMore && shouldContinue) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
 
