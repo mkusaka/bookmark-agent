@@ -83,7 +83,7 @@ export function BookmarkList({
     <BookmarkListClient bookmarks={bookmarks}>
       <TooltipProvider>
         <div className="rounded-md border">
-          <Table className="w-full table-fixed">
+          <Table className="w-full">
             <TableHeader>
               <TableRow>
                 <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">
@@ -92,7 +92,7 @@ export function BookmarkList({
                     bookmarkCount={bookmarks.length}
                   />
                 </TableHead>
-                <TableHead className="h-10 px-2 text-left align-middle font-medium">
+                <TableHead className="h-10 px-2 text-left align-middle font-medium w-full">
                 <Link href={`?sortBy=title&order=${currentSort.field === 'title' && currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
                   <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
                     Bookmark{' '}
@@ -101,7 +101,7 @@ export function BookmarkList({
                   </Button>
                 </Link>
               </TableHead>
-              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[100px]">
+              <TableHead className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap w-[140px]">
                 <Link href={`?sortBy=user&order=${currentSort.field === 'user' && currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
                   <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
                     User {currentSort.field === 'user' && `(${currentSort.order === 'desc' ? '↓' : '↑'})`}
@@ -109,7 +109,7 @@ export function BookmarkList({
                   </Button>
                 </Link>
               </TableHead>
-              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[120px]">
+              <TableHead className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap w-[120px]">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
@@ -167,7 +167,7 @@ export function BookmarkList({
                       <span className="max-w-[500px] truncate font-medium">
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span>
+                            <span className="truncate block">
                               {bookmark.entry?.title || bookmark.url}
                             </span>
                           </TooltipTrigger>
@@ -175,7 +175,7 @@ export function BookmarkList({
                             <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
                           </TooltipContent>
                         </Tooltip>
-                      </span>
+                      </div>
                     </div>
                     {(bookmark.entry?.summary || bookmark.comment || bookmark.tags.length > 0) && (
                       <div className="flex flex-col gap-1 mt-1">
@@ -248,7 +248,7 @@ export function BookmarkList({
                     )}
                   </TableCell>
                   <TableCell className="p-2 align-middle whitespace-nowrap">
-                    <div className="flex w-[100px] items-center gap-2">
+                    <div className="flex items-center gap-2 justify-end">
                       <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-xs">
                           {bookmark.user.name.charAt(0).toUpperCase()}
