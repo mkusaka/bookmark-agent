@@ -11,9 +11,6 @@ export async function getBookmarks(
   limit: number = 25,
   cursor?: string
 ): Promise<{ bookmarks: Bookmark[]; total: number; pagination: PaginationInfo }> {
-  console.log('getBookmarks called with filters:', JSON.stringify(filters));
-  console.log('sort:', sort);
-  
   try {
     // Build where conditions (without cursor)
     const filterConditions = [];
@@ -142,11 +139,7 @@ export async function getBookmarks(
       .limit(limit + 1); // Fetch one extra to check if there's a next page
 
     // Execute the query
-    console.log('Total filter conditions:', filterConditions.length);
-    console.log('Has cursor condition:', !!cursorCondition);
-    console.log('Executing query...');
     const results = await query;
-    console.log('Results count:', results.length);
 
     // Check if there's a next page
     const hasNextPage = results.length > limit;

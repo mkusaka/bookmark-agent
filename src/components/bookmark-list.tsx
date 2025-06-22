@@ -14,12 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   ChevronsUpDown,
@@ -36,6 +30,10 @@ import {
 } from './bookmark-list-actions';
 import { BookmarkListClient } from './bookmark-list-client';
 import { FilterLink } from './bookmark-filter-link';
+import { BookmarkTitle } from './bookmark-title';
+import { BookmarkSummary } from './bookmark-summary';
+import { BookmarkDate } from './bookmark-date';
+import { BookmarkExtraTags } from './bookmark-extra-tags';
 
 interface BookmarkListProps {
   bookmarks: Bookmark[];
@@ -62,7 +60,6 @@ export function BookmarkList({
   currentFilters,
   currentParams,
 }: BookmarkListProps) {
-
   const formatDate = (date: Date) => {
     const now = new Date();
     const diffInHours = Math.floor(
@@ -81,8 +78,7 @@ export function BookmarkList({
 
   return (
     <BookmarkListClient bookmarks={bookmarks}>
-      <TooltipProvider>
-        <div className="rounded-md border">
+      <div className="rounded-md border">
           <Table className="w-full table-fixed">
             <TableHeader>
               <TableRow>
@@ -166,48 +162,20 @@ export function BookmarkList({
                           currentParams={currentParams}
                         />
                         <div className="flex-1 min-w-0">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="font-medium truncate">
-                                {bookmark.entry?.title || bookmark.url}
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-[600px]">
-                              <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
-                            </TooltipContent>
-                          </Tooltip>
+                          <BookmarkTitle 
+                            title={bookmark.entry?.title} 
+                            url={bookmark.url} 
+                          />
                         </div>
                       </div>
                       {(bookmark.entry?.summary || bookmark.comment || bookmark.tags.length > 0) && (
                         <div className="flex flex-col gap-1">
-                        {(bookmark.entry?.summary || bookmark.comment) && (
-                          <div className="flex flex-col gap-1">
-                            {bookmark.entry?.summary && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <p className="text-sm text-muted-foreground line-clamp-2 cursor-help">
-                                    {bookmark.entry.summary}
-                                  </p>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-[600px]">
-                                  <p className="text-sm whitespace-pre-wrap">{bookmark.entry.summary}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                            {bookmark.comment && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <p className="text-sm italic text-muted-foreground line-clamp-1 cursor-help">
-                                    &quot;{bookmark.comment}&quot;
-                                  </p>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-[400px]">
-                                  <p className="text-sm whitespace-pre-wrap">{bookmark.comment}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                          </div>
-                        )}
+                          {(bookmark.entry?.summary || bookmark.comment) && (
+                            <BookmarkSummary 
+                              summary={bookmark.entry?.summary} 
+                              comment={bookmark.comment} 
+                            />
+                          )}
                         {bookmark.tags.length > 0 && (
                           <div className="flex gap-1 flex-wrap">
                             {bookmark.tags.slice(0, 3).map((tag) => (
@@ -221,27 +189,12 @@ export function BookmarkList({
                               />
                             ))}
                             {bookmark.tags.length > 3 && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Badge variant="secondary" className="text-xs cursor-help">
-                                    +{bookmark.tags.length - 3}
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <div className="flex flex-wrap gap-1 max-w-[300px]">
-                                    {bookmark.tags.slice(3).map((tag) => (
-                                      <FilterLink
-                                        key={tag.id}
-                                        type="tags"
-                                        value={tag.id}
-                                        label={tag.label}
-                                        isSelected={currentFilters.tags.includes(tag.id)}
-                                        currentParams={currentParams}
-                                      />
-                                    ))}
-                                  </div>
-                                </TooltipContent>
-                              </Tooltip>
+                              <BookmarkExtraTags
+                                extraCount={bookmark.tags.length - 3}
+                                extraTags={bookmark.tags.slice(3)}
+                                selectedTags={currentFilters.tags}
+                                currentParams={currentParams}
+                              />
                             )}
                           </div>
                         )}
@@ -260,23 +213,12 @@ export function BookmarkList({
                     </div>
                   </TableCell>
                   <TableCell className="p-2 align-middle whitespace-nowrap text-sm text-muted-foreground">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="cursor-help">
-                          {formatDate(
-                            currentSort.field === 'bookmarkedAt' ? bookmark.bookmarkedAt : bookmark.createdAt
-                          )}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-sm">
-                          {format(
-                            currentSort.field === 'bookmarkedAt' ? bookmark.bookmarkedAt : bookmark.createdAt,
-                            'yyyy/MM/dd HH:mm:ss'
-                          )}
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <BookmarkDate 
+                      date={currentSort.field === 'bookmarkedAt' ? bookmark.bookmarkedAt : bookmark.createdAt}
+                      displayDate={formatDate(
+                        currentSort.field === 'bookmarkedAt' ? bookmark.bookmarkedAt : bookmark.createdAt
+                      )}
+                    />
                   </TableCell>
                   <TableCell className="p-2 align-middle whitespace-nowrap">
                     <BookmarkActions url={bookmark.url} />
@@ -315,7 +257,6 @@ export function BookmarkList({
           </Link>
         </div>
       </div>
-      </TooltipProvider>
     </BookmarkListClient>
   );
 }

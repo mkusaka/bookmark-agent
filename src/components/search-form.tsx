@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useCallback, useTransition, useEffect } from 'react';
+import { useCallback, useTransition, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ import {
 import { type SearchFormValues } from '@/lib/search-params-schema';
 import type { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
+import { fuzzyMatch } from '@/lib/fuzzy-match';
 
 interface SearchFormProps {
   domains: string[];
@@ -183,32 +184,11 @@ export function SearchForm({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[250px] p-0" align="start">
-          <div className="p-3">
-            <Input
-              placeholder="Search domains..."
-              className="h-8 mb-2"
-            />
-            <div className="max-h-[200px] overflow-y-auto">
-              {domains.map((domain) => (
-                <div
-                  key={domain}
-                  className="flex items-center space-x-2 p-2 hover:bg-accent rounded-sm"
-                >
-                  <Checkbox
-                    id={domain}
-                    checked={formValues.domains.includes(domain)}
-                    onCheckedChange={() => handleDomainToggle(domain)}
-                  />
-                  <label
-                    htmlFor={domain}
-                    className="text-sm font-medium cursor-pointer flex-1"
-                  >
-                    {domain}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
+          <DomainSelector
+            domains={domains}
+            selectedDomains={formValues.domains}
+            onToggle={handleDomainToggle}
+          />
         </PopoverContent>
       </Popover>
 
@@ -234,32 +214,11 @@ export function SearchForm({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[250px] p-0" align="start">
-          <div className="p-3">
-            <Input
-              placeholder="Search tags..."
-              className="h-8 mb-2"
-            />
-            <div className="max-h-[200px] overflow-y-auto">
-              {tags.map((tag) => (
-                <div
-                  key={tag.id}
-                  className="flex items-center space-x-2 p-2 hover:bg-accent rounded-sm"
-                >
-                  <Checkbox
-                    id={`tag-${tag.id}`}
-                    checked={formValues.tags.includes(tag.id)}
-                    onCheckedChange={() => handleTagToggle(tag.id)}
-                  />
-                  <label
-                    htmlFor={`tag-${tag.id}`}
-                    className="text-sm font-medium cursor-pointer flex-1"
-                  >
-                    {tag.label}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
+          <TagSelector
+            tags={tags}
+            selectedTags={formValues.tags}
+            onToggle={handleTagToggle}
+          />
         </PopoverContent>
       </Popover>
 
@@ -285,35 +244,11 @@ export function SearchForm({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[280px] p-0" align="start">
-          <div className="p-3">
-            <Input
-              placeholder="Search users..."
-              className="h-8 mb-2"
-            />
-            <div className="max-h-[200px] overflow-y-auto">
-              {users.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center space-x-2 p-2 hover:bg-accent rounded-sm"
-                >
-                  <Checkbox
-                    id={`user-${user.id}`}
-                    checked={formValues.users.includes(user.id)}
-                    onCheckedChange={() => handleUserToggle(user.id)}
-                  />
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs">
-                      {user.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{user.name}</div>
-                    <div className="text-xs text-muted-foreground">@{user.hatenaId}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <UserSelector
+            users={users}
+            selectedUsers={formValues.users}
+            onToggle={handleUserToggle}
+          />
         </PopoverContent>
       </Popover>
 
@@ -375,6 +310,174 @@ export function SearchForm({
           <X className="ml-2 h-4 w-4" />
         </Button>
       )}
+    </div>
+  );
+}
+
+// Domain Selector Component
+function DomainSelector({ 
+  domains, 
+  selectedDomains, 
+  onToggle 
+}: { 
+  domains: string[]; 
+  selectedDomains: string[]; 
+  onToggle: (domain: string) => void;
+}) {
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const filteredDomains = searchQuery
+    ? domains.filter(domain => fuzzyMatch(searchQuery, domain))
+    : domains;
+
+  return (
+    <div className="p-3">
+      <Input
+        placeholder="Search domains..."
+        className="h-8 mb-2"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+      <div className="max-h-[200px] overflow-y-auto">
+        {filteredDomains.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-2">
+            No domains found
+          </div>
+        ) : (
+          filteredDomains.map((domain) => (
+            <div
+              key={domain}
+              className="flex items-center space-x-2 p-2 hover:bg-accent rounded-sm"
+            >
+              <Checkbox
+                id={domain}
+                checked={selectedDomains.includes(domain)}
+                onCheckedChange={() => onToggle(domain)}
+              />
+              <label
+                htmlFor={domain}
+                className="text-sm font-medium cursor-pointer flex-1"
+              >
+                {domain}
+              </label>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Tag Selector Component
+function TagSelector({ 
+  tags, 
+  selectedTags, 
+  onToggle 
+}: { 
+  tags: { id: string; label: string }[]; 
+  selectedTags: string[]; 
+  onToggle: (tagId: string) => void;
+}) {
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const filteredTags = searchQuery
+    ? tags.filter(tag => fuzzyMatch(searchQuery, tag.label))
+    : tags;
+
+  return (
+    <div className="p-3">
+      <Input
+        placeholder="Search tags..."
+        className="h-8 mb-2"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+      <div className="max-h-[200px] overflow-y-auto">
+        {filteredTags.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-2">
+            No tags found
+          </div>
+        ) : (
+          filteredTags.map((tag) => (
+            <div
+              key={tag.id}
+              className="flex items-center space-x-2 p-2 hover:bg-accent rounded-sm"
+            >
+              <Checkbox
+                id={`tag-${tag.id}`}
+                checked={selectedTags.includes(tag.id)}
+                onCheckedChange={() => onToggle(tag.id)}
+              />
+              <label
+                htmlFor={`tag-${tag.id}`}
+                className="text-sm font-medium cursor-pointer flex-1"
+              >
+                {tag.label}
+              </label>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// User Selector Component
+function UserSelector({ 
+  users, 
+  selectedUsers, 
+  onToggle 
+}: { 
+  users: { id: string; name: string; hatenaId: string }[]; 
+  selectedUsers: string[]; 
+  onToggle: (userId: string) => void;
+}) {
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const filteredUsers = searchQuery
+    ? users.filter(user => 
+        fuzzyMatch(searchQuery, user.name) || 
+        fuzzyMatch(searchQuery, user.hatenaId)
+      )
+    : users;
+
+  return (
+    <div className="p-3">
+      <Input
+        placeholder="Search users..."
+        className="h-8 mb-2"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+      <div className="max-h-[200px] overflow-y-auto">
+        {filteredUsers.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-2">
+            No users found
+          </div>
+        ) : (
+          filteredUsers.map((user) => (
+            <div
+              key={user.id}
+              className="flex items-center space-x-2 p-2 hover:bg-accent rounded-sm"
+            >
+              <Checkbox
+                id={`user-${user.id}`}
+                checked={selectedUsers.includes(user.id)}
+                onCheckedChange={() => onToggle(user.id)}
+              />
+              <Avatar className="h-6 w-6">
+                <AvatarFallback className="text-xs">
+                  {user.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <div className="text-sm font-medium">{user.name}</div>
+                <div className="text-xs text-muted-foreground">@{user.hatenaId}</div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }

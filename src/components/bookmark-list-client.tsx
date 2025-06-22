@@ -2,6 +2,7 @@
 
 import { useState, ReactNode, createContext, useContext } from 'react';
 import { BookmarkBulkActions } from './bookmark-bulk-actions';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import type { Bookmark } from '@/types/bookmark';
 
 interface SelectionContextType {
@@ -58,14 +59,16 @@ export function BookmarkListClient({ bookmarks, children }: BookmarkListClientPr
 
   return (
     <SelectionContext.Provider value={{ selectedBookmarks, toggleBookmark, toggleAll, clearSelection }}>
-      <div className="flex flex-col gap-4">
-        <BookmarkBulkActions 
-          bookmarks={bookmarks} 
-          selectedBookmarks={selectedBookmarks}
-          onClearSelection={clearSelection}
-        />
-        {children}
-      </div>
+      <TooltipProvider>
+        <div className="flex flex-col gap-4">
+          <BookmarkBulkActions 
+            bookmarks={bookmarks} 
+            selectedBookmarks={selectedBookmarks}
+            onClearSelection={clearSelection}
+          />
+          {children}
+        </div>
+      </TooltipProvider>
     </SelectionContext.Provider>
   );
 }
