@@ -18,12 +18,17 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Use constant-time comparison to prevent timing attacks
-    const authHeaderBuffer = Buffer.from(authHeader);
-    const expectedAuthBuffer = Buffer.from(expectedAuth);
+    // Pad both strings to the same length for constant-time comparison
+    const maxLength = Math.max(authHeader.length, expectedAuth.length);
+    const authHeaderPadded = authHeader.padEnd(maxLength, ' ');
+    const expectedAuthPadded = expectedAuth.padEnd(maxLength, ' ');
     
-    if (authHeaderBuffer.length !== expectedAuthBuffer.length || 
-        !crypto.timingSafeEqual(authHeaderBuffer, expectedAuthBuffer)) {
+    const authHeaderBuffer = Buffer.from(authHeaderPadded);
+    const expectedAuthBuffer = Buffer.from(expectedAuthPadded);
+    
+    const isEqual = crypto.timingSafeEqual(authHeaderBuffer, expectedAuthBuffer);
+    
+    if (!isEqual) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
