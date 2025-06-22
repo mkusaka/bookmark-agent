@@ -248,7 +248,7 @@ export function BookmarkList({
                     )}
                   </TableCell>
                   <TableCell className="p-2 align-middle whitespace-nowrap">
-                    <div className="flex w-[100px] items-center gap-2 justify-end">
+                    <div className="flex w-[100px] items-center gap-2">
                       <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-xs">
                           {bookmark.user.name.charAt(0).toUpperCase()}
