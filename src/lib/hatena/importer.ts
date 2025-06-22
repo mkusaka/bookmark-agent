@@ -27,7 +27,7 @@ export class HatenaBookmarkImporter {
       }
 
       console.log(`Fetching bookmarks for user: ${hatenaId}`);
-      const itemsPerPage = 10; // Hatena API returns 10 items per page
+      const itemsPerPage = 20; // Hatena API returns 20 items per page
       
       let totalImported = 0;
       let currentPage = 0;
