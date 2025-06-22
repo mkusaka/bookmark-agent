@@ -41,7 +41,7 @@ export class HatenaBookmarkImporter {
         console.log(`Will fetch from last page backwards`);
         
         // Use generator to fetch bookmarks page by page
-        async function* fetchOldestBookmarks() {
+        const fetchOldestBookmarks = async function* (this: HatenaBookmarkImporter) {
           for (let pageIndex = lastPageIndex; pageIndex >= 0; pageIndex--) {
             console.log(`Fetching page ${pageIndex}...`);
             const response = await this.client.fetchUserBookmarks(hatenaId, pageIndex);
@@ -61,10 +61,10 @@ export class HatenaBookmarkImporter {
               await new Promise(resolve => setTimeout(resolve, 1000));
             }
           }
-        }
+        }.bind(this);
         
         // Import bookmarks using the generator
-        const bookmarkGenerator = fetchOldestBookmarks.call(this);
+        const bookmarkGenerator = fetchOldestBookmarks();
         
         for await (const hatenaBookmark of bookmarkGenerator) {
           if (totalImported >= limit) {
@@ -100,7 +100,7 @@ export class HatenaBookmarkImporter {
         }
         
         // Use generator to fetch bookmarks page by page
-        async function* fetchBookmarksFromStart() {
+        const fetchBookmarksFromStart = async function* (this: HatenaBookmarkImporter) {
           let skippedCount = 0;
           let page = 0;
           
@@ -134,10 +134,10 @@ export class HatenaBookmarkImporter {
             // Add delay to avoid rate limiting
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
-        }
+        }.bind(this);
         
         // Import bookmarks using the generator
-        const bookmarkGenerator = fetchBookmarksFromStart.call(this);
+        const bookmarkGenerator = fetchBookmarksFromStart();
         
         for await (const hatenaBookmark of bookmarkGenerator) {
           if (totalImported >= targetCount) {
