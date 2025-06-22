@@ -34,7 +34,7 @@ export class HatenaBookmarkImporter {
 
       // If both limit and totalCount are provided, fetch from the last page backwards
       if (limit && totalCount) {
-        const lastPageIndex = Math.floor((totalCount - 1) / itemsPerPage);
+        const lastPageIndex = Math.ceil(totalCount / itemsPerPage) - 1;
         const itemsOnLastPage = totalCount % itemsPerPage || itemsPerPage;
         
         console.log(`Total bookmarks: ${totalCount}, limiting to ${limit} oldest bookmarks`);
