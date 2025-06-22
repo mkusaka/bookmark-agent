@@ -61,14 +61,23 @@ export function BookmarkList({
 }: BookmarkListProps) {
   const formatDate = (date: Date) => {
     const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-    );
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
-    if (diffInHours < 24) {
+    if (diffInMinutes < 1) {
+      return 'just now';
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
+    } else if (diffInHours < 24) {
       return `${diffInHours}h ago`;
-    } else if (diffInHours < 168) {
-      return `${Math.floor(diffInHours / 24)}d ago`;
+    } else if (diffInDays < 7) {
+      return `${diffInDays}d ago`;
+    } else if (diffInDays < 30) {
+      return `${Math.floor(diffInDays / 7)}w ago`;
+    } else if (diffInDays < 365) {
+      return `${Math.floor(diffInDays / 30)}mo ago`;
     } else {
       return format(date, 'yyyy/MM/dd');
     }

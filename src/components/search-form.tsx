@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-import { useCallback, useTransition, useState } from 'react';
+import { useCallback, useTransition, useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -310,18 +310,67 @@ function DomainSelector({
   onToggle: (domain: string) => void;
 }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [focusedIndex, setFocusedIndex] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   const filteredDomains = searchQuery
     ? domains.filter(domain => fuzzyMatch(searchQuery, domain))
     : domains;
 
+  // Reset focused index when filtered domains change
+  useEffect(() => {
+    setFocusedIndex(0);
+  }, [filteredDomains.length]);
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setFocusedIndex((prev) => {
+          const newIndex = prev < filteredDomains.length - 1 ? prev + 1 : prev;
+          // Scroll into view
+          setTimeout(() => {
+            document.getElementById(`domain-item-${newIndex}`)?.scrollIntoView({
+              behavior: 'smooth',
+              block: 'nearest'
+            });
+          }, 0);
+          return newIndex;
+        });
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setFocusedIndex((prev) => {
+          const newIndex = prev > 0 ? prev - 1 : prev;
+          // Scroll into view
+          setTimeout(() => {
+            document.getElementById(`domain-item-${newIndex}`)?.scrollIntoView({
+              behavior: 'smooth',
+              block: 'nearest'
+            });
+          }, 0);
+          return newIndex;
+        });
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (filteredDomains[focusedIndex]) {
+          onToggle(filteredDomains[focusedIndex]);
+        }
+        break;
+    }
+  };
+
   return (
     <div className="p-3">
       <Input
+        ref={inputRef}
         placeholder="Search domains..."
         className="h-8 mb-2"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
+        onKeyDown={handleKeyDown}
+        autoFocus
       />
       <div className="max-h-[200px] overflow-y-auto">
         {filteredDomains.length === 0 ? (
@@ -329,10 +378,15 @@ function DomainSelector({
             No domains found
           </div>
         ) : (
-          filteredDomains.map((domain) => (
+          filteredDomains.map((domain, index) => (
             <div
+              id={`domain-item-${index}`}
               key={domain}
-              className="flex items-center space-x-2 p-2 hover:bg-accent rounded-sm"
+              className={`flex items-center space-x-2 p-2 rounded-sm cursor-pointer ${
+                index === focusedIndex ? 'bg-accent' : 'hover:bg-accent'
+              }`}
+              onClick={() => onToggle(domain)}
+              onMouseEnter={() => setFocusedIndex(index)}
             >
               <Checkbox
                 id={domain}
@@ -364,18 +418,49 @@ function TagSelector({
   onToggle: (tagId: string) => void;
 }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [focusedIndex, setFocusedIndex] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   const filteredTags = searchQuery
     ? tags.filter(tag => fuzzyMatch(searchQuery, tag.label))
     : tags;
 
+  // Reset focused index when filtered tags change
+  useEffect(() => {
+    setFocusedIndex(0);
+  }, [filteredTags.length]);
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setFocusedIndex((prev) => 
+          prev < filteredTags.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setFocusedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (filteredTags[focusedIndex]) {
+          onToggle(filteredTags[focusedIndex].id);
+        }
+        break;
+    }
+  };
+
   return (
     <div className="p-3">
       <Input
+        ref={inputRef}
         placeholder="Search tags..."
         className="h-8 mb-2"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
+        onKeyDown={handleKeyDown}
+        autoFocus
       />
       <div className="max-h-[200px] overflow-y-auto">
         {filteredTags.length === 0 ? (
@@ -383,10 +468,14 @@ function TagSelector({
             No tags found
           </div>
         ) : (
-          filteredTags.map((tag) => (
+          filteredTags.map((tag, index) => (
             <div
               key={tag.id}
-              className="flex items-center space-x-2 p-2 hover:bg-accent rounded-sm"
+              className={`flex items-center space-x-2 p-2 rounded-sm cursor-pointer ${
+                index === focusedIndex ? 'bg-accent' : 'hover:bg-accent'
+              }`}
+              onClick={() => onToggle(tag.id)}
+              onMouseEnter={() => setFocusedIndex(index)}
             >
               <Checkbox
                 id={`tag-${tag.id}`}
@@ -418,6 +507,8 @@ function UserSelector({
   onToggle: (userId: string) => void;
 }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [focusedIndex, setFocusedIndex] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   const filteredUsers = searchQuery
     ? users.filter(user => 
@@ -426,13 +517,42 @@ function UserSelector({
       )
     : users;
 
+  // Reset focused index when filtered users change
+  useEffect(() => {
+    setFocusedIndex(0);
+  }, [filteredUsers.length]);
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setFocusedIndex((prev) => 
+          prev < filteredUsers.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setFocusedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (filteredUsers[focusedIndex]) {
+          onToggle(filteredUsers[focusedIndex].id);
+        }
+        break;
+    }
+  };
+
   return (
     <div className="p-3">
       <Input
+        ref={inputRef}
         placeholder="Search users..."
         className="h-8 mb-2"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
+        onKeyDown={handleKeyDown}
+        autoFocus
       />
       <div className="max-h-[200px] overflow-y-auto">
         {filteredUsers.length === 0 ? (
@@ -440,10 +560,14 @@ function UserSelector({
             No users found
           </div>
         ) : (
-          filteredUsers.map((user) => (
+          filteredUsers.map((user, index) => (
             <div
               key={user.id}
-              className="flex items-center space-x-2 p-2 hover:bg-accent rounded-sm"
+              className={`flex items-center space-x-2 p-2 rounded-sm cursor-pointer ${
+                index === focusedIndex ? 'bg-accent' : 'hover:bg-accent'
+              }`}
+              onClick={() => onToggle(user.id)}
+              onMouseEnter={() => setFocusedIndex(index)}
             >
               <Checkbox
                 id={`user-${user.id}`}
