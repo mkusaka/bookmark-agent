@@ -82,8 +82,9 @@ export function BookmarkList({
   return (
     <BookmarkListClient bookmarks={bookmarks}>
       <TooltipProvider>
-        <div className="rounded-md border">
-          <Table className="w-full">
+        <div className="rounded-md border overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[800px]">
             <TableHeader>
               <TableRow>
                 <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[50px]">
@@ -158,25 +159,28 @@ export function BookmarkList({
                   <TableCell className="p-2 align-middle">
                     <div className="flex flex-col gap-2">
                       <div className="flex items-start gap-2">
-                        <FilterLink
-                          type="domains"
-                          value={bookmark.domain}
-                          label={bookmark.domain}
-                          isSelected={currentFilters.domains.includes(bookmark.domain)}
-                          currentParams={currentParams}
-                        />
-                        <div className="flex-1 min-w-0 flex items-start gap-2">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="font-medium text-sm truncate block flex-1">
-                                {bookmark.entry?.title || bookmark.url}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-[600px]">
-                              <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <div className="flex gap-1 flex-wrap shrink-0">
+                        <div className="shrink-0">
+                          <FilterLink
+                            type="domains"
+                            value={bookmark.domain}
+                            label={bookmark.domain}
+                            isSelected={currentFilters.domains.includes(bookmark.domain)}
+                            currentParams={currentParams}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start gap-2">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="font-medium text-sm truncate block flex-1">
+                                  {bookmark.entry?.title || bookmark.url}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-[600px]">
+                                <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <div className="flex gap-1 flex-wrap shrink-0">
                             {bookmark.tags.slice(0, 3).map((tag) => (
                               <FilterLink
                                 key={tag.id}
@@ -210,6 +214,7 @@ export function BookmarkList({
                                 </TooltipContent>
                               </Tooltip>
                             )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -275,16 +280,17 @@ export function BookmarkList({
               ))
             )}
           </TableBody>
-        </Table>
+            </Table>
+          </div>
         </div>
 
-        <div className="flex items-center justify-between px-2">
-        <div className="flex-1 text-sm text-muted-foreground">
+        <div className="flex items-center justify-between px-2 py-3">
+          <div className="flex-1 text-sm text-muted-foreground">
           Showing {bookmarks.length} of {total} bookmark(s)
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href={hasPreviousPage ? '?' : '#'}>
-            <Button
+          </div>
+          <div className="flex items-center gap-2">
+            <Link href={hasPreviousPage ? '?' : '#'}>
+              <Button
               variant="outline"
               size="sm"
               disabled={!hasPreviousPage}

@@ -40,7 +40,7 @@ export default async function SearchPage({
   };
 
   return (
-    <div className="flex flex-col gap-8 p-8">
+    <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">
       <div className="flex items-center justify-between gap-2">
         <div className="flex flex-col gap-1">
           <h2 className="text-2xl font-semibold tracking-tight">Bookmark Search</h2>
