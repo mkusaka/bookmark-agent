@@ -21,13 +21,11 @@ export const entries = pgTable('entries', {
   domain: text('domain').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}, (table) => {
-  return {
-    domainIdx: index('entries_domain_idx').on(table.domain),
-    titleIdx: index('entries_title_trgm_idx').using('gin', sql`${table.title} gin_trgm_ops`),
-    summaryIdx: index('entries_summary_trgm_idx').using('gin', sql`${table.summary} gin_trgm_ops`),
-  };
-});
+}, (table) => [
+  index('entries_domain_idx').on(table.domain),
+  index('entries_title_trgm_idx').using('gin', sql`${table.title} gin_trgm_ops`),
+  index('entries_summary_trgm_idx').using('gin', sql`${table.summary} gin_trgm_ops`),
+]);
 
 // Bookmarks table
 export const bookmarks = pgTable('bookmarks', {
@@ -42,16 +40,14 @@ export const bookmarks = pgTable('bookmarks', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   userId: uuid('user_id').notNull().references(() => users.id),
   entryId: uuid('entry_id').references(() => entries.id),
-}, (table) => {
-  return {
-    userIdx: index('bookmarks_user_idx').on(table.userId),
-    domainIdx: index('bookmarks_domain_idx').on(table.domain),
-    bookmarkedAtIdx: index('bookmarks_bookmarked_at_idx').on(table.bookmarkedAt),
-    commentIdx: index('bookmarks_comment_trgm_idx').using('gin', sql`${table.comment} gin_trgm_ops`),
-    descriptionIdx: index('bookmarks_description_trgm_idx').using('gin', sql`${table.description} gin_trgm_ops`),
-    userUrlUnique: uniqueIndex('bookmarks_user_url_unique').on(table.userId, table.url),
-  };
-});
+}, (table) => [
+  index('bookmarks_user_idx').on(table.userId),
+  index('bookmarks_domain_idx').on(table.domain),
+  index('bookmarks_bookmarked_at_idx').on(table.bookmarkedAt),
+  index('bookmarks_comment_trgm_idx').using('gin', sql`${table.comment} gin_trgm_ops`),
+  index('bookmarks_description_trgm_idx').using('gin', sql`${table.description} gin_trgm_ops`),
+  uniqueIndex('bookmarks_user_url_unique').on(table.userId, table.url),
+]);
 
 // Tags table
 export const tags = pgTable('tags', {
@@ -59,11 +55,9 @@ export const tags = pgTable('tags', {
   label: text('label').notNull().unique(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}, (table) => {
-  return {
-    labelIdx: index('tags_label_idx').on(table.label),
-  };
-});
+}, (table) => [
+  index('tags_label_idx').on(table.label),
+]);
 
 // Bookmark-Tags join table
 export const bookmarkTags = pgTable('bookmark_tags', {
@@ -73,14 +67,12 @@ export const bookmarkTags = pgTable('bookmark_tags', {
   userId: uuid('user_id').notNull().references(() => users.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}, (table) => {
-  return {
-    bookmarkIdx: index('bookmark_tags_bookmark_idx').on(table.bookmarkId),
-    tagIdx: index('bookmark_tags_tag_idx').on(table.tagId),
-    userIdx: index('bookmark_tags_user_idx').on(table.userId),
-    bookmarkTagUnique: uniqueIndex('bookmark_tags_unique').on(table.bookmarkId, table.tagId),
-  };
-});
+}, (table) => [
+  index('bookmark_tags_bookmark_idx').on(table.bookmarkId),
+  index('bookmark_tags_tag_idx').on(table.tagId),
+  index('bookmark_tags_user_idx').on(table.userId),
+  uniqueIndex('bookmark_tags_unique').on(table.bookmarkId, table.tagId),
+]);
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
