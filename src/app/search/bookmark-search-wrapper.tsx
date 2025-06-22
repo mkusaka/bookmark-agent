@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useCallback, useState, useTransition, useEffect } from 'react';
+import { useCallback, useState, useTransition, useEffect, useRef } from 'react';
 import { BookmarkSearchV2 } from '@/components/bookmark-search/bookmark-search-v2';
 import type { Bookmark, BookmarkFilters, BookmarkSort } from '@/types/bookmark';
 import { getBookmarks } from '../actions/bookmark-actions';
@@ -41,8 +41,9 @@ export function BookmarkSearchWrapper({
   const [hasPreviousPage, setHasPreviousPage] = useState(initialHasPreviousPage);
   const [currentTotal, setCurrentTotal] = useState(total);
   
-  // Track if we have a cursor in the URL
+  // Track current cursor
   const currentCursor = searchParams.get('cursor');
+  const prevCursorRef = useRef(currentCursor);
 
   // Update URL params
   const updateSearchParams = useCallback((updates: Record<string, string | null>) => {
@@ -97,23 +98,24 @@ export function BookmarkSearchWrapper({
     updateSearchParams({ cursor: null });
   }, [updateSearchParams]);
 
-  // Update data when URL changes (for pagination)
+  // Update data when cursor changes
   useEffect(() => {
     const loadData = async () => {
-      const newCursor = searchParams.get('cursor');
-      if (newCursor !== currentCursor) {
+      // Only load if cursor actually changed
+      if (currentCursor !== prevCursorRef.current) {
         setIsLoadingData(true);
         try {
           const result = await getBookmarks(
             initialFilters,
             initialSort,
             25,
-            newCursor || undefined
+            currentCursor || undefined
           );
           setBookmarks(result.bookmarks);
           setHasNextPage(result.pagination.hasNextPage);
           setHasPreviousPage(result.pagination.hasPreviousPage);
           setCurrentTotal(result.total);
+          prevCursorRef.current = currentCursor;
         } catch (error) {
           console.error('Failed to load bookmarks:', error);
         } finally {
@@ -123,7 +125,7 @@ export function BookmarkSearchWrapper({
     };
 
     loadData();
-  }, [searchParams, currentCursor, initialFilters, initialSort]);
+  }, [currentCursor, initialFilters, initialSort]);
 
   return (
     <BookmarkSearchV2
