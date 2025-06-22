@@ -1,5 +1,5 @@
 import { getBookmarks, getDomains, getTags, getUsers } from '../actions/bookmark-actions';
-import { BookmarkSearchWrapper } from './bookmark-search-wrapper';
+import { SearchWrapperRHF } from './search-wrapper-rhf';
 import { parseSearchParams, buildFiltersFromParams, buildSortFromParams } from '@/lib/search-params-schema';
 
 export default async function SearchPage({
@@ -24,7 +24,7 @@ export default async function SearchPage({
   ]);
   
   return (
-    <BookmarkSearchWrapper
+    <SearchWrapperRHF
       initialBookmarks={bookmarksData.bookmarks}
       domains={domains}
       tags={tags}
@@ -32,8 +32,7 @@ export default async function SearchPage({
       total={bookmarksData.total}
       initialHasNextPage={bookmarksData.pagination.hasNextPage}
       initialHasPreviousPage={bookmarksData.pagination.hasPreviousPage}
-      initialFilters={filters}
-      initialSort={sort}
+      initialValues={params}
     />
   );
 }
