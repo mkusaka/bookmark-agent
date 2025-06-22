@@ -71,6 +71,8 @@ interface BookmarkSearchProps {
   hasPreviousPage?: boolean;
   onNextPage?: () => void;
   onPreviousPage?: () => void;
+  initialFilters?: BookmarkFilters;
+  initialSort?: BookmarkSort;
 }
 
 export function BookmarkSearchV2({
@@ -87,41 +89,25 @@ export function BookmarkSearchV2({
   hasPreviousPage = false,
   onNextPage,
   onPreviousPage,
+  initialFilters,
+  initialSort,
 }: BookmarkSearchProps) {
-  // Get initial values from URL params via parent component
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
-  
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || "");
-  const [selectedDomains, setSelectedDomains] = useState<string[]>(
-    searchParams.get('domains')?.split(',').filter(Boolean) || []
-  );
+  const [searchQuery, setSearchQuery] = useState(initialFilters?.searchQuery || "");
+  const [selectedDomains, setSelectedDomains] = useState<string[]>(initialFilters?.selectedDomains || []);
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>(
-    searchParams.get('tags')?.split(',').filter(Boolean) || []
-  );
-  const [selectedUsers, setSelectedUsers] = useState<string[]>(
-    searchParams.get('users')?.split(',').filter(Boolean) || []
-  );
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialFilters?.selectedTags || []);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>(initialFilters?.selectedUsers || []);
   const [domainSearchQuery, setDomainSearchQuery] = useState("");
   const [tagSearchQuery, setTagSearchQuery] = useState("");
   const [userSearchQuery, setUserSearchQuery] = useState("");
-  const [sortField, setSortField] = useState<SortField>(
-    (searchParams.get('sortBy') as SortField) || "bookmarkedAt"
+  const [sortField, setSortField] = useState<SortField>(initialSort?.field || "bookmarkedAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(initialSort?.order || "desc");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(
+    initialFilters?.dateRange ? {
+      from: initialFilters.dateRange.from,
+      to: initialFilters.dateRange.to,
+    } : undefined
   );
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
-    (searchParams.get('order') as "asc" | "desc") || "desc"
-  );
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
-    const from = searchParams.get('from');
-    const to = searchParams.get('to');
-    if (from || to) {
-      return {
-        from: from ? new Date(from) : undefined,
-        to: to ? new Date(to) : undefined,
-      };
-    }
-    return undefined;
-  });
   const isFirstRender = useRef(true);
 
   // Filter domains, tags, and users based on search
