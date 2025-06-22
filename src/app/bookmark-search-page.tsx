@@ -12,6 +12,10 @@ export default function BookmarkSearchPage() {
   const [tags, setTags] = useState<{ id: string; label: string }[]>([]);
   const [users, setUsers] = useState<{ id: string; name: string; hatenaId: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [cursor, setCursor] = useState<string | undefined>();
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPreviousPage, setHasPreviousPage] = useState(false);
   const [filters, setFilters] = useState<BookmarkFilters>({
     searchQuery: '',
     selectedDomains: [],
@@ -45,11 +49,20 @@ export default function BookmarkSearchPage() {
   }, []);
 
   // Load bookmarks based on filters
-  const loadBookmarks = useCallback(async () => {
+  const loadBookmarks = useCallback(async (newCursor?: string) => {
     setIsLoading(true);
     try {
-      const { bookmarks: bookmarksData } = await getBookmarks(debouncedFilters, sort);
+      const { bookmarks: bookmarksData, total, pagination } = await getBookmarks(
+        debouncedFilters, 
+        sort,
+        25,
+        newCursor
+      );
       setBookmarks(bookmarksData);
+      setTotal(total);
+      setHasNextPage(pagination.hasNextPage);
+      setHasPreviousPage(pagination.hasPreviousPage);
+      setCursor(pagination.nextCursor);
     } catch (error) {
       console.error('Failed to load bookmarks:', error);
     } finally {
@@ -58,6 +71,7 @@ export default function BookmarkSearchPage() {
   }, [debouncedFilters, sort]);
 
   useEffect(() => {
+    setCursor(undefined); // Reset cursor when filters change
     loadBookmarks();
   }, [loadBookmarks]);
 
@@ -69,6 +83,19 @@ export default function BookmarkSearchPage() {
     setSort(newSort);
   }, []);
 
+  const handleNextPage = useCallback(() => {
+    if (cursor && hasNextPage) {
+      loadBookmarks(cursor);
+    }
+  }, [cursor, hasNextPage, loadBookmarks]);
+
+  const handlePreviousPage = useCallback(() => {
+    // In a real implementation, you'd maintain a stack of cursors
+    // For now, we'll just reload from the beginning
+    setCursor(undefined);
+    loadBookmarks();
+  }, [loadBookmarks]);
+
   return (
     <BookmarkSearch
       bookmarks={bookmarks}
@@ -78,6 +105,11 @@ export default function BookmarkSearchPage() {
       onFiltersChange={handleFiltersChange}
       onSortChange={handleSortChange}
       isLoading={isLoading}
+      total={total}
+      hasNextPage={hasNextPage}
+      hasPreviousPage={hasPreviousPage}
+      onNextPage={handleNextPage}
+      onPreviousPage={handlePreviousPage}
     />
   );
 }

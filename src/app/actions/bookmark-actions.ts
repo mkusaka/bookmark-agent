@@ -8,8 +8,8 @@ import type { BookmarkFilters, BookmarkSort } from '@/types/bookmark';
 export async function getBookmarks(
   filters: BookmarkFilters,
   sort: BookmarkSort = { field: 'bookmarkedAt', order: 'desc' },
-  limit: number = 50,
-  offset: number = 0
+  limit: number = 25,
+  cursor?: string
 ) {
   console.log('getBookmarks called with filters:', JSON.stringify(filters));
   console.log('sort:', sort);
@@ -17,6 +17,32 @@ export async function getBookmarks(
   try {
     // Build where conditions
     const conditions = [];
+
+    // Add cursor condition if provided
+    if (cursor) {
+      const [bookmarkedAt, id] = cursor.split('_');
+      if (sort.order === 'desc') {
+        conditions.push(
+          or(
+            lte(bookmarks.bookmarkedAt, new Date(bookmarkedAt)),
+            and(
+              eq(bookmarks.bookmarkedAt, new Date(bookmarkedAt)),
+              lte(bookmarks.id, id)
+            )
+          )
+        );
+      } else {
+        conditions.push(
+          or(
+            gte(bookmarks.bookmarkedAt, new Date(bookmarkedAt)),
+            and(
+              eq(bookmarks.bookmarkedAt, new Date(bookmarkedAt)),
+              gte(bookmarks.id, id)
+            )
+          )
+        );
+      }
+    }
 
     // Search query - search in title, comment, and tags
     if (filters.searchQuery && filters.searchQuery.trim() !== '') {
@@ -100,8 +126,7 @@ export async function getBookmarks(
               bookmarks.bookmarkedAt
             )
       )
-      .limit(limit)
-      .offset(offset);
+      .limit(limit + 1); // Fetch one extra to check if there's a next page
 
     // Execute the query
     console.log('Total conditions:', conditions.length);
@@ -109,8 +134,12 @@ export async function getBookmarks(
     const results = await query;
     console.log('Results count:', results.length);
 
+    // Check if there's a next page
+    const hasNextPage = results.length > limit;
+    const actualResults = hasNextPage ? results.slice(0, limit) : results;
+
     // Get tags for each bookmark
-    const bookmarkIds = results.map((r) => r.bookmark.id);
+    const bookmarkIds = actualResults.map((r) => r.bookmark.id);
     const bookmarkTagsData = await db
       .select({
         bookmarkId: bookmarkTags.bookmarkId,
@@ -128,12 +157,26 @@ export async function getBookmarks(
     }, {} as Record<string, typeof tags.$inferSelect[]>);
 
     // Format the results
-    const formattedBookmarks = results.map((result) => ({
+    const formattedBookmarks = actualResults.map((result) => ({
       ...result.bookmark,
       user: result.user!,
       entry: result.entry,
       tags: tagsByBookmark[result.bookmark.id] || [],
     }));
+
+    // Generate next cursor if there's a next page
+    let nextCursor: string | undefined;
+    if (hasNextPage && formattedBookmarks.length > 0) {
+      const lastBookmark = formattedBookmarks[formattedBookmarks.length - 1];
+      nextCursor = `${lastBookmark.bookmarkedAt.toISOString()}_${lastBookmark.id}`;
+    }
+
+    // Generate previous cursor (simplified - in production you'd track this better)
+    let previousCursor: string | undefined;
+    if (cursor && formattedBookmarks.length > 0) {
+      const firstBookmark = formattedBookmarks[0];
+      previousCursor = `${firstBookmark.bookmarkedAt.toISOString()}_${firstBookmark.id}`;
+    }
 
     // Get total count
     const countQuery = db
@@ -148,6 +191,12 @@ export async function getBookmarks(
     return {
       bookmarks: formattedBookmarks,
       total: Number(count),
+      pagination: {
+        hasNextPage,
+        hasPreviousPage: !!cursor,
+        nextCursor,
+        previousCursor,
+      },
     };
   } catch (error) {
     console.error('Error fetching bookmarks:', error);

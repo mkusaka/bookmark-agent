@@ -45,6 +45,8 @@ import {
   ExternalLinkIcon,
   MoreHorizontal,
   Copy,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 import { format } from "date-fns";
@@ -64,6 +66,11 @@ interface BookmarkSearchProps {
   onSortChange?: (sort: BookmarkSort) => void;
   onAddBookmark?: () => void;
   isLoading?: boolean;
+  total?: number;
+  hasNextPage?: boolean;
+  hasPreviousPage?: boolean;
+  onNextPage?: () => void;
+  onPreviousPage?: () => void;
 }
 
 export function BookmarkSearchV2({
@@ -75,6 +82,11 @@ export function BookmarkSearchV2({
   onSortChange,
   onAddBookmark,
   isLoading = false,
+  total = 0,
+  hasNextPage = false,
+  hasPreviousPage = false,
+  onNextPage,
+  onPreviousPage,
 }: BookmarkSearchProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
@@ -785,6 +797,27 @@ export function BookmarkSearchV2({
           <div className="flex items-center justify-between px-2">
             <div className="flex-1 text-sm text-muted-foreground">
               {selectedBookmarks.length} of {bookmarks.length} bookmark(s) selected.
+              {total > 0 && ` (${total} total)`}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onPreviousPage}
+                disabled={!hasPreviousPage || isLoading}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onNextPage}
+                disabled={!hasNextPage || isLoading}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>

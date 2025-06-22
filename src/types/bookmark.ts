@@ -51,3 +51,10 @@ export interface BookmarkSort {
   field: SortField;
   order: SortOrder;
 }
+
+export interface PaginationInfo {
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  nextCursor?: string;
+  previousCursor?: string;
+}
