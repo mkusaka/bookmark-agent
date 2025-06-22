@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { getBookmarks, getDomains, getTags, getUsers } from '../bookmark-actions';
 import { db } from '@/db';
-import { users, entries, bookmarks, tags, bookmarkTags } from '@/db/schema';
+import { bookmarks } from '@/db/schema';
 import type { BookmarkFilters, BookmarkSort } from '@/types/bookmark';
 
 // Mock the database module
@@ -55,14 +55,16 @@ describe('bookmark-actions', () => {
       };
 
       // Mock select for main query
-      vi.mocked(db.select).mockReturnValue(mockQuery as any);
+      // @ts-expect-error - Mock return type doesn't match real query builder
+      vi.mocked(db.select).mockReturnValue(mockQuery);
       
       // Mock selectDistinct (not used in this test)
-      vi.mocked(db.selectDistinct).mockReturnValue(mockQuery as any);
+      // @ts-expect-error - Mock return type doesn't match real query builder
+      vi.mocked(db.selectDistinct).mockReturnValue(mockQuery);
 
       try {
         await getBookmarks(mockFilters, mockSort);
-      } catch (error) {
+      } catch {
         // Expected to fail due to mocking limitations
       }
 
@@ -95,11 +97,12 @@ describe('bookmark-actions', () => {
         then: vi.fn().mockResolvedValue([]),
       };
 
-      vi.mocked(db.select).mockReturnValue(mockQuery as any);
+      // @ts-expect-error - Mock return type doesn't match real query builder
+      vi.mocked(db.select).mockReturnValue(mockQuery);
 
       try {
         await getBookmarks(mockFilters, mockSort);
-      } catch (error) {
+      } catch {
         // Expected to fail due to mocking limitations
       }
 
@@ -123,7 +126,8 @@ describe('bookmark-actions', () => {
         then: vi.fn().mockResolvedValue([]), // No matching tags
       };
 
-      vi.mocked(db.select).mockReturnValue(mockTagQuery as any);
+      // @ts-expect-error - Mock return type doesn't match real query builder
+      vi.mocked(db.select).mockReturnValue(mockTagQuery);
 
       const result = await getBookmarks(mockFilters);
 
@@ -145,7 +149,8 @@ describe('bookmark-actions', () => {
         then: vi.fn().mockResolvedValue(mockDomains),
       };
 
-      vi.mocked(db.selectDistinct).mockReturnValue(mockQuery as any);
+      // @ts-expect-error - Mock return type doesn't match real query builder
+      vi.mocked(db.selectDistinct).mockReturnValue(mockQuery);
 
       const result = await getDomains();
 
@@ -168,7 +173,8 @@ describe('bookmark-actions', () => {
         then: vi.fn().mockResolvedValue(mockTags),
       };
 
-      vi.mocked(db.select).mockReturnValue(mockQuery as any);
+      // @ts-expect-error - Mock return type doesn't match real query builder
+      vi.mocked(db.select).mockReturnValue(mockQuery);
 
       const result = await getTags();
 
@@ -190,7 +196,8 @@ describe('bookmark-actions', () => {
         then: vi.fn().mockResolvedValue(mockUsers),
       };
 
-      vi.mocked(db.select).mockReturnValue(mockQuery as any);
+      // @ts-expect-error - Mock return type doesn't match real query builder
+      vi.mocked(db.select).mockReturnValue(mockQuery);
 
       const result = await getUsers();
 

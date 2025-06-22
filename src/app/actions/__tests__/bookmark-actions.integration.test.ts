@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { getBookmarks } from '../bookmark-actions';
 import { db } from '@/db';
 import { users, entries, bookmarks, tags, bookmarkTags } from '@/db/schema';
@@ -10,7 +10,6 @@ const skipInCI = process.env.CI ? describe.skip : describe;
 
 skipInCI('bookmark-actions integration tests', () => {
   let testUserId: string;
-  let testEntryId: string;
   let testTagId1: string;
   let testTagId2: string;
   let testBookmarkId1: string;
@@ -35,7 +34,6 @@ skipInCI('bookmark-actions integration tests', () => {
       summary: 'A great article about React development',
       domain: 'example.com',
     }).returning();
-    testEntryId = entry1.id;
 
     const [entry2] = await db.insert(entries).values({
       title: 'Another Test Entry',

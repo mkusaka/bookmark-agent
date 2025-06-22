@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-import { beforeAll, afterAll, vi } from 'vitest';
+import { beforeAll, afterAll } from 'vitest';
 
 // Load test environment variables before importing db
 config({ path: '.env.test' });

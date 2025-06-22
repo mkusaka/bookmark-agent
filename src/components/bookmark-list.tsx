@@ -175,7 +175,7 @@ export function BookmarkList({
                             <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
                           </TooltipContent>
                         </Tooltip>
-                      </div>
+                      </span>
                     </div>
                     {(bookmark.entry?.summary || bookmark.comment || bookmark.tags.length > 0) && (
                       <div className="flex flex-col gap-1 mt-1">

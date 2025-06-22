@@ -18,10 +18,10 @@ describe('HatenaBookmarkClient (Unit Tests)', () => {
         item: { bookmarks: [] },
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      vi.mocked(global.fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
-      });
+      } as Response);
 
       const result = await client.fetchUserBookmarks('testuser');
 
@@ -42,10 +42,10 @@ describe('HatenaBookmarkClient (Unit Tests)', () => {
         item: { bookmarks: [] },
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      vi.mocked(global.fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
-      });
+      } as Response);
 
       const result = await client.fetchUserBookmarks('testuser', 2);
 
@@ -61,10 +61,10 @@ describe('HatenaBookmarkClient (Unit Tests)', () => {
     });
 
     it('should throw error when response is not ok', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      vi.mocked(global.fetch).mockResolvedValueOnce({
         ok: false,
         statusText: 'Not Found',
-      });
+      } as Response);
 
       await expect(client.fetchUserBookmarks('testuser')).rejects.toThrow(
         'Failed to fetch bookmarks: Not Found'
@@ -89,11 +89,11 @@ describe('HatenaBookmarkClient (Unit Tests)', () => {
       ];
 
       let callCount = 0;
-      (global.fetch as any).mockImplementation(() =>
+      vi.mocked(global.fetch).mockImplementation(() =>
         Promise.resolve({
           ok: true,
           json: async () => mockResponses[callCount++],
-        })
+        } as Response)
       );
 
       // Mock setTimeout to avoid actual delays
@@ -120,10 +120,10 @@ describe('HatenaBookmarkClient (Unit Tests)', () => {
         item: { bookmarks: [] },
       };
 
-      (global.fetch as any).mockResolvedValue({
+      vi.mocked(global.fetch).mockResolvedValue({
         ok: true,
         json: async () => mockResponse,
-      });
+      } as Response);
 
       // Mock setTimeout to avoid actual delays
       vi.useFakeTimers();
