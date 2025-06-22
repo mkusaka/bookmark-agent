@@ -31,8 +31,6 @@ export class HatenaBookmarkImporter {
       
       let totalImported = 0;
       let currentPage = 0;
-      let startPage = 0;
-      let targetCount = Number.MAX_SAFE_INTEGER; // Default to importing all
 
       // If both limit and totalCount are provided, fetch from the last page backwards
       if (limit && totalCount) {
