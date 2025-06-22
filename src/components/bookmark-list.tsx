@@ -83,16 +83,16 @@ export function BookmarkList({
     <BookmarkListClient bookmarks={bookmarks}>
       <TooltipProvider>
         <div className="rounded-md border">
-          <Table className="w-full">
+          <Table className="w-full table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">
+                <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[40px] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">
                   <SelectAllCheckbox 
                     bookmarkIds={bookmarks.map(b => b.id)} 
                     bookmarkCount={bookmarks.length}
                   />
                 </TableHead>
-                <TableHead className="h-10 px-2 text-left align-middle font-medium w-full">
+                <TableHead className="h-10 px-2 text-left align-middle font-medium">
                 <Link href={`?sortBy=title&order=${currentSort.field === 'title' && currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
                   <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
                     Bookmark{' '}
@@ -101,7 +101,7 @@ export function BookmarkList({
                   </Button>
                 </Link>
               </TableHead>
-              <TableHead className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap w-[140px]">
+              <TableHead className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap w-[100px]">
                 <Link href={`?sortBy=user&order=${currentSort.field === 'user' && currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
                   <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
                     User {currentSort.field === 'user' && `(${currentSort.order === 'desc' ? '↓' : '↑'})`}
@@ -109,7 +109,7 @@ export function BookmarkList({
                   </Button>
                 </Link>
               </TableHead>
-              <TableHead className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap w-[120px]">
+              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[100px]">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
@@ -137,7 +137,7 @@ export function BookmarkList({
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableHead>
-              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap"></TableHead>
+              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[60px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -150,35 +150,36 @@ export function BookmarkList({
             ) : (
               bookmarks.map((bookmark) => (
                 <TableRow key={bookmark.id}>
-                  <TableCell className="p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">
+                  <TableCell className="p-2 align-middle whitespace-nowrap w-[40px] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">
                     <BookmarkCheckbox 
                       bookmarkId={bookmark.id} 
                     />
                   </TableCell>
                   <TableCell className="p-2 align-middle">
-                    <div className="flex gap-2">
-                      <FilterLink
-                        type="domains"
-                        value={bookmark.domain}
-                        label={bookmark.domain}
-                        isSelected={currentFilters.domains.includes(bookmark.domain)}
-                        currentParams={currentParams}
-                      />
-                      <span className="max-w-[500px] truncate font-medium">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="truncate block">
-                              {bookmark.entry?.title || bookmark.url}
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-[600px]">
-                            <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </span>
-                    </div>
-                    {(bookmark.entry?.summary || bookmark.comment || bookmark.tags.length > 0) && (
-                      <div className="flex flex-col gap-1 mt-1">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-start gap-2">
+                        <FilterLink
+                          type="domains"
+                          value={bookmark.domain}
+                          label={bookmark.domain}
+                          isSelected={currentFilters.domains.includes(bookmark.domain)}
+                          currentParams={currentParams}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="font-medium truncate">
+                                {bookmark.entry?.title || bookmark.url}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-[600px]">
+                              <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </div>
+                      {(bookmark.entry?.summary || bookmark.comment || bookmark.tags.length > 0) && (
+                        <div className="flex flex-col gap-1">
                         {(bookmark.entry?.summary || bookmark.comment) && (
                           <div className="flex flex-col gap-1">
                             {bookmark.entry?.summary && (
@@ -244,8 +245,9 @@ export function BookmarkList({
                             )}
                           </div>
                         )}
-                      </div>
-                    )}
+                        </div>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="p-2 align-middle whitespace-nowrap">
                     <div className="flex items-center gap-2 justify-end">
@@ -257,7 +259,7 @@ export function BookmarkList({
                       <div className="text-sm font-medium">{bookmark.user.name}</div>
                     </div>
                   </TableCell>
-                  <TableCell className="p-2 align-middle whitespace-nowrap text-sm text-muted-foreground text-right">
+                  <TableCell className="p-2 align-middle whitespace-nowrap text-sm text-muted-foreground">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="cursor-help">
