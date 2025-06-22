@@ -78,6 +78,7 @@ export default async function SearchPage({
               domains: params.domains,
               tags: params.tags,
             }}
+            currentParams={rawParams}
           />
         </Suspense>
       </div>

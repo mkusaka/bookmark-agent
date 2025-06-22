@@ -34,6 +34,8 @@ import {
   SelectAllCheckbox, 
   BookmarkActions
 } from './bookmark-list-actions';
+import { BookmarkListClient } from './bookmark-list-client';
+import { FilterLink } from './bookmark-filter-link';
 
 interface BookmarkListProps {
   bookmarks: Bookmark[];
@@ -48,6 +50,7 @@ interface BookmarkListProps {
     domains: string[];
     tags: string[];
   };
+  currentParams: { [key: string]: string | string[] | undefined };
 }
 
 export function BookmarkList({
@@ -57,7 +60,9 @@ export function BookmarkList({
   hasPreviousPage,
   currentSort,
   currentFilters,
+  currentParams,
 }: BookmarkListProps) {
+
   const formatDate = (date: Date) => {
     const now = new Date();
     const diffInHours = Math.floor(
@@ -73,15 +78,20 @@ export function BookmarkList({
     }
   };
 
+
   return (
-    <TooltipProvider>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap">
-                <SelectAllCheckbox bookmarkCount={bookmarks.length} />
-              </TableHead>
+    <BookmarkListClient bookmarks={bookmarks}>
+      <TooltipProvider>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap">
+                  <SelectAllCheckbox 
+                    bookmarkIds={bookmarks.map(b => b.id)} 
+                    bookmarkCount={bookmarks.length}
+                  />
+                </TableHead>
               <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap">
                 <Link href={`?sortBy=title&order=${currentSort.field === 'title' && currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
                   <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
@@ -141,22 +151,20 @@ export function BookmarkList({
               bookmarks.map((bookmark) => (
                 <TableRow key={bookmark.id}>
                   <TableCell className="p-2 align-middle whitespace-nowrap">
-                    <BookmarkCheckbox bookmarkId={bookmark.id} />
+                    <BookmarkCheckbox 
+                      bookmarkId={bookmark.id} 
+                    />
                   </TableCell>
                   <TableCell className="p-2 align-middle max-w-[500px]">
                     <div className="flex flex-col gap-2">
                       <div className="flex items-start gap-2">
-                        <Link 
-                          href={`?domains=${bookmark.domain}`}
-                          className={currentFilters.domains.includes(bookmark.domain) ? '' : ''}
-                        >
-                          <Badge 
-                            variant={currentFilters.domains.includes(bookmark.domain) ? "default" : "outline"}
-                            className="font-mono text-xs shrink-0 cursor-pointer hover:bg-accent transition-colors"
-                          >
-                            {bookmark.domain}
-                          </Badge>
-                        </Link>
+                        <FilterLink
+                          type="domains"
+                          value={bookmark.domain}
+                          label={bookmark.domain}
+                          isSelected={currentFilters.domains.includes(bookmark.domain)}
+                          currentParams={currentParams}
+                        />
                         <div className="flex-1 min-w-0 flex items-start gap-2">
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -170,17 +178,14 @@ export function BookmarkList({
                           </Tooltip>
                           <div className="flex gap-1 flex-wrap shrink-0">
                             {bookmark.tags.slice(0, 3).map((tag) => (
-                              <Link 
+                              <FilterLink
                                 key={tag.id}
-                                href={`?tags=${tag.id}`}
-                              >
-                                <Badge 
-                                  variant={currentFilters.tags.includes(tag.id) ? "default" : "secondary"}
-                                  className="text-xs cursor-pointer hover:bg-accent transition-colors"
-                                >
-                                  {tag.label}
-                                </Badge>
-                              </Link>
+                                type="tags"
+                                value={tag.id}
+                                label={tag.label}
+                                isSelected={currentFilters.tags.includes(tag.id)}
+                                currentParams={currentParams}
+                              />
                             ))}
                             {bookmark.tags.length > 3 && (
                               <Tooltip>
@@ -192,17 +197,14 @@ export function BookmarkList({
                                 <TooltipContent>
                                   <div className="flex flex-wrap gap-1 max-w-[300px]">
                                     {bookmark.tags.slice(3).map((tag) => (
-                                      <Link 
+                                      <FilterLink
                                         key={tag.id}
-                                        href={`?tags=${tag.id}`}
-                                      >
-                                        <Badge 
-                                          variant={currentFilters.tags.includes(tag.id) ? "default" : "secondary"}
-                                          className="text-xs cursor-pointer hover:bg-accent transition-colors"
-                                        >
-                                          {tag.label}
-                                        </Badge>
-                                      </Link>
+                                        type="tags"
+                                        value={tag.id}
+                                        label={tag.label}
+                                        isSelected={currentFilters.tags.includes(tag.id)}
+                                        currentParams={currentParams}
+                                      />
                                     ))}
                                   </div>
                                 </TooltipContent>
@@ -274,9 +276,9 @@ export function BookmarkList({
             )}
           </TableBody>
         </Table>
-      </div>
+        </div>
 
-      <div className="flex items-center justify-between px-2">
+        <div className="flex items-center justify-between px-2">
         <div className="flex-1 text-sm text-muted-foreground">
           Showing {bookmarks.length} of {total} bookmark(s)
         </div>
@@ -303,6 +305,7 @@ export function BookmarkList({
           </Link>
         </div>
       </div>
-    </TooltipProvider>
+      </TooltipProvider>
+    </BookmarkListClient>
   );
 }

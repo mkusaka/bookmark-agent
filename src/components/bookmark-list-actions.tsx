@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,27 +13,31 @@ import {
   MoreHorizontal,
   Copy,
 } from 'lucide-react';
+import { toast } from 'sonner';
+import Link from 'next/link';
+import { useSelection } from './bookmark-list-client';
 
-export function BookmarkCheckbox({ }: { bookmarkId: string }) {
-  const [checked, setChecked] = useState(false);
+export function BookmarkCheckbox({ bookmarkId }: { bookmarkId: string }) {
+  const { selectedBookmarks, toggleBookmark } = useSelection();
   
   return (
     <Checkbox
-      checked={checked}
-      onCheckedChange={setChecked}
+      checked={selectedBookmarks.has(bookmarkId)}
+      onCheckedChange={() => toggleBookmark(bookmarkId)}
       aria-label="Select row"
       className="translate-y-[2px]"
     />
   );
 }
 
-export function SelectAllCheckbox({ }: { bookmarkCount: number }) {
-  const [checked, setChecked] = useState(false);
+export function SelectAllCheckbox({ bookmarkIds }: { bookmarkIds: string[]; bookmarkCount: number }) {
+  const { selectedBookmarks, toggleAll } = useSelection();
+  const allSelected = bookmarkIds.length > 0 && bookmarkIds.every(id => selectedBookmarks.has(id));
   
   return (
     <Checkbox
-      checked={checked}
-      onCheckedChange={setChecked}
+      checked={allSelected}
+      onCheckedChange={() => toggleAll(bookmarkIds)}
       aria-label="Select all"
       className="translate-y-[2px]"
     />
@@ -58,7 +61,10 @@ export function BookmarkActions({ url }: { url: string }) {
           <ExternalLink className="mr-2 h-4 w-4" />
           Open in new tab
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigator.clipboard.writeText(url)}>
+        <DropdownMenuItem onClick={() => {
+          navigator.clipboard.writeText(url);
+          toast.success('Link copied to clipboard');
+        }}>
           <Copy className="mr-2 h-4 w-4" />
           Copy link
         </DropdownMenuItem>
@@ -69,48 +75,36 @@ export function BookmarkActions({ url }: { url: string }) {
 
 export function DomainBadgeClickable({ 
   domain, 
-  isSelected,
   href 
 }: { 
   domain: string;
   isSelected: boolean;
   href: string;
 }) {
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    window.location.href = href;
-  };
-
   return (
-    <span 
-      onClick={handleClick}
+    <Link 
+      href={href}
       className="cursor-pointer"
     >
       {domain}
-    </span>
+    </Link>
   );
 }
 
 export function TagBadgeClickable({ 
   tag, 
-  isSelected,
   href 
 }: { 
   tag: { id: string; label: string };
   isSelected: boolean;
   href: string;
 }) {
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    window.location.href = href;
-  };
-
   return (
-    <span 
-      onClick={handleClick}
+    <Link 
+      href={href}
       className="cursor-pointer"
     >
       {tag.label}
-    </span>
+    </Link>
   );
 }
