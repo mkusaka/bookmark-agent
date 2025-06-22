@@ -317,17 +317,27 @@ function DomainSelector({
     ? domains.filter(domain => fuzzyMatch(searchQuery, domain))
     : domains;
 
-  // Reset focused index when filtered domains change
+  // Sort domains: selected first, then alphabetically
+  const sortedDomains = [...filteredDomains].sort((a, b) => {
+    const aSelected = selectedDomains.includes(a);
+    const bSelected = selectedDomains.includes(b);
+    
+    if (aSelected && !bSelected) return -1;
+    if (!aSelected && bSelected) return 1;
+    return a.localeCompare(b);
+  });
+
+  // Reset focused index when sorted domains change
   useEffect(() => {
     setFocusedIndex(0);
-  }, [filteredDomains.length]);
+  }, [sortedDomains.length]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
         setFocusedIndex((prev) => {
-          const newIndex = prev < filteredDomains.length - 1 ? prev + 1 : prev;
+          const newIndex = prev < sortedDomains.length - 1 ? prev + 1 : prev;
           // Scroll into view
           setTimeout(() => {
             document.getElementById(`domain-item-${newIndex}`)?.scrollIntoView({
@@ -354,8 +364,8 @@ function DomainSelector({
         break;
       case 'Enter':
         e.preventDefault();
-        if (filteredDomains[focusedIndex]) {
-          onToggle(filteredDomains[focusedIndex]);
+        if (sortedDomains[focusedIndex]) {
+          onToggle(sortedDomains[focusedIndex]);
         }
         break;
     }
@@ -373,12 +383,12 @@ function DomainSelector({
         autoFocus
       />
       <div className="max-h-[200px] overflow-y-auto">
-        {filteredDomains.length === 0 ? (
+        {sortedDomains.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center py-2">
             No domains found
           </div>
         ) : (
-          filteredDomains.map((domain, index) => (
+          sortedDomains.map((domain, index) => (
             <div
               id={`domain-item-${index}`}
               key={domain}
@@ -425,17 +435,27 @@ function TagSelector({
     ? tags.filter(tag => fuzzyMatch(searchQuery, tag.label))
     : tags;
 
-  // Reset focused index when filtered tags change
+  // Sort tags: selected first, then alphabetically by label
+  const sortedTags = [...filteredTags].sort((a, b) => {
+    const aSelected = selectedTags.includes(a.id);
+    const bSelected = selectedTags.includes(b.id);
+    
+    if (aSelected && !bSelected) return -1;
+    if (!aSelected && bSelected) return 1;
+    return a.label.localeCompare(b.label);
+  });
+
+  // Reset focused index when sorted tags change
   useEffect(() => {
     setFocusedIndex(0);
-  }, [filteredTags.length]);
+  }, [sortedTags.length]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
         setFocusedIndex((prev) => 
-          prev < filteredTags.length - 1 ? prev + 1 : prev
+          prev < sortedTags.length - 1 ? prev + 1 : prev
         );
         break;
       case 'ArrowUp':
@@ -444,8 +464,8 @@ function TagSelector({
         break;
       case 'Enter':
         e.preventDefault();
-        if (filteredTags[focusedIndex]) {
-          onToggle(filteredTags[focusedIndex].id);
+        if (sortedTags[focusedIndex]) {
+          onToggle(sortedTags[focusedIndex].id);
         }
         break;
     }
@@ -463,12 +483,12 @@ function TagSelector({
         autoFocus
       />
       <div className="max-h-[200px] overflow-y-auto">
-        {filteredTags.length === 0 ? (
+        {sortedTags.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center py-2">
             No tags found
           </div>
         ) : (
-          filteredTags.map((tag, index) => (
+          sortedTags.map((tag, index) => (
             <div
               key={tag.id}
               className={`flex items-center space-x-2 p-2 rounded-sm cursor-pointer ${
@@ -517,17 +537,27 @@ function UserSelector({
       )
     : users;
 
-  // Reset focused index when filtered users change
+  // Sort users: selected first, then alphabetically by name
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const aSelected = selectedUsers.includes(a.id);
+    const bSelected = selectedUsers.includes(b.id);
+    
+    if (aSelected && !bSelected) return -1;
+    if (!aSelected && bSelected) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  // Reset focused index when sorted users change
   useEffect(() => {
     setFocusedIndex(0);
-  }, [filteredUsers.length]);
+  }, [sortedUsers.length]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
         setFocusedIndex((prev) => 
-          prev < filteredUsers.length - 1 ? prev + 1 : prev
+          prev < sortedUsers.length - 1 ? prev + 1 : prev
         );
         break;
       case 'ArrowUp':
@@ -536,8 +566,8 @@ function UserSelector({
         break;
       case 'Enter':
         e.preventDefault();
-        if (filteredUsers[focusedIndex]) {
-          onToggle(filteredUsers[focusedIndex].id);
+        if (sortedUsers[focusedIndex]) {
+          onToggle(sortedUsers[focusedIndex].id);
         }
         break;
     }
@@ -555,12 +585,12 @@ function UserSelector({
         autoFocus
       />
       <div className="max-h-[200px] overflow-y-auto">
-        {filteredUsers.length === 0 ? (
+        {sortedUsers.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center py-2">
             No users found
           </div>
         ) : (
-          filteredUsers.map((user, index) => (
+          sortedUsers.map((user, index) => (
             <div
               key={user.id}
               className={`flex items-center space-x-2 p-2 rounded-sm cursor-pointer ${
