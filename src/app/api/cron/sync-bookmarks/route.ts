@@ -3,12 +3,27 @@ import { db } from '@/db';
 import { bookmarks, users } from '@/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { HatenaBookmarkImporter } from '@/lib/hatena/importer';
+import crypto from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify authorization
+    // Verify authorization with constant-time comparison
     const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
+    
+    if (!authHeader || !process.env.CRON_SECRET) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    
+    // Use constant-time comparison to prevent timing attacks
+    const authHeaderBuffer = Buffer.from(authHeader);
+    const expectedAuthBuffer = Buffer.from(expectedAuth);
+    
+    if (authHeaderBuffer.length !== expectedAuthBuffer.length || 
+        !crypto.timingSafeEqual(authHeaderBuffer, expectedAuthBuffer)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

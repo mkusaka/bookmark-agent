@@ -137,7 +137,6 @@ export class HatenaBookmarkImporter {
       console.log(`Fetching latest bookmarks for user: ${hatenaId}`);
       
       let imported = 0;
-      const skipped = 0;
       let page = 0;
       let hasMore = true;
       let shouldContinue = true;
@@ -192,8 +191,8 @@ export class HatenaBookmarkImporter {
         }
       }
 
-      console.log(`Latest import completed. Imported: ${imported}, Skipped: ${skipped}`);
-      return { imported, skipped };
+      console.log(`Latest import completed. Imported: ${imported}`);
+      return { imported };
     } catch (error) {
       console.error('Latest import failed:', error);
       throw error;
