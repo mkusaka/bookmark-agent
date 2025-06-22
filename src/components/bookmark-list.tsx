@@ -86,13 +86,13 @@ export function BookmarkList({
           <Table className="w-full table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[50px]">
+                <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">
                   <SelectAllCheckbox 
                     bookmarkIds={bookmarks.map(b => b.id)} 
                     bookmarkCount={bookmarks.length}
                   />
                 </TableHead>
-              <TableHead className="h-10 px-2 text-left align-middle font-medium w-[50%]">
+                <TableHead className="h-10 px-2 text-left align-middle font-medium">
                 <Link href={`?sortBy=title&order=${currentSort.field === 'title' && currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
                   <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
                     Bookmark{' '}
@@ -101,7 +101,7 @@ export function BookmarkList({
                   </Button>
                 </Link>
               </TableHead>
-              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[140px]">
+              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[100px]">
                 <Link href={`?sortBy=user&order=${currentSort.field === 'user' && currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
                   <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
                     User {currentSort.field === 'user' && `(${currentSort.order === 'desc' ? '↓' : '↑'})`}
@@ -150,38 +150,65 @@ export function BookmarkList({
             ) : (
               bookmarks.map((bookmark) => (
                 <TableRow key={bookmark.id}>
-                  <TableCell className="p-2 align-middle whitespace-nowrap">
+                  <TableCell className="p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">
                     <BookmarkCheckbox 
                       bookmarkId={bookmark.id} 
                     />
                   </TableCell>
-                  <TableCell className="p-2 align-middle overflow-hidden">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-start gap-2 min-w-0">
-                        <div className="shrink-0 max-w-[120px]">
-                          <FilterLink
-                            type="domains"
-                            value={bookmark.domain}
-                            label={bookmark.domain}
-                            isSelected={currentFilters.domains.includes(bookmark.domain)}
-                            currentParams={currentParams}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0 overflow-hidden">
+                  <TableCell className="p-2 align-middle">
+                    <div className="flex gap-2">
+                      <FilterLink
+                        type="domains"
+                        value={bookmark.domain}
+                        label={bookmark.domain}
+                        isSelected={currentFilters.domains.includes(bookmark.domain)}
+                        currentParams={currentParams}
+                      />
+                      <span className="max-w-[500px] truncate font-medium">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span>
+                              {bookmark.entry?.title || bookmark.url}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[600px]">
+                            <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </span>
+                    </div>
+                    {(bookmark.entry?.summary || bookmark.comment || bookmark.tags.length > 0) && (
+                      <div className="flex flex-col gap-1 mt-1">
+                        {(bookmark.entry?.summary || bookmark.comment) && (
                           <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2">
+                            {bookmark.entry?.summary && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="font-medium text-sm truncate block">
-                                    {bookmark.entry?.title || bookmark.url}
-                                  </span>
+                                  <p className="text-sm text-muted-foreground line-clamp-2 cursor-help">
+                                    {bookmark.entry.summary}
+                                  </p>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-[600px]">
-                                  <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
+                                  <p className="text-sm whitespace-pre-wrap">{bookmark.entry.summary}</p>
                                 </TooltipContent>
                               </Tooltip>
-                            </div>
-                            <div className="flex gap-1 flex-wrap">
+                            )}
+                            {bookmark.comment && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <p className="text-sm italic text-muted-foreground line-clamp-1 cursor-help">
+                                    &quot;{bookmark.comment}&quot;
+                                  </p>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-[400px]">
+                                  <p className="text-sm whitespace-pre-wrap">{bookmark.comment}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
+                        )}
+                        {bookmark.tags.length > 0 && (
+                          <div className="flex gap-1 flex-wrap">
                             {bookmark.tags.slice(0, 3).map((tag) => (
                               <FilterLink
                                 key={tag.id}
@@ -215,38 +242,13 @@ export function BookmarkList({
                                 </TooltipContent>
                               </Tooltip>
                             )}
-                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
-                      {bookmark.entry?.summary && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <p className="text-sm text-muted-foreground line-clamp-2 cursor-help">
-                              {bookmark.entry.summary}
-                            </p>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-[600px]">
-                            <p className="text-sm whitespace-pre-wrap">{bookmark.entry.summary}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                      {bookmark.comment && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <p className="text-sm italic text-muted-foreground line-clamp-1 cursor-help">
-                              &quot;{bookmark.comment}&quot;
-                            </p>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-[400px]">
-                            <p className="text-sm whitespace-pre-wrap">{bookmark.comment}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
+                    )}
                   </TableCell>
                   <TableCell className="p-2 align-middle whitespace-nowrap">
-                    <div className="flex items-center gap-2">
+                    <div className="flex w-[100px] items-center gap-2 justify-end">
                       <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-xs">
                           {bookmark.user.name.charAt(0).toUpperCase()}
@@ -255,7 +257,7 @@ export function BookmarkList({
                       <div className="text-sm font-medium">{bookmark.user.name}</div>
                     </div>
                   </TableCell>
-                  <TableCell className="p-2 align-middle whitespace-nowrap text-sm text-muted-foreground text-center">
+                  <TableCell className="p-2 align-middle whitespace-nowrap text-sm text-muted-foreground text-right">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="cursor-help">
