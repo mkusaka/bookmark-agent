@@ -33,6 +33,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   CirclePlus,
   ChevronsUpDown,
@@ -42,6 +43,8 @@ import {
   BookmarkIcon,
   CalendarIcon,
   ExternalLinkIcon,
+  MoreHorizontal,
+  Copy,
 } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 import { format } from "date-fns";
@@ -243,6 +246,7 @@ export function BookmarkSearchV2({
                 Add Bookmark
               </Button>
             )}
+            <ThemeToggle />
           </div>
         </div>
 
@@ -525,16 +529,17 @@ export function BookmarkSearchV2({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[50px]">
+                  <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap">
                     <Checkbox
                       checked={
                         selectedBookmarks.length === bookmarks.length && bookmarks.length > 0
                       }
                       onCheckedChange={handleSelectAll}
                       aria-label="Select all"
+                      className="translate-y-[2px]"
                     />
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
@@ -550,10 +555,10 @@ export function BookmarkSearchV2({
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableHead>
-                  <TableHead className="w-[140px]">
+                  <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[140px]">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 data-[state=open]:bg-accent w-full justify-start">
+                        <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
                           User {sortField === "user" && `(${sortOrder === "desc" ? "↓" : "↑"})`}
                           <ChevronsUpDown className="ml-2 h-4 w-4" />
                         </Button>
@@ -565,10 +570,10 @@ export function BookmarkSearchV2({
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableHead>
-                  <TableHead className="w-[120px]">
+                  <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[120px]">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 data-[state=open]:bg-accent w-full justify-start">
+                        <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
                           {sortField === "bookmarkedAt"
                             ? "Bookmarked"
                             : sortField === "createdAt"
@@ -589,7 +594,7 @@ export function BookmarkSearchV2({
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableHead>
-                  <TableHead className="w-[80px]"></TableHead>
+                  <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -608,56 +613,87 @@ export function BookmarkSearchV2({
                 ) : (
                   bookmarks.map((bookmark) => (
                     <TableRow key={bookmark.id}>
-                      <TableCell>
+                      <TableCell className="p-2 align-middle whitespace-nowrap">
                         <Checkbox
                           checked={selectedBookmarks.includes(bookmark.id)}
                           onCheckedChange={() => handleBookmarkToggle(bookmark.id)}
                           aria-label="Select row"
+                          className="translate-y-[2px]"
                         />
                       </TableCell>
-                      <TableCell className="max-w-[500px]">
+                      <TableCell className="p-2 align-middle max-w-[500px]">
                         <div className="flex flex-col gap-2">
                           <div className="flex items-start gap-2">
-                            <Badge variant="outline" className="font-mono text-xs shrink-0">
+                            <Badge 
+                              variant={selectedDomains.includes(bookmark.domain) ? "default" : "outline"}
+                              className="font-mono text-xs shrink-0 cursor-pointer hover:bg-accent transition-colors"
+                              onClick={() => {
+                                if (selectedDomains.includes(bookmark.domain)) {
+                                  setSelectedDomains(selectedDomains.filter(d => d !== bookmark.domain));
+                                } else {
+                                  setSelectedDomains([...selectedDomains, bookmark.domain]);
+                                }
+                              }}
+                            >
                               {bookmark.domain}
                             </Badge>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start gap-2">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <h3 className="font-medium text-sm line-clamp-2 cursor-help flex-1">
-                                      {bookmark.entry?.title || bookmark.url}
-                                    </h3>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="max-w-[600px]">
-                                    <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                                <div className="flex gap-1 flex-wrap">
-                                  {bookmark.tags.slice(0, 3).map((tag) => (
-                                    <Badge key={tag.id} variant="secondary" className="text-xs">
-                                      {tag.label}
-                                    </Badge>
-                                  ))}
-                                  {bookmark.tags.length > 3 && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Badge variant="secondary" className="text-xs cursor-help">
-                                          +{bookmark.tags.length - 3}
-                                        </Badge>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <div className="flex flex-wrap gap-1 max-w-[300px]">
-                                          {bookmark.tags.slice(3).map((tag) => (
-                                            <Badge key={tag.id} variant="secondary" className="text-xs">
-                                              {tag.label}
-                                            </Badge>
-                                          ))}
-                                        </div>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  )}
-                                </div>
+                            <div className="flex-1 min-w-0 flex items-start gap-2">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="font-medium text-sm truncate block flex-1">
+                                    {bookmark.entry?.title || bookmark.url}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-[600px]">
+                                  <p className="text-sm whitespace-pre-wrap break-words">{bookmark.entry?.title || bookmark.url}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <div className="flex gap-1 flex-wrap shrink-0">
+                                {bookmark.tags.slice(0, 3).map((tag) => (
+                                  <Badge 
+                                    key={tag.id} 
+                                    variant={selectedTags.includes(tag.id) ? "default" : "secondary"}
+                                    className="text-xs cursor-pointer hover:bg-accent transition-colors"
+                                    onClick={() => {
+                                      if (selectedTags.includes(tag.id)) {
+                                        setSelectedTags(selectedTags.filter(t => t !== tag.id));
+                                      } else {
+                                        setSelectedTags([...selectedTags, tag.id]);
+                                      }
+                                    }}
+                                  >
+                                    {tag.label}
+                                  </Badge>
+                                ))}
+                                {bookmark.tags.length > 3 && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Badge variant="secondary" className="text-xs cursor-help">
+                                        +{bookmark.tags.length - 3}
+                                      </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <div className="flex flex-wrap gap-1 max-w-[300px]">
+                                        {bookmark.tags.slice(3).map((tag) => (
+                                          <Badge 
+                                            key={tag.id} 
+                                            variant={selectedTags.includes(tag.id) ? "default" : "secondary"}
+                                            className="text-xs cursor-pointer hover:bg-accent transition-colors"
+                                            onClick={() => {
+                                              if (selectedTags.includes(tag.id)) {
+                                                setSelectedTags(selectedTags.filter(t => t !== tag.id));
+                                              } else {
+                                                setSelectedTags([...selectedTags, tag.id]);
+                                              }
+                                            }}
+                                          >
+                                            {tag.label}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -687,7 +723,7 @@ export function BookmarkSearchV2({
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-2 align-middle whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-6 w-6">
                             <AvatarFallback className="text-xs">
@@ -697,7 +733,7 @@ export function BookmarkSearchV2({
                           <div className="text-sm font-medium">{bookmark.user.name}</div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground text-center">
+                      <TableCell className="p-2 align-middle whitespace-nowrap text-sm text-muted-foreground text-center">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="cursor-help">
@@ -716,16 +752,28 @@ export function BookmarkSearchV2({
                           </TooltipContent>
                         </Tooltip>
                       </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 px-2 gap-1"
-                          onClick={() => window.open(bookmark.url, "_blank")}
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          Open
-                        </Button>
+                      <TableCell className="p-2 align-middle whitespace-nowrap">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className="h-8 w-8 p-0"
+                            >
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => window.open(bookmark.url, "_blank")}>
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                              Open in new tab
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(bookmark.url)}>
+                              <Copy className="mr-2 h-4 w-4" />
+                              Copy link
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))
@@ -736,7 +784,7 @@ export function BookmarkSearchV2({
 
           <div className="flex items-center justify-between px-2">
             <div className="flex-1 text-sm text-muted-foreground">
-              {selectedBookmarks.length} of {bookmarks.length} bookmark(s) selected
+              {selectedBookmarks.length} of {bookmarks.length} bookmark(s) selected.
             </div>
           </div>
         </div>
