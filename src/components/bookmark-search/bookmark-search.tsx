@@ -219,22 +219,22 @@ export function BookmarkSearch({
     <div className="flex flex-col gap-8 p-8">
       <div className="flex items-center justify-between gap-2">
         <div className="flex flex-col gap-1">
-          <h2 className="text-2xl font-semibold tracking-tight">ブックマーク検索</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Bookmark Search</h2>
           <p className="text-muted-foreground">
-            高度なフィルタリングでブックマークを検索・管理
+            Search and manage bookmarks with advanced filtering
           </p>
         </div>
         <div className="flex items-center gap-2">
           {selectedBookmarks.length > 0 && (
             <Button variant="outline" onClick={handleOpenSelected} className="gap-2">
               <ExternalLinkIcon className="h-4 w-4" />
-              選択したものを開く ({selectedBookmarks.length})
+              Open Selected ({selectedBookmarks.length})
             </Button>
           )}
           {onAddBookmark && (
             <Button className="gap-2" onClick={onAddBookmark}>
               <BookmarkIcon className="h-4 w-4" />
-              ブックマークを追加
+              Add Bookmark
             </Button>
           )}
         </div>
@@ -244,7 +244,7 @@ export function BookmarkSearch({
         <div className="flex items-center justify-between">
           <div className="flex flex-1 items-center gap-2 flex-wrap">
             <Input
-              placeholder="ブックマークを検索..."
+              placeholder="Search bookmarks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-8 w-[150px] lg:w-[250px]"
@@ -254,7 +254,7 @@ export function BookmarkSearch({
               <PopoverTrigger asChild>
                 <Button variant="outline" className="h-8 border-dashed gap-1.5">
                   <CirclePlus className="h-4 w-4" />
-                  ドメイン
+                  Domain
                   <Separator orientation="vertical" className="mx-2 h-4" />
                   {selectedDomains.length > 0 && (
                     <>
@@ -263,7 +263,7 @@ export function BookmarkSearch({
                       </Badge>
                       <div className="hidden gap-1 lg:flex">
                         <Badge variant="secondary" className="rounded-sm px-1 font-normal">
-                          {selectedDomains.length} 選択中
+                          {selectedDomains.length} selected
                         </Badge>
                       </div>
                     </>

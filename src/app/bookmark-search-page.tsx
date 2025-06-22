@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { BookmarkSearch } from '@/components/bookmark-search';
+import { BookmarkSearchV2 as BookmarkSearch } from '@/components/bookmark-search/bookmark-search-v2';
 import { getBookmarks, getDomains, getTags, getUsers } from './actions/bookmark-actions';
 import type { Bookmark, BookmarkFilters, BookmarkSort } from '@/types/bookmark';
 import { useDebounce } from '@/hooks/use-debounce';
