@@ -11,7 +11,7 @@ export class HatenaBookmarkImporter {
     this.client = new HatenaBookmarkClient();
   }
 
-  async importUserBookmarks(hatenaId: string, limit?: number) {
+  async importUserBookmarks(hatenaId: string, limit?: number, totalCount?: number) {
     try {
       // Get or create user
       let user = await db.query.users.findFirst({
@@ -26,28 +26,28 @@ export class HatenaBookmarkImporter {
         user = newUser;
       }
 
-      // First, get total count of bookmarks
-      console.log(`Fetching total bookmark count for user: ${hatenaId}`);
-      const firstPage = await this.client.fetchUserBookmarks(hatenaId, 0);
-      const totalCount = firstPage.meta.total;
-      console.log(`Total bookmarks: ${totalCount}`);
-
-      // Calculate starting page for oldest bookmarks
+      console.log(`Fetching bookmarks for user: ${hatenaId}`);
       const itemsPerPage = 10; // Hatena API returns 10 items per page
+      
+      let totalImported = 0;
+      let currentPage = 0;
       let startPage = 0;
-      let targetCount = totalCount;
+      let targetCount = Number.MAX_SAFE_INTEGER; // Default to importing all
 
-      if (limit && limit < totalCount) {
+      // If both limit and totalCount are provided, calculate the starting page for oldest bookmarks
+      if (limit && totalCount) {
         // Calculate which page contains the oldest bookmarks we want
         startPage = Math.floor((totalCount - limit) / itemsPerPage);
         targetCount = limit;
-        console.log(`Limiting to ${limit} oldest bookmarks, starting from page ${startPage}`);
+        currentPage = startPage;
+        console.log(`Total bookmarks: ${totalCount}, limiting to ${limit} oldest bookmarks`);
+        console.log(`Starting from page ${startPage}`);
+      } else if (limit) {
+        targetCount = limit;
+        console.log(`Limiting to ${limit} bookmarks`);
       }
 
-      let totalImported = 0;
-      let currentPage = startPage;
-
-      // Import from oldest to newest
+      // Import bookmarks
       while (totalImported < targetCount) {
         console.log(`Fetching page ${currentPage}...`);
         const response = await this.client.fetchUserBookmarks(hatenaId, currentPage);
@@ -56,8 +56,10 @@ export class HatenaBookmarkImporter {
           break;
         }
 
-        // Reverse the bookmarks to import oldest first within each page
-        const bookmarksToImport = response.item.bookmarks.reverse();
+        // If we're getting oldest bookmarks, reverse the order within each page
+        const bookmarksToImport = (limit && totalCount) 
+          ? response.item.bookmarks.reverse() 
+          : response.item.bookmarks;
 
         for (const hatenaBookmark of bookmarksToImport) {
           if (totalImported >= targetCount) {

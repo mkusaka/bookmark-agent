@@ -55,8 +55,11 @@ pnpm db:migrate
 # Import all bookmarks
 pnpm db:seed
 
-# Import only the oldest 100 bookmarks
+# Import only the first 100 bookmarks
 pnpm db:seed -- --limit=100
+
+# Import the oldest 100 bookmarks (requires total count)
+pnpm db:seed -- --limit=100 --total=5000
 ```
 
 5. Start the development server:

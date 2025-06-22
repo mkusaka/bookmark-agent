@@ -1,3 +1,5 @@
+/// <reference types="@cloudflare/workers-types" />
+
 export interface Env {
   CRON_SECRET: string;
   TARGET_URL: string;
@@ -6,7 +8,7 @@ export interface Env {
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
   async scheduled(
-    _controller: ScheduledController,
+    _controller: ScheduledEvent,
     env: Env,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _ctx: ExecutionContext,

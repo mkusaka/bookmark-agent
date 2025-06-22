@@ -12,19 +12,29 @@ async function main() {
     process.exit(1);
   }
 
-  // Get limit from command line argument
+  // Get command line arguments
   const args = process.argv.slice(2);
   const limitArg = args.find(arg => arg.startsWith('--limit='));
+  const totalArg = args.find(arg => arg.startsWith('--total='));
+  
   const limit = limitArg ? parseInt(limitArg.split('=')[1], 10) : undefined;
+  const totalCount = totalArg ? parseInt(totalArg.split('=')[1], 10) : undefined;
 
   if (limit && isNaN(limit)) {
     console.error('Invalid limit value. Must be a number.');
     process.exit(1);
   }
 
+  if (totalCount && isNaN(totalCount)) {
+    console.error('Invalid total value. Must be a number.');
+    process.exit(1);
+  }
+
   console.log(`Starting import for user: ${hatenaUserId}`);
-  if (limit) {
-    console.log(`Limiting to ${limit} oldest bookmarks`);
+  if (limit && totalCount) {
+    console.log(`Total bookmarks: ${totalCount}, limiting to ${limit} oldest bookmarks`);
+  } else if (limit) {
+    console.log(`Limiting to ${limit} bookmarks`);
   }
   
   // Dynamic import after env vars are loaded
@@ -32,7 +42,7 @@ async function main() {
   const importer = new HatenaBookmarkImporter();
   
   try {
-    const totalImported = await importer.importUserBookmarks(hatenaUserId, limit);
+    const totalImported = await importer.importUserBookmarks(hatenaUserId, limit, totalCount);
     console.log(`Successfully imported ${totalImported} bookmarks`);
   } catch (error) {
     console.error('Import failed:', error);
