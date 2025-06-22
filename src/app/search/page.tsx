@@ -34,7 +34,6 @@ export default async function SearchPage({
       initialHasPreviousPage={bookmarksData.pagination.hasPreviousPage}
       initialFilters={filters}
       initialSort={sort}
-      initialCursor={params.cursor}
     />
   );
 }

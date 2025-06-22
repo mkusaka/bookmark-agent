@@ -1,9 +1,10 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
-import { useCallback, useState, useTransition } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useCallback, useState, useTransition, useEffect } from 'react';
 import { BookmarkSearchV2 } from '@/components/bookmark-search/bookmark-search-v2';
 import type { Bookmark, BookmarkFilters, BookmarkSort } from '@/types/bookmark';
+import { getBookmarks } from '../actions/bookmark-actions';
 
 interface BookmarkSearchWrapperProps {
   initialBookmarks: Bookmark[];
@@ -15,7 +16,6 @@ interface BookmarkSearchWrapperProps {
   initialHasPreviousPage: boolean;
   initialFilters: BookmarkFilters;
   initialSort: BookmarkSort;
-  initialCursor?: string;
 }
 
 export function BookmarkSearchWrapper({
@@ -28,16 +28,21 @@ export function BookmarkSearchWrapper({
   initialHasPreviousPage,
   initialFilters,
   initialSort,
-  initialCursor,
 }: BookmarkSearchWrapperProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const [isLoadingData, setIsLoadingData] = useState(false);
   
-  // State for optimistic updates
-  const [bookmarks] = useState(initialBookmarks);
-  const [hasNextPage] = useState(initialHasNextPage);
-  const [hasPreviousPage] = useState(initialHasPreviousPage);
+  // State for dynamic updates
+  const [bookmarks, setBookmarks] = useState(initialBookmarks);
+  const [hasNextPage, setHasNextPage] = useState(initialHasNextPage);
+  const [hasPreviousPage, setHasPreviousPage] = useState(initialHasPreviousPage);
+  const [currentTotal, setCurrentTotal] = useState(total);
+  
+  // Track if we have a cursor in the URL
+  const currentCursor = searchParams.get('cursor');
 
   // Update URL params
   const updateSearchParams = useCallback((updates: Record<string, string | null>) => {
@@ -88,9 +93,37 @@ export function BookmarkSearchWrapper({
   }, [hasNextPage, bookmarks, updateSearchParams]);
 
   const handlePreviousPage = useCallback(() => {
-    // Simple implementation - go back to first page
+    // Go back to first page
     updateSearchParams({ cursor: null });
   }, [updateSearchParams]);
+
+  // Update data when URL changes (for pagination)
+  useEffect(() => {
+    const loadData = async () => {
+      const newCursor = searchParams.get('cursor');
+      if (newCursor !== currentCursor) {
+        setIsLoadingData(true);
+        try {
+          const result = await getBookmarks(
+            initialFilters,
+            initialSort,
+            25,
+            newCursor || undefined
+          );
+          setBookmarks(result.bookmarks);
+          setHasNextPage(result.pagination.hasNextPage);
+          setHasPreviousPage(result.pagination.hasPreviousPage);
+          setCurrentTotal(result.total);
+        } catch (error) {
+          console.error('Failed to load bookmarks:', error);
+        } finally {
+          setIsLoadingData(false);
+        }
+      }
+    };
+
+    loadData();
+  }, [searchParams, currentCursor, initialFilters, initialSort]);
 
   return (
     <BookmarkSearchV2
@@ -100,10 +133,10 @@ export function BookmarkSearchWrapper({
       users={users}
       onFiltersChange={handleFiltersChange}
       onSortChange={handleSortChange}
-      isLoading={isPending}
-      total={total}
+      isLoading={isPending || isLoadingData}
+      total={currentTotal}
       hasNextPage={hasNextPage}
-      hasPreviousPage={hasPreviousPage}
+      hasPreviousPage={!!currentCursor}
       onNextPage={handleNextPage}
       onPreviousPage={handlePreviousPage}
       initialFilters={initialFilters}

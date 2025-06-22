@@ -3,14 +3,14 @@
 import { db } from '@/db';
 import { bookmarks, users, entries, tags, bookmarkTags } from '@/db/schema';
 import { eq, and, or, ilike, desc, asc, gte, lte, sql, inArray } from 'drizzle-orm';
-import type { BookmarkFilters, BookmarkSort } from '@/types/bookmark';
+import type { BookmarkFilters, BookmarkSort, Bookmark, PaginationInfo } from '@/types/bookmark';
 
 export async function getBookmarks(
   filters: BookmarkFilters,
   sort: BookmarkSort = { field: 'bookmarkedAt', order: 'desc' },
   limit: number = 25,
   cursor?: string
-) {
+): Promise<{ bookmarks: Bookmark[]; total: number; pagination: PaginationInfo }> {
   console.log('getBookmarks called with filters:', JSON.stringify(filters));
   console.log('sort:', sort);
   
@@ -92,7 +92,16 @@ export async function getBookmarks(
       
       if (bookmarkIdsWithTags.length === 0) {
         // No bookmarks match the tag filter
-        return { bookmarks: [], total: 0 };
+        return { 
+          bookmarks: [], 
+          total: 0,
+          pagination: {
+            hasNextPage: false,
+            hasPreviousPage: false,
+            nextCursor: undefined,
+            previousCursor: undefined,
+          }
+        };
       }
       
       // Add tag filter to conditions
