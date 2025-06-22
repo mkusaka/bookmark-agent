@@ -88,17 +88,40 @@ export function BookmarkSearchV2({
   onNextPage,
   onPreviousPage,
 }: BookmarkSearchProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
+  // Get initial values from URL params via parent component
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || "");
+  const [selectedDomains, setSelectedDomains] = useState<string[]>(
+    searchParams.get('domains')?.split(',').filter(Boolean) || []
+  );
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    searchParams.get('tags')?.split(',').filter(Boolean) || []
+  );
+  const [selectedUsers, setSelectedUsers] = useState<string[]>(
+    searchParams.get('users')?.split(',').filter(Boolean) || []
+  );
   const [domainSearchQuery, setDomainSearchQuery] = useState("");
   const [tagSearchQuery, setTagSearchQuery] = useState("");
   const [userSearchQuery, setUserSearchQuery] = useState("");
-  const [sortField, setSortField] = useState<SortField>("bookmarkedAt");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [sortField, setSortField] = useState<SortField>(
+    (searchParams.get('sortBy') as SortField) || "bookmarkedAt"
+  );
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
+    (searchParams.get('order') as "asc" | "desc") || "desc"
+  );
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const from = searchParams.get('from');
+    const to = searchParams.get('to');
+    if (from || to) {
+      return {
+        from: from ? new Date(from) : undefined,
+        to: to ? new Date(to) : undefined,
+      };
+    }
+    return undefined;
+  });
   const isFirstRender = useRef(true);
 
   // Filter domains, tags, and users based on search
@@ -612,8 +635,10 @@ export function BookmarkSearchV2({
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">
-                      Loading...
+                    <TableCell colSpan={5} className="text-center h-24">
+                      <div className="flex items-center justify-center">
+                        <div className="text-sm text-muted-foreground">Loading...</div>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : bookmarks.length === 0 ? (

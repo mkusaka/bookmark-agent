@@ -1,5 +1,5 @@
-import BookmarkSearchPage from './bookmark-search-page';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return <BookmarkSearchPage />;
+  redirect('/bookmark-search');
 }
