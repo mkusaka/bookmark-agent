@@ -1,5 +1,9 @@
-import Link from 'next/link';
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useTransition, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { useNavigationPending } from '@/contexts/navigation-context';
 
 interface FilterLinkProps {
   type: 'domains' | 'tags';
@@ -10,6 +14,14 @@ interface FilterLinkProps {
 }
 
 export function FilterLink({ type, value, label, isSelected, currentParams }: FilterLinkProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const { setIsPending } = useNavigationPending();
+  
+  useEffect(() => {
+    setIsPending(isPending);
+  }, [isPending, setIsPending]);
+  
   // Build URL with proper param handling
   const buildUrl = () => {
     const params = new URLSearchParams();
@@ -50,6 +62,12 @@ export function FilterLink({ type, value, label, isSelected, currentParams }: Fi
     return `?${params.toString()}`;
   };
   
+  const handleClick = () => {
+    startTransition(() => {
+      router.push(buildUrl());
+    });
+  };
+  
   const variant = type === 'domains' 
     ? (isSelected ? "default" : "outline")
     : (isSelected ? "default" : "secondary");
@@ -59,10 +77,12 @@ export function FilterLink({ type, value, label, isSelected, currentParams }: Fi
     : "text-xs w-fit whitespace-nowrap shrink-0";
   
   return (
-    <Link href={buildUrl()}>
-      <Badge variant={variant} className={className}>
-        {label}
-      </Badge>
-    </Link>
+    <Badge 
+      variant={variant} 
+      className={`${className} cursor-pointer`}
+      onClick={handleClick}
+    >
+      {label}
+    </Badge>
   );
 }

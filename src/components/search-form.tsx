@@ -26,6 +26,7 @@ import type { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
 import { fuzzyMatch } from '@/lib/fuzzy-match';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useNavigationPending } from '@/contexts/navigation-context';
 
 interface SearchFormProps {
   domains: string[];
@@ -43,6 +44,11 @@ export function SearchForm({
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
+  const { isPending: isNavigationPending, setIsPending } = useNavigationPending();
+  
+  useEffect(() => {
+    setIsPending(isPending);
+  }, [isPending, setIsPending]);
 
   const form = useForm<SearchFormValues>({
     defaultValues: initialValues,
@@ -290,7 +296,7 @@ export function SearchForm({
       )}
       
       {/* Loading indicator */}
-      {isPending && (
+      {(isPending || isNavigationPending) && (
         <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm">Loading...</span>
