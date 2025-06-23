@@ -20,12 +20,49 @@ export function BookmarkBulkActions({ bookmarks, selectedBookmarks, onClearSelec
     
     if (selectedUrls.length === 0) return;
     
-    // Open all URLs
+    // Warn if trying to open many bookmarks
+    if (selectedUrls.length > 10) {
+      const confirmed = window.confirm(
+        `You are about to open ${selectedUrls.length} bookmarks. Your browser may block some popups. Continue?`
+      );
+      if (!confirmed) return;
+    }
+    
+    // Try to open all URLs immediately (within the user gesture context)
+    let openedCount = 0;
+    const failedUrls: string[] = [];
+    
     selectedUrls.forEach(url => {
-      window.open(url, '_blank');
+      try {
+        const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+        if (newWindow) {
+          openedCount++;
+        } else {
+          failedUrls.push(url);
+        }
+      } catch (e) {
+        failedUrls.push(url);
+      }
     });
     
-    toast.success(`Opened ${selectedUrls.length} bookmark${selectedUrls.length > 1 ? 's' : ''}`);
+    // Provide feedback
+    if (failedUrls.length > 0) {
+      toast.warning(
+        `Opened ${openedCount} of ${selectedUrls.length} bookmarks. ${failedUrls.length} were blocked by your browser.`,
+        {
+          action: failedUrls.length === 1 ? {
+            label: 'Copy URL',
+            onClick: () => {
+              navigator.clipboard.writeText(failedUrls[0]);
+              toast.success('URL copied to clipboard');
+            }
+          } : undefined
+        }
+      );
+    } else {
+      toast.success(`Opened ${openedCount} bookmark${openedCount > 1 ? 's' : ''}`);
+    }
+    
     onClearSelection();
   };
   
