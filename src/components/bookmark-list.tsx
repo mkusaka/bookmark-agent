@@ -160,7 +160,7 @@ export function BookmarkList({
                   </TableCell>
                   <TableCell className="p-2 align-middle">
                     <div className="flex flex-col gap-1">
-                      <div className="flex items-start gap-2">
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
                         <FilterLink
                           type="domains"
                           value={bookmark.domain}
