@@ -430,11 +430,11 @@ function DomainSelector({
                     <Checkbox
                       id={`domain-${virtualItem.index}`}
                       checked={isSelected}
-                      onCheckedChange={() => onToggle(domain)}
+                      className="pointer-events-none"
                     />
                     <label
                       htmlFor={`domain-${virtualItem.index}`}
-                      className="text-sm font-medium cursor-pointer flex-1"
+                      className="text-sm font-medium flex-1 pointer-events-none"
                     >
                       {domain}
                     </label>
@@ -532,11 +532,11 @@ function TagSelector({
               <Checkbox
                 id={`tag-${tag.id}`}
                 checked={selectedTags.includes(tag.id)}
-                onCheckedChange={() => onToggle(tag.id)}
+                className="pointer-events-none"
               />
               <label
                 htmlFor={`tag-${tag.id}`}
-                className="text-sm font-medium cursor-pointer flex-1"
+                className="text-sm font-medium flex-1 pointer-events-none"
               >
                 {tag.label}
               </label>
@@ -634,14 +634,14 @@ function UserSelector({
               <Checkbox
                 id={`user-${user.id}`}
                 checked={selectedUsers.includes(user.id)}
-                onCheckedChange={() => onToggle(user.id)}
+                className="pointer-events-none"
               />
-              <Avatar className="h-6 w-6">
+              <Avatar className="h-6 w-6 pointer-events-none">
                 <AvatarFallback className="text-xs">
                   {user.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
+              <div className="flex-1 pointer-events-none">
                 <div className="text-sm font-medium">{user.name}</div>
                 <div className="text-xs text-muted-foreground">@{user.hatenaId}</div>
               </div>
