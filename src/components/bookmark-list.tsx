@@ -162,23 +162,23 @@ export function BookmarkList({
                       <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
                         <FilterLink
                           type="domains"
-                          value={bookmark.entry?.rootUrl || bookmark.domain}
-                          label={bookmark.entry?.rootUrl || bookmark.domain}
-                          isSelected={currentFilters.domains.includes(bookmark.entry?.rootUrl || bookmark.domain)}
+                          value={bookmark.entry.rootUrl}
+                          label={bookmark.entry.rootUrl.replace(/^https?:\/\//, '')}
+                          isSelected={currentFilters.domains.includes(bookmark.entry.rootUrl)}
                           currentParams={currentParams}
                         />
                         <div className="flex-1 min-w-0">
                           <BookmarkTitle 
-                            title={bookmark.entry?.title} 
+                            title={bookmark.entry.title} 
                             url={bookmark.url} 
                           />
                         </div>
                       </div>
-                      {(bookmark.entry?.summary || bookmark.comment || bookmark.tags.length > 0) && (
+                      {(bookmark.entry.summary || bookmark.comment || bookmark.tags.length > 0) && (
                         <div className="flex flex-col gap-1 min-w-0">
-                          {(bookmark.entry?.summary || bookmark.comment) && (
+                          {(bookmark.entry.summary || bookmark.comment) && (
                             <BookmarkSummary 
-                              summary={bookmark.entry?.summary} 
+                              summary={bookmark.entry.summary} 
                               comment={bookmark.comment} 
                             />
                           )}

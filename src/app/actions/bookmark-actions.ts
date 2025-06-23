@@ -162,13 +162,15 @@ export async function getBookmarks(
       return acc;
     }, {} as Record<string, typeof tags.$inferSelect[]>);
 
-    // Format the results
-    const formattedBookmarks = actualResults.map((result) => ({
-      ...result.bookmark,
-      user: result.user!,
-      entry: result.entry,
-      tags: tagsByBookmark[result.bookmark.id] || [],
-    }));
+    // Format the results - filter out bookmarks without entries
+    const formattedBookmarks = actualResults
+      .filter((result) => result.entry !== null)
+      .map((result) => ({
+        ...result.bookmark,
+        user: result.user!,
+        entry: result.entry!,
+        tags: tagsByBookmark[result.bookmark.id] || [],
+      }));
 
     // Generate next cursor if there's a next page
     let nextCursor: string | undefined;

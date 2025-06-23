@@ -29,7 +29,7 @@ export interface Bookmark {
   createdAt: Date;
   updatedAt: Date;
   user: User;
-  entry: Entry | null;
+  entry: Entry;
   tags: BookmarkTag[];
 }
 
