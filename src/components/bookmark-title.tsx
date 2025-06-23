@@ -13,9 +13,14 @@ export function BookmarkTitle({ title, url }: BookmarkTitleProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="font-medium truncate">
+        <a 
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium truncate text-primary hover:underline block"
+        >
           {displayText}
-        </div>
+        </a>
       </TooltipTrigger>
       <TooltipContent className="max-w-[600px]">
         <p className="text-sm whitespace-pre-wrap break-words">{displayText}</p>

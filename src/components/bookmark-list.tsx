@@ -97,7 +97,13 @@ export function BookmarkList({
                   />
                 </TableHead>
                 <TableHead className="h-10 px-2 text-left align-middle font-medium">
-                <Link href={`?sortBy=title&order=${currentSort.field === 'title' && currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
+                <Link href={
+                  currentSort.field === 'title'
+                    ? currentSort.order === 'asc'
+                      ? '?sortBy=title&order=desc'
+                      : '?'  // Reset to default (no sort)
+                    : '?sortBy=title&order=asc'
+                }>
                   <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
                     Bookmark{' '}
                     {currentSort.field === 'title' && `(${currentSort.order === 'desc' ? '↓' : '↑'})`}
@@ -106,7 +112,13 @@ export function BookmarkList({
                 </Link>
               </TableHead>
               <TableHead className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap w-[100px]">
-                <Link href={`?sortBy=user&order=${currentSort.field === 'user' && currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
+                <Link href={
+                  currentSort.field === 'user'
+                    ? currentSort.order === 'asc'
+                      ? '?sortBy=user&order=desc'
+                      : '?'  // Reset to default (no sort)
+                    : '?sortBy=user&order=asc'
+                }>
                   <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
                     User {currentSort.field === 'user' && `(${currentSort.order === 'desc' ? '↓' : '↑'})`}
                     <ChevronsUpDown className="ml-2 h-4 w-4" />
@@ -129,13 +141,27 @@ export function BookmarkList({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`?sortBy=bookmarkedAt&order=${currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
+                      <Link href={
+                        currentSort.field === 'bookmarkedAt'
+                          ? currentSort.order === 'asc'
+                            ? '?sortBy=bookmarkedAt&order=desc'
+                            : '?'  // Reset to default (no sort)
+                          : '?sortBy=bookmarkedAt&order=asc'
+                      }>
                         Sort by Bookmark Date
+                        {currentSort.field === 'bookmarkedAt' && ` (${currentSort.order === 'desc' ? '↓' : '↑'})`}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href={`?sortBy=createdAt&order=${currentSort.order === 'asc' ? 'desc' : 'asc'}`}>
+                      <Link href={
+                        currentSort.field === 'createdAt'
+                          ? currentSort.order === 'asc'
+                            ? '?sortBy=createdAt&order=desc'
+                            : '?'  // Reset to default (no sort)
+                          : '?sortBy=createdAt&order=asc'
+                      }>
                         Sort by Created Date
+                        {currentSort.field === 'createdAt' && ` (${currentSort.order === 'desc' ? '↓' : '↑'})`}
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
