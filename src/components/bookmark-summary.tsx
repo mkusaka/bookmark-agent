@@ -9,11 +9,11 @@ interface BookmarkSummaryProps {
 
 export function BookmarkSummary({ summary, comment }: BookmarkSummaryProps) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 min-w-0">
       {summary && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <p className="text-sm text-muted-foreground line-clamp-2 cursor-help">
+            <p className="text-sm text-muted-foreground break-words whitespace-normal cursor-help">
               {summary}
             </p>
           </TooltipTrigger>
@@ -25,7 +25,7 @@ export function BookmarkSummary({ summary, comment }: BookmarkSummaryProps) {
       {comment && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <p className="text-sm italic text-muted-foreground line-clamp-1 cursor-help">
+            <p className="text-sm italic text-muted-foreground break-words whitespace-normal cursor-help">
               &quot;{comment}&quot;
             </p>
           </TooltipTrigger>

@@ -17,7 +17,7 @@ export function BookmarkTitle({ title, url }: BookmarkTitleProps) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium truncate text-primary hover:underline block"
+          className="font-medium text-primary hover:underline block break-words whitespace-normal"
         >
           {displayText}
         </a>

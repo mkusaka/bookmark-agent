@@ -3,17 +3,17 @@
 import { useRouter } from 'next/navigation';
 import { useTransition, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronsUpDown } from 'lucide-react';
+import { ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react';
 import { useNavigationPending } from '@/contexts/navigation-context';
 
 interface BookmarkSortLinkProps {
   href: string;
   children: React.ReactNode;
   className?: string;
-  showChevron?: boolean;
+  sortState?: 'asc' | 'desc' | null;
 }
 
-export function BookmarkSortLink({ href, children, className, showChevron = true }: BookmarkSortLinkProps) {
+export function BookmarkSortLink({ href, children, className, sortState = null }: BookmarkSortLinkProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { setIsPending } = useNavigationPending();
@@ -30,6 +30,8 @@ export function BookmarkSortLink({ href, children, className, showChevron = true
     setIsPending(isPending);
   }, [isPending, setIsPending]);
 
+  const SortIcon = sortState === 'asc' ? ChevronUp : sortState === 'desc' ? ChevronDown : ChevronsUpDown;
+
   return (
     <Button 
       variant="ghost" 
@@ -37,7 +39,7 @@ export function BookmarkSortLink({ href, children, className, showChevron = true
       onClick={handleClick}
     >
       {children}
-      {showChevron && <ChevronsUpDown className="ml-2 h-4 w-4" />}
+      <SortIcon className="ml-2 h-4 w-4" />
     </Button>
   );
 }

@@ -121,12 +121,12 @@ export function BookmarkList({
                         : '?'  // Reset to default (no sort)
                       : '?sortBy=title&order=asc'
                   }
+                  sortState={currentSort.field === 'title' ? currentSort.order as 'asc' | 'desc' : null}
                 >
-                  Bookmark{' '}
-                  {currentSort.field === 'title' && `(${currentSort.order === 'desc' ? '↓' : '↑'})`}
+                  Bookmark
                 </BookmarkSortLink>
               </TableHead>
-              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[100px]">
+              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[70px]">
                 <BookmarkSortLink
                   href={
                     currentSort.field === 'bookmarkedAt'
@@ -135,12 +135,12 @@ export function BookmarkList({
                         : '?'  // Reset to default (no sort)
                       : '?sortBy=bookmarkedAt&order=desc'
                   }
+                  sortState={currentSort.field === 'bookmarkedAt' ? currentSort.order as 'asc' | 'desc' : null}
                 >
-                  Bookmarked{' '}
-                  {currentSort.field === 'bookmarkedAt' && `(${currentSort.order === 'desc' ? '↓' : '↑'})`}
+                  Date
                 </BookmarkSortLink>
               </TableHead>
-              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[60px]"></TableHead>
+              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[40px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -176,7 +176,7 @@ export function BookmarkList({
                         </div>
                       </div>
                       {(bookmark.entry?.summary || bookmark.comment || bookmark.tags.length > 0) && (
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 min-w-0">
                           {(bookmark.entry?.summary || bookmark.comment) && (
                             <BookmarkSummary 
                               summary={bookmark.entry?.summary} 
