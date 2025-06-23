@@ -8,7 +8,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  ChevronsUpDown,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';

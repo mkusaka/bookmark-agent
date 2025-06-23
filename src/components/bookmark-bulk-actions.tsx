@@ -40,7 +40,7 @@ export function BookmarkBulkActions({ bookmarks, selectedBookmarks, onClearSelec
         } else {
           failedUrls.push(url);
         }
-      } catch (e) {
+      } catch {
         failedUrls.push(url);
       }
     });
