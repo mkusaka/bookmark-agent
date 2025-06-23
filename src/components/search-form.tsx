@@ -283,7 +283,7 @@ function DomainSelector({
   const parentRef = useRef<HTMLDivElement>(null);
   
   const filteredDomains = searchQuery
-    ? domains.filter(domain => fuzzyMatch(searchQuery, domain.replace(/^https?:\/\//, '')))
+    ? domains.filter(domain => fuzzyMatch(searchQuery, domain.replace(/^https?:\/\//, '').replace(/\/$/, '')))
     : domains;
 
   // Sort domains: selected first, then alphabetically by domain without schema
@@ -293,7 +293,7 @@ function DomainSelector({
     
     if (aSelected && !bSelected) return -1;
     if (!aSelected && bSelected) return 1;
-    return a.replace(/^https?:\/\//, '').localeCompare(b.replace(/^https?:\/\//, ''));
+    return a.replace(/^https?:\/\//, '').replace(/\/$/, '').localeCompare(b.replace(/^https?:\/\//, '').replace(/\/$/, ''));
   });
 
   // Initialize virtualizer with dynamic height
@@ -399,7 +399,7 @@ function DomainSelector({
                       htmlFor={`domain-${virtualItem.index}`}
                       className="text-sm font-medium flex-1 pointer-events-none break-all py-0.5"
                     >
-                      {domain.replace(/^https?:\/\//, '')}
+                      {domain.replace(/^https?:\/\//, '').replace(/\/$/, '')}
                     </label>
                   </div>
                 </div>

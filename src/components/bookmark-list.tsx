@@ -163,7 +163,7 @@ export function BookmarkList({
                         <FilterLink
                           type="domains"
                           value={bookmark.entry.rootUrl}
-                          label={bookmark.entry.rootUrl.replace(/^https?:\/\//, '')}
+                          label={bookmark.entry.rootUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
                           isSelected={currentFilters.domains.includes(bookmark.entry.rootUrl)}
                           currentParams={currentParams}
                         />
