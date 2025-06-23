@@ -25,6 +25,7 @@ import { type SearchFormValues } from '@/lib/search-params-schema';
 import type { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
 import { fuzzyMatch } from '@/lib/fuzzy-match';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 interface SearchFormProps {
   domains: string[];
@@ -312,6 +313,7 @@ function DomainSelector({
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const parentRef = useRef<HTMLDivElement>(null);
   
   const filteredDomains = searchQuery
     ? domains.filter(domain => fuzzyMatch(searchQuery, domain))
@@ -327,40 +329,37 @@ function DomainSelector({
     return a.localeCompare(b);
   });
 
+  // Initialize virtualizer
+  const virtualizer = useVirtualizer({
+    count: sortedDomains.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 40,
+    overscan: 5,
+  });
+
   // Reset focused index when sorted domains change
   useEffect(() => {
     setFocusedIndex(0);
   }, [sortedDomains.length]);
 
+  // Scroll to focused item
+  useEffect(() => {
+    if (focusedIndex >= 0 && focusedIndex < sortedDomains.length) {
+      virtualizer.scrollToIndex(focusedIndex, { align: 'auto' });
+    }
+  }, [focusedIndex, virtualizer, sortedDomains.length]);
+
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setFocusedIndex((prev) => {
-          const newIndex = prev < sortedDomains.length - 1 ? prev + 1 : prev;
-          // Scroll into view
-          setTimeout(() => {
-            document.getElementById(`domain-item-${newIndex}`)?.scrollIntoView({
-              behavior: 'smooth',
-              block: 'nearest'
-            });
-          }, 0);
-          return newIndex;
-        });
+        setFocusedIndex((prev) => 
+          prev < sortedDomains.length - 1 ? prev + 1 : prev
+        );
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setFocusedIndex((prev) => {
-          const newIndex = prev > 0 ? prev - 1 : prev;
-          // Scroll into view
-          setTimeout(() => {
-            document.getElementById(`domain-item-${newIndex}`)?.scrollIntoView({
-              behavior: 'smooth',
-              block: 'nearest'
-            });
-          }, 0);
-          return newIndex;
-        });
+        setFocusedIndex((prev) => (prev > 0 ? prev - 1 : prev));
         break;
       case 'Enter':
         e.preventDefault();
@@ -382,37 +381,64 @@ function DomainSelector({
         onKeyDown={handleKeyDown}
         autoFocus
       />
-      <div className="max-h-[200px] overflow-y-auto">
-        {sortedDomains.length === 0 ? (
-          <div className="text-sm text-muted-foreground text-center py-2">
-            No domains found
+      {sortedDomains.length === 0 ? (
+        <div className="text-sm text-muted-foreground text-center py-2">
+          No domains found
+        </div>
+      ) : (
+        <div
+          ref={parentRef}
+          className="h-[200px] overflow-auto"
+        >
+          <div
+            style={{
+              height: `${virtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {virtualizer.getVirtualItems().map((virtualItem) => {
+              const domain = sortedDomains[virtualItem.index];
+              const isSelected = selectedDomains.includes(domain);
+              const isFocused = virtualItem.index === focusedIndex;
+
+              return (
+                <div
+                  key={virtualItem.key}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: `${virtualItem.size}px`,
+                    transform: `translateY(${virtualItem.start}px)`,
+                  }}
+                >
+                  <div
+                    className={`flex items-center space-x-2 px-3 h-full rounded-sm cursor-pointer ${
+                      isFocused ? 'bg-accent' : 'hover:bg-accent'
+                    }`}
+                    onClick={() => onToggle(domain)}
+                    onMouseEnter={() => setFocusedIndex(virtualItem.index)}
+                  >
+                    <Checkbox
+                      id={`domain-${virtualItem.index}`}
+                      checked={isSelected}
+                      onCheckedChange={() => onToggle(domain)}
+                    />
+                    <label
+                      htmlFor={`domain-${virtualItem.index}`}
+                      className="text-sm font-medium cursor-pointer flex-1"
+                    >
+                      {domain}
+                    </label>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        ) : (
-          sortedDomains.map((domain, index) => (
-            <div
-              id={`domain-item-${index}`}
-              key={domain}
-              className={`flex items-center space-x-2 p-2 rounded-sm cursor-pointer ${
-                index === focusedIndex ? 'bg-accent' : 'hover:bg-accent'
-              }`}
-              onClick={() => onToggle(domain)}
-              onMouseEnter={() => setFocusedIndex(index)}
-            >
-              <Checkbox
-                id={domain}
-                checked={selectedDomains.includes(domain)}
-                onCheckedChange={() => onToggle(domain)}
-              />
-              <label
-                htmlFor={domain}
-                className="text-sm font-medium cursor-pointer flex-1"
-              >
-                {domain}
-              </label>
-            </div>
-          ))
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
