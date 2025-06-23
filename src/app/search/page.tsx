@@ -4,8 +4,8 @@ import { SearchForm } from '@/components/search-form';
 import { BookmarkList } from '@/components/bookmark-list';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SearchPageClient } from '@/components/search-page-client';
-import { BookmarkSearchHeader } from '@/components/bookmark-search-header';
 import { Suspense } from 'react';
+import Link from 'next/link';
 
 export default async function SearchPage({
   searchParams,
@@ -45,7 +45,11 @@ export default async function SearchPage({
       <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 w-full">
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-col gap-1">
-            <BookmarkSearchHeader />
+            <h2 className="text-2xl font-semibold tracking-tight">
+              <Link href="/search" className="hover:underline">
+                Bookmark Search
+              </Link>
+            </h2>
             <p className="text-muted-foreground">
               Search and manage bookmarks with advanced filtering
             </p>
