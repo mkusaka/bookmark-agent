@@ -1,4 +1,4 @@
-import { getBookmarks, getDomains, getTags, getUsers } from '../actions/bookmark-actions';
+import { getBookmarks, getDomains, getTags } from '../actions/bookmark-actions';
 import { parseSearchParams, buildFiltersFromParams, buildSortFromParams } from '@/lib/search-params-schema';
 import { SearchForm } from '@/components/search-form';
 import { BookmarkList } from '@/components/bookmark-list';
@@ -20,11 +20,10 @@ export default async function SearchPage({
   const sort = buildSortFromParams(params);
   
   // Fetch all data in parallel
-  const [bookmarksData, domains, tags, users] = await Promise.all([
+  const [bookmarksData, domains, tags] = await Promise.all([
     getBookmarks(filters, sort, 25, params.cursor),
     getDomains(),
     getTags(),
-    getUsers(),
   ]);
   
   // Convert params to form values
@@ -58,7 +57,6 @@ export default async function SearchPage({
             <SearchForm
               domains={domains}
               tags={tags}
-              users={users}
               initialValues={formValues}
             />
           </div>

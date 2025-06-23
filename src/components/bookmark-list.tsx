@@ -53,6 +53,28 @@ export function BookmarkList({
   currentFilters,
   currentParams,
 }: BookmarkListProps) {
+  // Helper to build URL with current params
+  const buildUrlWithParams = (cursor?: string) => {
+    const params = new URLSearchParams();
+    
+    // Copy all existing params
+    Object.entries(currentParams).forEach(([key, val]) => {
+      if (val && key !== 'cursor') {
+        if (Array.isArray(val)) {
+          val.forEach(v => params.append(key, v));
+        } else {
+          params.set(key, val);
+        }
+      }
+    });
+    
+    // Add cursor if provided
+    if (cursor) {
+      params.set('cursor', cursor);
+    }
+    
+    return `?${params.toString()}`;
+  };
   const formatDate = (date: Date) => {
     const now = new Date();
     const diffInMs = now.getTime() - date.getTime();
@@ -208,7 +230,7 @@ export function BookmarkList({
           Showing {bookmarks.length} of {total} bookmark(s)
           </div>
           <div className="flex items-center gap-2">
-            <Link href={hasPreviousPage ? '?' : '#'}>
+            <Link href={hasPreviousPage ? buildUrlWithParams() : '#'}>
               <Button
               variant="outline"
               size="sm"
@@ -218,7 +240,7 @@ export function BookmarkList({
               Previous
             </Button>
           </Link>
-          <Link href={hasNextPage ? `?cursor=${bookmarks[bookmarks.length - 1]?.bookmarkedAt.toISOString()}_${bookmarks[bookmarks.length - 1]?.id}` : '#'}>
+          <Link href={hasNextPage ? buildUrlWithParams(`${bookmarks[bookmarks.length - 1]?.bookmarkedAt.toISOString()}_${bookmarks[bookmarks.length - 1]?.id}`) : '#'}>
             <Button
               variant="outline"
               size="sm"

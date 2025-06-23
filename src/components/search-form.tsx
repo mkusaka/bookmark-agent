@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { Calendar } from '@/components/ui/calendar';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   CirclePlus,
   X,
@@ -31,14 +30,12 @@ import { useNavigationPending } from '@/contexts/navigation-context';
 interface SearchFormProps {
   domains: string[];
   tags: { id: string; label: string }[];
-  users: { id: string; name: string; hatenaId: string }[];
   initialValues: SearchFormValues;
 }
 
 export function SearchForm({
   domains,
   tags,
-  users,
   initialValues,
 }: SearchFormProps) {
   const router = useRouter();
@@ -64,9 +61,11 @@ export function SearchForm({
     const params = new URLSearchParams();
     
     if (values.q) params.set('q', values.q);
-    if (values.domains.length > 0) params.set('domains', values.domains.join(','));
-    if (values.tags.length > 0) params.set('tags', values.tags.join(','));
-    if (values.users.length > 0) params.set('users', values.users.join(','));
+    
+    // Add array parameters properly
+    values.domains.forEach(domain => params.append('domains', domain));
+    values.tags.forEach(tag => params.append('tags', tag));
+    
     if (values.from) params.set('from', values.from.toISOString());
     if (values.to) params.set('to', values.to.toISOString());
     if (values.sortBy !== 'bookmarkedAt') params.set('sortBy', values.sortBy);
@@ -98,15 +97,6 @@ export function SearchForm({
     updateURL();
   }, [form, setValue, updateURL]);
 
-  const handleUserToggle = useCallback((userId: string) => {
-    const current = form.getValues('users');
-    if (current.includes(userId)) {
-      setValue('users', current.filter(u => u !== userId));
-    } else {
-      setValue('users', [...current, userId]);
-    }
-    updateURL();
-  }, [form, setValue, updateURL]);
 
   const handleDateRangeChange = useCallback((range: DateRange | undefined) => {
     setValue('from', range?.from);
@@ -119,7 +109,6 @@ export function SearchForm({
       q: '',
       domains: [],
       tags: [],
-      users: [],
       from: undefined,
       to: undefined,
       sortBy: 'bookmarkedAt',
@@ -206,35 +195,6 @@ export function SearchForm({
         </PopoverContent>
       </Popover>
 
-      {/* Users Filter */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="h-8 border-dashed gap-1.5">
-            <CirclePlus className="h-4 w-4" />
-            Users
-            <Separator orientation="vertical" className="mx-2 h-4" />
-            {formValues.users.length > 0 && (
-              <>
-                <Badge variant="secondary" className="rounded-sm px-1 font-normal lg:hidden">
-                  {formValues.users.length}
-                </Badge>
-                <div className="hidden gap-1 lg:flex">
-                  <Badge variant="secondary" className="rounded-sm px-1 font-normal">
-                    {formValues.users.length} selected
-                  </Badge>
-                </div>
-              </>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[280px] p-0" align="start">
-          <UserSelector
-            users={users}
-            selectedUsers={formValues.users}
-            onToggle={handleUserToggle}
-          />
-        </PopoverContent>
-      </Popover>
 
       {/* Date Filter */}
       <Popover>
@@ -287,7 +247,6 @@ export function SearchForm({
       {(formValues.q ||
         formValues.domains.length > 0 ||
         formValues.tags.length > 0 ||
-        formValues.users.length > 0 ||
         dateRange ||
         formValues.sortBy !== 'bookmarkedAt' ||
         formValues.order !== 'desc') && (
@@ -550,107 +509,3 @@ function TagSelector({
   );
 }
 
-// User Selector Component
-function UserSelector({ 
-  users, 
-  selectedUsers, 
-  onToggle 
-}: { 
-  users: { id: string; name: string; hatenaId: string }[]; 
-  selectedUsers: string[]; 
-  onToggle: (userId: string) => void;
-}) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [focusedIndex, setFocusedIndex] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
-  
-  const filteredUsers = searchQuery
-    ? users.filter(user => 
-        fuzzyMatch(searchQuery, user.name) || 
-        fuzzyMatch(searchQuery, user.hatenaId)
-      )
-    : users;
-
-  // Sort users: selected first, then alphabetically by name
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
-    const aSelected = selectedUsers.includes(a.id);
-    const bSelected = selectedUsers.includes(b.id);
-    
-    if (aSelected && !bSelected) return -1;
-    if (!aSelected && bSelected) return 1;
-    return a.name.localeCompare(b.name);
-  });
-
-  // Reset focused index when sorted users change
-  useEffect(() => {
-    setFocusedIndex(0);
-  }, [sortedUsers.length]);
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setFocusedIndex((prev) => 
-          prev < sortedUsers.length - 1 ? prev + 1 : prev
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setFocusedIndex((prev) => (prev > 0 ? prev - 1 : prev));
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (sortedUsers[focusedIndex]) {
-          onToggle(sortedUsers[focusedIndex].id);
-        }
-        break;
-    }
-  };
-
-  return (
-    <div className="p-3">
-      <Input
-        ref={inputRef}
-        placeholder="Search users..."
-        className="h-8 mb-2"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        onKeyDown={handleKeyDown}
-        autoFocus
-      />
-      <div className="max-h-[200px] overflow-y-auto">
-        {sortedUsers.length === 0 ? (
-          <div className="text-sm text-muted-foreground text-center py-2">
-            No users found
-          </div>
-        ) : (
-          sortedUsers.map((user, index) => (
-            <div
-              key={user.id}
-              className={`flex items-center space-x-2 p-2 rounded-sm cursor-pointer ${
-                index === focusedIndex ? 'bg-accent' : 'hover:bg-accent'
-              }`}
-              onClick={() => onToggle(user.id)}
-              onMouseEnter={() => setFocusedIndex(index)}
-            >
-              <Checkbox
-                id={`user-${user.id}`}
-                checked={selectedUsers.includes(user.id)}
-                className="pointer-events-none"
-              />
-              <Avatar className="h-6 w-6 pointer-events-none">
-                <AvatarFallback className="text-xs">
-                  {user.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 pointer-events-none">
-                <div className="text-sm font-medium">{user.name}</div>
-                <div className="text-xs text-muted-foreground">@{user.hatenaId}</div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}

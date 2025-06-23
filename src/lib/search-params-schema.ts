@@ -3,15 +3,18 @@ import { z } from 'zod';
 // Schema for search parameters from URL
 export const searchParamsSchema = z.object({
   q: z.string().optional(),
-  domains: z.string().optional().transform((val) => 
-    val ? val.split(',').filter(Boolean) : []
-  ),
-  tags: z.string().optional().transform((val) => 
-    val ? val.split(',').filter(Boolean) : []
-  ),
-  users: z.string().optional().transform((val) => 
-    val ? val.split(',').filter(Boolean) : []
-  ),
+  domains: z.union([
+    z.string().transform(val => [val]),
+    z.array(z.string())
+  ]).optional().default([]),
+  tags: z.union([
+    z.string().transform(val => [val]),
+    z.array(z.string())
+  ]).optional().default([]),
+  users: z.union([
+    z.string().transform(val => [val]),
+    z.array(z.string())
+  ]).optional().default([]),
   from: z.string().optional().transform((val) => 
     val ? new Date(val) : undefined
   ),
@@ -42,11 +45,17 @@ export type SearchFormValues = z.infer<typeof searchFormSchema>;
 
 // Helper function to parse search params from URLSearchParams or Next.js searchParams
 export function parseSearchParams(params: Record<string, string | string[] | undefined>): SearchParams {
-  // Convert array values to first value for simplicity
+  // Keep arrays as arrays, but handle other values appropriately
   const normalizedParams = Object.entries(params).reduce((acc, [key, value]) => {
-    acc[key] = Array.isArray(value) ? value[0] : value;
+    if (key === 'domains' || key === 'tags' || key === 'users') {
+      // For array fields, keep them as arrays
+      acc[key] = value;
+    } else {
+      // For non-array fields, take the first value if it's an array
+      acc[key] = Array.isArray(value) ? value[0] : value;
+    }
     return acc;
-  }, {} as Record<string, string | undefined>);
+  }, {} as Record<string, string | string[] | undefined>);
 
   // Use safeParse to handle errors gracefully
   const result = searchParamsSchema.safeParse(normalizedParams);

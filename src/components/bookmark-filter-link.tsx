@@ -30,7 +30,8 @@ export function FilterLink({ type, value, label, isSelected, currentParams }: Fi
     Object.entries(currentParams).forEach(([key, val]) => {
       if (val && key !== 'cursor') { // Reset cursor on filter change
         if (Array.isArray(val)) {
-          params.set(key, val.join(','));
+          // For array params, append each value
+          val.forEach(v => params.append(key, v));
         } else {
           params.set(key, val);
         }
@@ -39,24 +40,20 @@ export function FilterLink({ type, value, label, isSelected, currentParams }: Fi
     
     // Handle the filter toggle
     const currentValues = currentParams[type];
-    const valueArray = typeof currentValues === 'string' 
-      ? currentValues.split(',').filter(Boolean)
-      : Array.isArray(currentValues) 
+    const valueArray = Array.isArray(currentValues) 
       ? currentValues 
+      : typeof currentValues === 'string' 
+      ? [currentValues]
       : [];
     
     if (isSelected) {
       // Remove the value
       const newValues = valueArray.filter(v => v !== value);
-      if (newValues.length > 0) {
-        params.set(type, newValues.join(','));
-      } else {
-        params.delete(type);
-      }
+      params.delete(type); // Clear all existing values
+      newValues.forEach(v => params.append(type, v));
     } else {
       // Add the value
-      const newValues = [...valueArray, value];
-      params.set(type, newValues.join(','));
+      params.append(type, value);
     }
     
     return `?${params.toString()}`;
