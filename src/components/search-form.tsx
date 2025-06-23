@@ -156,7 +156,7 @@ export function SearchForm({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[250px] p-0" align="start">
+        <PopoverContent className="w-[320px] p-0" align="start">
           <DomainSelector
             domains={domains}
             selectedDomains={formValues.domains}
@@ -296,12 +296,13 @@ function DomainSelector({
     return a.localeCompare(b);
   });
 
-  // Initialize virtualizer
-  const virtualizer = useVirtualizer({
+  // Initialize virtualizer with dynamic height
+  const rowVirtualizer = useVirtualizer({
     count: sortedDomains.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 40,
+    estimateSize: () => 40, // Default height
     overscan: 5,
+    measureElement: (element) => element?.getBoundingClientRect().height ?? 40,
   });
 
   // Reset focused index when sorted domains change
@@ -312,9 +313,9 @@ function DomainSelector({
   // Scroll to focused item
   useEffect(() => {
     if (focusedIndex >= 0 && focusedIndex < sortedDomains.length) {
-      virtualizer.scrollToIndex(focusedIndex, { align: 'auto' });
+      rowVirtualizer.scrollToIndex(focusedIndex, { align: 'auto' });
     }
-  }, [focusedIndex, virtualizer, sortedDomains.length]);
+  }, [focusedIndex, rowVirtualizer, sortedDomains.length]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {
@@ -355,16 +356,16 @@ function DomainSelector({
       ) : (
         <div
           ref={parentRef}
-          className="h-[200px] overflow-auto"
+          className="max-h-[300px] overflow-auto"
         >
           <div
             style={{
-              height: `${virtualizer.getTotalSize()}px`,
+              height: `${rowVirtualizer.getTotalSize()}px`,
               width: '100%',
               position: 'relative',
             }}
           >
-            {virtualizer.getVirtualItems().map((virtualItem) => {
+            {rowVirtualizer.getVirtualItems().map((virtualItem) => {
               const domain = sortedDomains[virtualItem.index];
               const isSelected = selectedDomains.includes(domain);
               const isFocused = virtualItem.index === focusedIndex;
@@ -372,17 +373,18 @@ function DomainSelector({
               return (
                 <div
                   key={virtualItem.key}
+                  data-index={virtualItem.index}
+                  ref={rowVirtualizer.measureElement}
                   style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
                     width: '100%',
-                    height: `${virtualItem.size}px`,
                     transform: `translateY(${virtualItem.start}px)`,
                   }}
                 >
                   <div
-                    className={`flex items-center space-x-2 px-3 h-full rounded-sm cursor-pointer ${
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-sm cursor-pointer ${
                       isFocused ? 'bg-accent' : 'hover:bg-accent'
                     }`}
                     onClick={() => onToggle(domain)}
@@ -391,11 +393,11 @@ function DomainSelector({
                     <Checkbox
                       id={`domain-${virtualItem.index}`}
                       checked={isSelected}
-                      className="pointer-events-none"
+                      className="pointer-events-none shrink-0 mt-0.5"
                     />
                     <label
                       htmlFor={`domain-${virtualItem.index}`}
-                      className="text-sm font-medium flex-1 pointer-events-none"
+                      className="text-sm font-medium flex-1 pointer-events-none break-all py-0.5"
                     >
                       {domain}
                     </label>
