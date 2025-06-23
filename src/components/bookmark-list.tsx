@@ -162,9 +162,9 @@ export function BookmarkList({
                       <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
                         <FilterLink
                           type="domains"
-                          value={bookmark.domain}
-                          label={bookmark.domain}
-                          isSelected={currentFilters.domains.includes(bookmark.domain)}
+                          value={bookmark.entry?.rootUrl || bookmark.domain}
+                          label={bookmark.entry?.rootUrl || bookmark.domain}
+                          isSelected={currentFilters.domains.includes(bookmark.entry?.rootUrl || bookmark.domain)}
                           currentParams={currentParams}
                         />
                         <div className="flex-1 min-w-0">
