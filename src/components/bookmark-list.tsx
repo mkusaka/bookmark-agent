@@ -8,13 +8,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
   ChevronsUpDown,
   ChevronLeft,
   ChevronRight,
@@ -33,6 +26,7 @@ import { BookmarkTitle } from './bookmark-title';
 import { BookmarkSummary } from './bookmark-summary';
 import { BookmarkDate } from './bookmark-date';
 import { BookmarkExtraTags } from './bookmark-extra-tags';
+import { BookmarkSortLink } from './bookmark-sort-link';
 
 interface BookmarkListProps {
   bookmarks: Bookmark[];
@@ -97,75 +91,32 @@ export function BookmarkList({
                   />
                 </TableHead>
                 <TableHead className="h-10 px-2 text-left align-middle font-medium">
-                <Link href={
-                  currentSort.field === 'title'
-                    ? currentSort.order === 'asc'
-                      ? '?sortBy=title&order=desc'
-                      : '?'  // Reset to default (no sort)
-                    : '?sortBy=title&order=asc'
-                }>
-                  <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
-                    Bookmark{' '}
-                    {currentSort.field === 'title' && `(${currentSort.order === 'desc' ? '↓' : '↑'})`}
-                    <ChevronsUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </TableHead>
-              <TableHead className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap w-[100px]">
-                <Link href={
-                  currentSort.field === 'user'
-                    ? currentSort.order === 'asc'
-                      ? '?sortBy=user&order=desc'
-                      : '?'  // Reset to default (no sort)
-                    : '?sortBy=user&order=asc'
-                }>
-                  <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
-                    User {currentSort.field === 'user' && `(${currentSort.order === 'desc' ? '↓' : '↑'})`}
-                    <ChevronsUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                <BookmarkSortLink
+                  href={
+                    currentSort.field === 'title'
+                      ? currentSort.order === 'asc'
+                        ? '?sortBy=title&order=desc'
+                        : '?'  // Reset to default (no sort)
+                      : '?sortBy=title&order=asc'
+                  }
+                >
+                  Bookmark{' '}
+                  {currentSort.field === 'title' && `(${currentSort.order === 'desc' ? '↓' : '↑'})`}
+                </BookmarkSortLink>
               </TableHead>
               <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[100px]">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="-ml-3 h-8 data-[state=open]:bg-accent">
-                      {currentSort.field === 'bookmarkedAt'
-                        ? 'Bookmarked'
-                        : currentSort.field === 'createdAt'
-                        ? 'Created'
-                        : 'Date'}
-                      {(currentSort.field === 'bookmarkedAt' || currentSort.field === 'createdAt') &&
-                        ` (${currentSort.order === 'desc' ? '↓' : '↑'})`}
-                      <ChevronsUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link href={
-                        currentSort.field === 'bookmarkedAt'
-                          ? currentSort.order === 'asc'
-                            ? '?sortBy=bookmarkedAt&order=desc'
-                            : '?'  // Reset to default (no sort)
-                          : '?sortBy=bookmarkedAt&order=asc'
-                      }>
-                        Sort by Bookmark Date
-                        {currentSort.field === 'bookmarkedAt' && ` (${currentSort.order === 'desc' ? '↓' : '↑'})`}
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href={
-                        currentSort.field === 'createdAt'
-                          ? currentSort.order === 'asc'
-                            ? '?sortBy=createdAt&order=desc'
-                            : '?'  // Reset to default (no sort)
-                          : '?sortBy=createdAt&order=asc'
-                      }>
-                        Sort by Created Date
-                        {currentSort.field === 'createdAt' && ` (${currentSort.order === 'desc' ? '↓' : '↑'})`}
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <BookmarkSortLink
+                  href={
+                    currentSort.field === 'bookmarkedAt'
+                      ? currentSort.order === 'desc'
+                        ? '?sortBy=bookmarkedAt&order=asc'
+                        : '?'  // Reset to default (no sort)
+                      : '?sortBy=bookmarkedAt&order=desc'
+                  }
+                >
+                  Bookmarked{' '}
+                  {currentSort.field === 'bookmarkedAt' && `(${currentSort.order === 'desc' ? '↓' : '↑'})`}
+                </BookmarkSortLink>
               </TableHead>
               <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[60px]"></TableHead>
             </TableRow>
@@ -236,22 +187,10 @@ export function BookmarkList({
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="p-2 align-middle whitespace-nowrap">
-                    <div className="flex items-center gap-2 justify-end">
-                      <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-xs">
-                          {bookmark.user.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="text-sm font-medium">{bookmark.user.name}</div>
-                    </div>
-                  </TableCell>
                   <TableCell className="p-2 align-middle whitespace-nowrap text-sm text-muted-foreground">
                     <BookmarkDate 
-                      date={currentSort.field === 'bookmarkedAt' ? bookmark.bookmarkedAt : bookmark.createdAt}
-                      displayDate={formatDate(
-                        currentSort.field === 'bookmarkedAt' ? bookmark.bookmarkedAt : bookmark.createdAt
-                      )}
+                      date={bookmark.bookmarkedAt}
+                      displayDate={formatDate(bookmark.bookmarkedAt)}
                     />
                   </TableCell>
                   <TableCell className="p-2 align-middle whitespace-nowrap">

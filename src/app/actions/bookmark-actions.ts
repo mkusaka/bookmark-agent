@@ -127,13 +127,11 @@ export async function getBookmarks(
           ? desc(
               sort.field === 'title' ? entries.title :
               sort.field === 'user' ? users.name :
-              sort.field === 'createdAt' ? bookmarks.createdAt :
               bookmarks.bookmarkedAt
             )
           : asc(
               sort.field === 'title' ? entries.title :
               sort.field === 'user' ? users.name :
-              sort.field === 'createdAt' ? bookmarks.createdAt :
               bookmarks.bookmarkedAt
             )
       )

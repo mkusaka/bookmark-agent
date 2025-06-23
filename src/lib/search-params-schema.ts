@@ -18,7 +18,7 @@ export const searchParamsSchema = z.object({
   to: z.string().optional().transform((val) => 
     val ? new Date(val) : undefined
   ),
-  sortBy: z.enum(['bookmarkedAt', 'createdAt', 'title', 'user']).optional().default('bookmarkedAt'),
+  sortBy: z.enum(['bookmarkedAt', 'title', 'user']).optional().default('bookmarkedAt'),
   order: z.enum(['asc', 'desc']).optional().default('desc'),
   cursor: z.string().optional(),
 });
@@ -33,7 +33,7 @@ export const searchFormSchema = z.object({
   users: z.array(z.string()).default([]),
   from: z.date().optional(),
   to: z.date().optional(),
-  sortBy: z.enum(['bookmarkedAt', 'createdAt', 'title', 'user']).default('bookmarkedAt'),
+  sortBy: z.enum(['bookmarkedAt', 'title', 'user']).default('bookmarkedAt'),
   order: z.enum(['asc', 'desc']).default('desc'),
   cursor: z.string().optional(),
 });

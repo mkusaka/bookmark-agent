@@ -288,7 +288,9 @@ export function SearchForm({
         formValues.domains.length > 0 ||
         formValues.tags.length > 0 ||
         formValues.users.length > 0 ||
-        dateRange) && (
+        dateRange ||
+        formValues.sortBy !== 'bookmarkedAt' ||
+        formValues.order !== 'desc') && (
         <Button variant="ghost" onClick={resetFilters} className="h-8 px-2 lg:px-3">
           Reset
           <X className="ml-2 h-4 w-4" />
