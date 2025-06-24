@@ -52,6 +52,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@serwist/next": "^9.0.15",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20.19.1",
     "@types/pg": "^8.15.4",
@@ -64,6 +65,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
     "postgres": "^3.4.7",
+    "serwist": "^9.0.15",
     "tailwindcss": "^4",
     "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.4",
