@@ -63,6 +63,7 @@ export default async function SearchPage({
               domains={domains}
               tags={tags}
               initialValues={formValues}
+              bookmarks={bookmarksData.bookmarks}
             />
           </div>
 

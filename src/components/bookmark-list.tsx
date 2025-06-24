@@ -100,7 +100,7 @@ export function BookmarkList({
 
 
   return (
-    <BookmarkListClient bookmarks={bookmarks}>
+    <BookmarkListClient>
       <div className="rounded-md border">
           <Table className="w-full table-fixed">
             <TableHeader>

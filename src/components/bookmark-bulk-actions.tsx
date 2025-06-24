@@ -69,7 +69,7 @@ export function BookmarkBulkActions({ bookmarks, selectedBookmarks, onClearSelec
   if (selectedCount === 0) return null;
   
   return (
-    <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+    <div className="flex items-center gap-2">
       <span className="text-sm text-muted-foreground">
         {selectedCount} bookmark{selectedCount > 1 ? 's' : ''} selected
       </span>
@@ -77,7 +77,7 @@ export function BookmarkBulkActions({ bookmarks, selectedBookmarks, onClearSelec
         size="sm"
         variant="outline"
         onClick={handleOpenSelected}
-        className="gap-2"
+        className="h-8 gap-2"
       >
         <ExternalLink className="h-4 w-4" />
         Open Selected

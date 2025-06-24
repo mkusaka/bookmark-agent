@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { useSelection } from './bookmark-list-client';
+import { useSelection } from './search-page-client';
 
 export function BookmarkCheckbox({ bookmarkId }: { bookmarkId: string }) {
   const { selectedBookmarks, toggleBookmark } = useSelection();
