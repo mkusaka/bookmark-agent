@@ -11,7 +11,7 @@ export function MarkdownSourceViewer({ content }: MarkdownSourceViewerProps) {
   const [html, setHtml] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [isCopied, setIsCopied] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(true); // Default to fullscreen
+  const [isFullscreen, setIsFullscreen] = useState(false); // Default to compact view
 
   useEffect(() => {
     async function highlightMarkdown() {
@@ -52,15 +52,18 @@ export function MarkdownSourceViewer({ content }: MarkdownSourceViewerProps) {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 p-4">
-        <div className="h-full bg-gray-50 dark:bg-gray-900/50 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-          <div className="animate-pulse space-y-4">
+      <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Markdown Source
+          </span>
+        </div>
+        <div className="p-8">
+          <div className="animate-pulse space-y-3">
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
           </div>
         </div>
       </div>
@@ -108,9 +111,10 @@ export function MarkdownSourceViewer({ content }: MarkdownSourceViewerProps) {
               </button>
             </div>
           </div>
-          <div className="p-4 text-center text-gray-600 dark:text-gray-400">
-            <p>Click &quot;Expand&quot; to view the full markdown content</p>
-          </div>
+          <div 
+            className="markdown-source-viewer max-h-[400px]"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
         </div>
       </div>
     );
