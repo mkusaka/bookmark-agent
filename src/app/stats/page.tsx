@@ -5,6 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { BookmarkTimelineChart } from '@/components/bookmark-timeline-chart';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export default async function StatsPage() {
   // Fetch all data in parallel
@@ -17,7 +19,7 @@ export default async function StatsPage() {
         selectedUsers: [] 
       }, 
       { field: 'bookmarkedAt', order: 'desc' }, 
-      1000
+      10000 // Increased to get more historical data
     ),
     getDomains(),
     getTags(),
@@ -62,11 +64,13 @@ export default async function StatsPage() {
   }, {} as Record<string, number>);
   
   const sortedMonths = Object.entries(bookmarksByMonth)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-12);
+    .sort(([a], [b]) => a.localeCompare(b));
+  
+  // Get last 24 months for the chart
+  const last24Months = sortedMonths.slice(-24);
   
   // Prepare data for the chart
-  const chartData = sortedMonths.map(([month, count]) => ({
+  const chartData = last24Months.map(([month, count]) => ({
     month,
     count,
   }));
@@ -84,7 +88,15 @@ export default async function StatsPage() {
             Overview of your bookmark collection
           </p>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <Link href="/search">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Search
+            </Button>
+          </Link>
+          <ThemeToggle />
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -194,19 +206,21 @@ export default async function StatsPage() {
             <CardHeader>
               <CardTitle>Bookmarks Timeline</CardTitle>
               <CardDescription>
-                Bookmarks added per month (last 12 months)
+                Bookmarks added per month (last 24 months)
               </CardDescription>
             </CardHeader>
             <CardContent>
               <BookmarkTimelineChart data={chartData} />
               <div className="mt-6 space-y-2">
-                <h4 className="text-sm font-medium mb-2">Monthly Details</h4>
-                {sortedMonths.map(([month, count]) => (
-                  <div key={month} className="flex items-center justify-between">
-                    <span className="text-sm">{month}</span>
-                    <Badge variant="secondary">{count}</Badge>
-                  </div>
-                ))}
+                <h4 className="text-sm font-medium mb-2">Monthly Details (Last 24 months)</h4>
+                <div className="max-h-96 overflow-y-auto space-y-1">
+                  {last24Months.map(([month, count]) => (
+                    <div key={month} className="flex items-center justify-between py-1">
+                      <span className="text-sm">{month}</span>
+                      <Badge variant="secondary">{count}</Badge>
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

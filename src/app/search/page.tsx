@@ -6,6 +6,8 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { SearchPageClient } from '@/components/search-page-client';
 import { Suspense } from 'react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { BarChart3 } from 'lucide-react';
 
 export default async function SearchPage({
   searchParams,
@@ -54,7 +56,15 @@ export default async function SearchPage({
               Search and manage bookmarks with advanced filtering
             </p>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <Link href="/stats">
+              <Button variant="outline" size="sm">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Stats
+              </Button>
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
 
         <div className="flex flex-col gap-4">
