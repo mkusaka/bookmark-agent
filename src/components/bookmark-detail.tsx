@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { ExternalLink, Calendar, User, Tag, MessageSquare } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import type { Bookmark } from '@/types/bookmark';
 
 interface BookmarkDetailProps {
@@ -10,6 +11,8 @@ interface BookmarkDetailProps {
 }
 
 export function BookmarkDetail({ bookmark }: BookmarkDetailProps) {
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get('return') || '/search';
   const { entry, user, tags, comment, description } = bookmark;
   
   return (
@@ -118,7 +121,7 @@ export function BookmarkDetail({ bookmark }: BookmarkDetailProps) {
       {/* Back to list */}
       <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
         <Link
-          href="/search"
+          href={returnUrl}
           className="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
         >
           ← Back to bookmarks

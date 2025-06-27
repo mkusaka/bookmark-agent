@@ -7,15 +7,21 @@ interface BookmarkTitleProps {
   title?: string;
   url: string;
   bookmarkId: string;
+  returnUrl?: string;
 }
 
-export function BookmarkTitle({ title, url, bookmarkId }: BookmarkTitleProps) {
+export function BookmarkTitle({ title, url, bookmarkId, returnUrl }: BookmarkTitleProps) {
   const displayText = title || url;
+  
+  // Build detail page URL with return URL parameter
+  const detailUrl = returnUrl 
+    ? `/bookmarks/${bookmarkId}?return=${encodeURIComponent(returnUrl)}`
+    : `/bookmarks/${bookmarkId}`;
   
   return (
     <div className="flex items-start gap-2">
       <Link
-        href={`/bookmarks/${bookmarkId}`}
+        href={detailUrl}
         className="font-medium text-primary hover:underline block break-words whitespace-normal flex-1"
       >
         {displayText}

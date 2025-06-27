@@ -172,6 +172,7 @@ export function BookmarkList({
                             title={bookmark.entry.title} 
                             url={bookmark.url}
                             bookmarkId={bookmark.id}
+                            returnUrl={buildUrlWithParams()}
                           />
                         </div>
                       </div>

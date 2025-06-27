@@ -8,9 +8,10 @@ import { MarkdownSkeleton } from '@/components/markdown-skeleton';
 export default async function BookmarkDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const bookmark = await getBookmarkById(params.id);
+  const { id } = await params;
+  const bookmark = await getBookmarkById(id);
 
   if (!bookmark) {
     notFound();
@@ -18,7 +19,9 @@ export default async function BookmarkDetailPage({
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <BookmarkDetail bookmark={bookmark} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <BookmarkDetail bookmark={bookmark} />
+      </Suspense>
       
       <div className="mt-8">
         <h2 className="text-xl font-semibold mb-4">Content</h2>
