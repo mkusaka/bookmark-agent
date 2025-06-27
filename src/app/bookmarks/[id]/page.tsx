@@ -24,7 +24,9 @@ export default async function BookmarkDetailPage({
       </Suspense>
       
       <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Content</h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          Markdown Content
+        </h2>
         <Suspense fallback={<MarkdownSkeleton />}>
           <BookmarkMarkdown url={bookmark.url} />
         </Suspense>

@@ -168,30 +168,46 @@ html.dark .shiki-wrapper [style*="--shiki-light"]:not([style*="--shiki-dark"]) {
 
 /* Markdown source viewer styles */
 .markdown-source-viewer {
-  @apply max-h-[600px] overflow-y-auto;
+  @apply overflow-auto;
 }
 
 .markdown-source-viewer pre {
-  @apply !m-0 !p-4 !rounded-none;
+  @apply !m-0 !p-6 !rounded-none;
+  tab-size: 2;
 }
 
 .markdown-source-viewer code {
-  @apply font-mono text-sm leading-relaxed;
+  @apply font-mono text-sm;
+  line-height: 1.7;
 }
 
 /* Light mode */
 html:not(.dark) .markdown-source-viewer .shiki {
-  background-color: var(--shiki-light-bg, #ffffff) !important;
+  background-color: #fafafa !important;
+}
+
+html:not(.dark) .markdown-source-viewer [style*="--shiki-dark"] {
+  display: none;
 }
 
 /* Dark mode */
 html.dark .markdown-source-viewer .shiki {
-  background-color: var(--shiki-dark-bg, #0d1117) !important;
+  background-color: #0d1117 !important;
+}
+
+html.dark .markdown-source-viewer [style*="--shiki-light"]:not([style*="--shiki-dark"]) {
+  display: none;
+}
+
+/* Line numbers */
+.markdown-source-viewer .line {
+  display: inline-block;
+  width: 100%;
 }
 
 /* Scrollbar for source viewer */
 .markdown-source-viewer::-webkit-scrollbar {
-  @apply w-2;
+  @apply w-2 h-2;
 }
 
 .markdown-source-viewer::-webkit-scrollbar-track {
@@ -200,4 +216,13 @@ html.dark .markdown-source-viewer .shiki {
 
 .markdown-source-viewer::-webkit-scrollbar-thumb {
   @apply bg-gray-400 dark:bg-gray-600 rounded hover:bg-gray-500 dark:hover:bg-gray-500;
+}
+
+.markdown-source-viewer::-webkit-scrollbar-corner {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+/* Fullscreen mode adjustments */
+.fixed.inset-0 .markdown-source-viewer {
+  @apply max-h-none;
 }
