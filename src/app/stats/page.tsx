@@ -152,7 +152,7 @@ export default async function StatsPage() {
               <div className="mt-6 space-y-2">
                 <h4 className="text-sm font-medium mb-2">Monthly Details (Last 24 months)</h4>
                 <div className="max-h-96 overflow-y-auto space-y-1">
-                  {last24Months.map(([month, count]) => (
+                  {last24Months.slice().reverse().map(([month, count]) => (
                     <div key={month} className="flex items-center justify-between py-1">
                       <span className="text-sm">{month}</span>
                       <Badge variant="secondary">{count}</Badge>
