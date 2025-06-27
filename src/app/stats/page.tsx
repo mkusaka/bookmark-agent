@@ -132,12 +132,37 @@ export default async function StatsPage() {
         </Card>
       </div>
 
-      <Tabs defaultValue="domains" className="w-full">
+      <Tabs defaultValue="timeline" className="w-full">
         <TabsList>
+          <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="domains">Top Domains</TabsTrigger>
           <TabsTrigger value="tags">Top Tags</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="timeline" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Bookmarks Timeline</CardTitle>
+              <CardDescription>
+                Bookmarks added per month (last 24 months)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BookmarkTimelineChart data={chartData} />
+              <div className="mt-6 space-y-2">
+                <h4 className="text-sm font-medium mb-2">Monthly Details (Last 24 months)</h4>
+                <div className="max-h-96 overflow-y-auto space-y-1">
+                  {last24Months.map(([month, count]) => (
+                    <div key={month} className="flex items-center justify-between py-1">
+                      <span className="text-sm">{month}</span>
+                      <Badge variant="secondary">{count}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
         
         <TabsContent value="domains" className="space-y-4">
           <Card>
@@ -196,31 +221,6 @@ export default async function StatsPage() {
                     <Badge variant="secondary">{count}</Badge>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="timeline" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Bookmarks Timeline</CardTitle>
-              <CardDescription>
-                Bookmarks added per month (last 24 months)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <BookmarkTimelineChart data={chartData} />
-              <div className="mt-6 space-y-2">
-                <h4 className="text-sm font-medium mb-2">Monthly Details (Last 24 months)</h4>
-                <div className="max-h-96 overflow-y-auto space-y-1">
-                  {last24Months.map(([month, count]) => (
-                    <div key={month} className="flex items-center justify-between py-1">
-                      <span className="text-sm">{month}</span>
-                      <Badge variant="secondary">{count}</Badge>
-                    </div>
-                  ))}
-                </div>
               </div>
             </CardContent>
           </Card>
