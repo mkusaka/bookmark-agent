@@ -1,5 +1,6 @@
+'use client';
+
 import { useEffect, useState } from 'react';
-import { codeToHtml } from 'shiki';
 
 interface CodeBlockProps {
   code: string;
@@ -12,6 +13,9 @@ export function CodeBlock({ code, language = 'text' }: CodeBlockProps) {
   useEffect(() => {
     async function highlightCode() {
       try {
+        // Dynamic import to avoid SSR issues
+        const { codeToHtml } = await import('shiki');
+        
         const highlighted = await codeToHtml(code, {
           lang: language,
           themes: {
@@ -33,7 +37,7 @@ export function CodeBlock({ code, language = 'text' }: CodeBlockProps) {
   if (!html) {
     return (
       <pre className="bg-gray-100 dark:bg-gray-800 rounded p-4 overflow-x-auto my-4">
-        <code className="text-sm">{code}</code>
+        <code className="text-sm font-mono">{code}</code>
       </pre>
     );
   }
