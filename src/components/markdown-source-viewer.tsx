@@ -120,7 +120,7 @@ export function MarkdownSourceViewer({ content }: MarkdownSourceViewerProps) {
         </div>
       </div>
       <div 
-        className={`shiki-container bg-white dark:bg-gray-900 overflow-auto ${isExpanded ? 'h-[calc(100%-53px)]' : 'max-h-[500px]'}`}
+        className={`shiki-container bg-white dark:bg-gray-900 overflow-auto ${isExpanded ? 'h-[calc(100%-53px)]' : ''}`}
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </div>
