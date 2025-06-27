@@ -2,20 +2,24 @@
 
 import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 interface BookmarkTitleProps {
   title?: string;
   url: string;
   bookmarkId: string;
-  returnUrl?: string;
 }
 
-export function BookmarkTitle({ title, url, bookmarkId, returnUrl }: BookmarkTitleProps) {
+export function BookmarkTitle({ title, url, bookmarkId }: BookmarkTitleProps) {
   const displayText = title || url;
+  const searchParams = useSearchParams();
+  
+  // Get current search params as string
+  const currentSearchParams = searchParams.toString();
   
   // Build detail page URL with return URL parameter
-  const detailUrl = returnUrl && returnUrl !== '' 
-    ? `/bookmarks/${bookmarkId}?return=${encodeURIComponent('/search' + returnUrl)}`
+  const detailUrl = currentSearchParams
+    ? `/bookmarks/${bookmarkId}?return=${encodeURIComponent('/search?' + currentSearchParams)}`
     : `/bookmarks/${bookmarkId}`;
   
   return (
