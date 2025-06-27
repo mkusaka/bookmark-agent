@@ -128,7 +128,15 @@
   @apply !m-0 !p-6 !rounded-none;
   font-size: 14px;
   line-height: 1.6;
-  overflow-x: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+.shiki-container code {
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
 }
 
 /* Shiki theme switching */
