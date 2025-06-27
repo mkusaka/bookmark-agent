@@ -169,11 +169,11 @@ html.dark .shiki-wrapper [style*="--shiki-light"]:not([style*="--shiki-dark"]) {
 /* Markdown source viewer styles */
 .markdown-source-viewer {
   @apply overflow-auto h-full;
-  background: #fafbfc;
+  background: #ffffff;
 }
 
 html.dark .markdown-source-viewer {
-  background: #0d1117;
+  background: #1a1a1a;
 }
 
 .markdown-source-viewer pre {
@@ -195,7 +195,7 @@ html.dark .markdown-source-viewer {
 
 /* Light mode */
 html:not(.dark) .markdown-source-viewer {
-  background-color: #fafbfc !important;
+  background-color: #ffffff !important;
 }
 
 html:not(.dark) .markdown-source-viewer [style*="--shiki-dark"] {
@@ -204,18 +204,52 @@ html:not(.dark) .markdown-source-viewer [style*="--shiki-dark"] {
 
 /* Dark mode */
 html.dark .markdown-source-viewer {
-  background-color: #0d1117 !important;
+  background-color: #1a1a1a !important;
 }
 
 html.dark .markdown-source-viewer [style*="--shiki-light"]:not([style*="--shiki-dark"]) {
   display: none;
 }
 
-/* Line wrapping */
+/* Boost contrast for better readability */
+.markdown-source-viewer .shiki {
+  filter: brightness(1.2) saturate(1.3);
+}
+
+html.dark .markdown-source-viewer .shiki {
+  filter: brightness(1.5) saturate(1.4);
+}
+
+/* Make text even brighter in dark mode */
+html.dark .markdown-source-viewer .shiki span {
+  opacity: 0.95;
+}
+
+/* Line styling and wrapping */
 .markdown-source-viewer .line {
   display: block;
   white-space: pre-wrap;
   word-wrap: break-word;
+  position: relative;
+  padding-left: 3.5rem;
+  min-height: 1.8em;
+}
+
+/* Line numbers */
+.markdown-source-viewer .line::before {
+  content: attr(data-line);
+  position: absolute;
+  left: 0.5rem;
+  width: 2.5rem;
+  text-align: right;
+  color: #9ca3af;
+  font-size: 12px;
+  user-select: none;
+  font-family: monospace;
+}
+
+html.dark .markdown-source-viewer .line::before {
+  color: #6b7280;
 }
 
 /* Scrollbar for source viewer */

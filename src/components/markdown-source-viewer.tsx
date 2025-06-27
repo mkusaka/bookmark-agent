@@ -23,8 +23,8 @@ export function MarkdownSourceViewer({ content }: MarkdownSourceViewerProps) {
         const highlighted = await codeToHtml(content, {
           lang: 'markdown',
           themes: {
-            light: 'min-light',
-            dark: 'tokyo-night',
+            light: 'github-light',
+            dark: 'github-dark-default',
           },
         });
         setHtml(highlighted);
