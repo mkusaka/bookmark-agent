@@ -170,7 +170,8 @@ export function BookmarkList({
                         <div className="flex-1 min-w-0">
                           <BookmarkTitle 
                             title={bookmark.entry.title} 
-                            url={bookmark.url} 
+                            url={bookmark.url}
+                            bookmarkId={bookmark.id}
                           />
                         </div>
                       </div>

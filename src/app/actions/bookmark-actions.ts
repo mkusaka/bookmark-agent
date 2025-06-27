@@ -247,3 +247,46 @@ export async function getUsers() {
     throw new Error('Failed to fetch users');
   }
 }
+
+export async function getBookmarkById(id: string): Promise<Bookmark | null> {
+  try {
+    const result = await db
+      .select({
+        bookmark: bookmarks,
+        user: users,
+        entry: entries,
+      })
+      .from(bookmarks)
+      .leftJoin(users, eq(bookmarks.userId, users.id))
+      .leftJoin(entries, eq(bookmarks.entryId, entries.id))
+      .where(eq(bookmarks.id, id))
+      .limit(1);
+
+    if (result.length === 0 || !result[0].entry) {
+      return null;
+    }
+
+    // Get tags for this bookmark
+    const tagsResult = await db
+      .select({
+        tag: tags,
+      })
+      .from(bookmarkTags)
+      .leftJoin(tags, eq(bookmarkTags.tagId, tags.id))
+      .where(eq(bookmarkTags.bookmarkId, id));
+
+    const bookmarkTagsList = tagsResult
+      .filter(({ tag }) => tag !== null)
+      .map(({ tag }) => tag!);
+
+    return {
+      ...result[0].bookmark,
+      user: result[0].user!,
+      entry: result[0].entry!,
+      tags: bookmarkTagsList,
+    };
+  } catch (error) {
+    console.error('Error fetching bookmark by ID:', error);
+    throw new Error('Failed to fetch bookmark');
+  }
+}

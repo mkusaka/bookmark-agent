@@ -16,6 +16,7 @@ A Next.js application for managing and searching Hatena bookmarks with advanced 
 - Node.js 18+
 - PostgreSQL (or Docker for local development)
 - Hatena account
+- Cloudflare account (for Browser Rendering API)
 
 ## Environment Variables
 
@@ -26,12 +27,28 @@ DATABASE_URL=your_neon_database_url
 LOCAL_DATABASE_URL=postgresql://postgres:password@localhost:5432/bookmark_agent
 HATENA_USER_ID=your_hatena_user_id
 CRON_SECRET=your_random_secret_string
+CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
+CLOUDFLARE_API_TOKEN=your_cloudflare_api_token
 ```
 
 To generate a secure `CRON_SECRET`:
 ```bash
 node scripts/generate-cron-secret.js
 ```
+
+### Cloudflare Browser Rendering API Setup
+
+To enable markdown content fetching for bookmark detail pages:
+
+1. Create a Cloudflare account at https://cloudflare.com
+2. Navigate to your account dashboard
+3. Find your Account ID in the sidebar
+4. Generate an API token with Browser Rendering permissions:
+   - Go to "My Profile" → "API Tokens"
+   - Click "Create Token"
+   - Use the "Custom token" template
+   - Add permission: Account → Browser Rendering → Read
+   - Create and copy the token
 
 ## Setup
 
