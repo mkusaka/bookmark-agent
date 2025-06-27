@@ -1,7 +1,9 @@
 'use client';
 
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { CodeBlock } from './code-block';
 
 interface MarkdownRendererProps {
   content: string;
@@ -16,16 +18,16 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           components={{
             // Override default components for better styling
             h1: ({ children }) => (
-              <h1 className="text-2xl font-bold mt-8 mb-4">{children}</h1>
+              <h1 className="text-3xl font-bold mt-8 mb-4 text-gray-900 dark:text-gray-100">{children}</h1>
             ),
             h2: ({ children }) => (
-              <h2 className="text-xl font-semibold mt-8 mb-4">{children}</h2>
+              <h2 className="text-2xl font-semibold mt-8 mb-4 text-gray-900 dark:text-gray-100">{children}</h2>
             ),
             h3: ({ children }) => (
-              <h3 className="text-lg font-semibold mt-6 mb-3">{children}</h3>
+              <h3 className="text-xl font-semibold mt-6 mb-3 text-gray-900 dark:text-gray-100">{children}</h3>
             ),
             p: ({ children }) => (
-              <p className="mb-4 leading-relaxed">{children}</p>
+              <p className="mb-4 leading-relaxed text-gray-700 dark:text-gray-300">{children}</p>
             ),
             a: ({ href, children }) => (
               <a 
@@ -37,32 +39,51 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
                 {children}
               </a>
             ),
-            code: ({ className, children }) => {
-              const isInline = !className;
-              return isInline ? (
-                <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm">
-                  {children}
-                </code>
-              ) : (
-                <code className="text-sm">{children}</code>
+            code: ({ className, children, ...props }) => {
+              // Check if it's an inline code or a code block
+              const match = /language-(\w+)/.exec(className || '');
+              const isInline = !match && !('inline' in props);
+              
+              if (isInline) {
+                return (
+                  <code className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800 dark:text-gray-200">
+                    {children}
+                  </code>
+                );
+              }
+              
+              // For code blocks, use Shiki
+              return (
+                <CodeBlock 
+                  code={String(children).replace(/\n$/, '')} 
+                  language={match?.[1] || 'text'} 
+                />
               );
             },
-            pre: ({ children }) => (
-              <pre className="bg-gray-100 dark:bg-gray-800 rounded p-4 overflow-x-auto my-4">
-                {children}
-              </pre>
-            ),
+            pre: ({ children }) => {
+              // Check if children is a code element with Shiki content
+              if (React.isValidElement(children) && children.props) {
+                return <>{children}</>;
+              }
+              
+              // Fallback for non-code content in pre
+              return (
+                <pre className="bg-gray-100 dark:bg-gray-800 rounded p-4 overflow-x-auto my-4 font-mono text-sm">
+                  {children}
+                </pre>
+              );
+            },
             ul: ({ children }) => (
-              <ul className="list-disc list-inside my-4 space-y-1">{children}</ul>
+              <ul className="list-disc list-inside my-4 space-y-2 text-gray-700 dark:text-gray-300">{children}</ul>
             ),
             ol: ({ children }) => (
-              <ol className="list-decimal list-inside my-4 space-y-1">{children}</ol>
+              <ol className="list-decimal list-inside my-4 space-y-2 text-gray-700 dark:text-gray-300">{children}</ol>
             ),
             li: ({ children }) => (
               <li className="ml-4">{children}</li>
             ),
             blockquote: ({ children }) => (
-              <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic my-4">
+              <blockquote className="border-l-4 border-blue-500 dark:border-blue-400 pl-4 italic my-4 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/50 py-2 pr-4 rounded-r">
                 {children}
               </blockquote>
             ),
@@ -70,25 +91,39 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
               <img 
                 src={src} 
                 alt={alt} 
-                className="rounded-lg max-w-full h-auto my-4"
+                className="rounded-lg max-w-full h-auto my-4 shadow-md"
               />
             ),
             table: ({ children }) => (
-              <div className="overflow-x-auto my-4">
-                <table className="min-w-full border-collapse">
+              <div className="overflow-x-auto my-6">
+                <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600">
                   {children}
                 </table>
               </div>
             ),
+            thead: ({ children }) => (
+              <thead className="bg-gray-100 dark:bg-gray-800">
+                {children}
+              </thead>
+            ),
             th: ({ children }) => (
-              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 bg-gray-100 dark:bg-gray-800 font-semibold text-left">
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold text-left text-gray-900 dark:text-gray-100">
                 {children}
               </th>
             ),
             td: ({ children }) => (
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-700 dark:text-gray-300">
                 {children}
               </td>
+            ),
+            hr: () => (
+              <hr className="my-8 border-gray-300 dark:border-gray-600" />
+            ),
+            strong: ({ children }) => (
+              <strong className="font-semibold text-gray-900 dark:text-gray-100">{children}</strong>
+            ),
+            em: ({ children }) => (
+              <em className="italic">{children}</em>
             ),
           }}
         >

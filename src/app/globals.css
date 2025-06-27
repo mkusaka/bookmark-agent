@@ -120,3 +120,48 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Shiki code block styles */
+.shiki-wrapper {
+  @apply my-4 rounded-lg overflow-hidden;
+}
+
+.shiki-wrapper pre {
+  @apply !m-0 !p-4 overflow-x-auto;
+}
+
+/* Light mode */
+html:not(.dark) .shiki-wrapper .shiki {
+  background-color: var(--shiki-light-bg, #f6f8fa) !important;
+}
+
+html:not(.dark) .shiki-wrapper [style*="--shiki-dark"] {
+  display: none;
+}
+
+/* Dark mode */
+html.dark .shiki-wrapper .shiki {
+  background-color: var(--shiki-dark-bg, #161b22) !important;
+}
+
+html.dark .shiki-wrapper [style*="--shiki-light"]:not([style*="--shiki-dark"]) {
+  display: none;
+}
+
+/* Font and spacing */
+.shiki-wrapper code {
+  @apply font-mono text-sm leading-relaxed;
+}
+
+/* Scrollbar styling */
+.shiki-wrapper pre::-webkit-scrollbar {
+  @apply h-2;
+}
+
+.shiki-wrapper pre::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+.shiki-wrapper pre::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 dark:bg-gray-600 rounded;
+}
