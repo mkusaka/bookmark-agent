@@ -168,22 +168,34 @@ html.dark .shiki-wrapper [style*="--shiki-light"]:not([style*="--shiki-dark"]) {
 
 /* Markdown source viewer styles */
 .markdown-source-viewer {
-  @apply overflow-auto;
+  @apply overflow-auto h-full;
+  background: #fafbfc;
+}
+
+html.dark .markdown-source-viewer {
+  background: #0d1117;
 }
 
 .markdown-source-viewer pre {
-  @apply !m-0 !p-6 !rounded-none;
+  @apply !m-0 !p-8 !rounded-none h-full;
   tab-size: 2;
 }
 
 .markdown-source-viewer code {
-  @apply font-mono text-sm;
-  line-height: 1.7;
+  @apply font-mono;
+  font-size: 14px !important;
+  line-height: 1.8 !important;
+}
+
+/* Shiki specific styles */
+.markdown-source-viewer .shiki {
+  @apply h-full !p-8;
+  background-color: transparent !important;
 }
 
 /* Light mode */
-html:not(.dark) .markdown-source-viewer .shiki {
-  background-color: #fafafa !important;
+html:not(.dark) .markdown-source-viewer {
+  background-color: #fafbfc !important;
 }
 
 html:not(.dark) .markdown-source-viewer [style*="--shiki-dark"] {
@@ -191,7 +203,7 @@ html:not(.dark) .markdown-source-viewer [style*="--shiki-dark"] {
 }
 
 /* Dark mode */
-html.dark .markdown-source-viewer .shiki {
+html.dark .markdown-source-viewer {
   background-color: #0d1117 !important;
 }
 
@@ -199,30 +211,36 @@ html.dark .markdown-source-viewer [style*="--shiki-light"]:not([style*="--shiki-
   display: none;
 }
 
-/* Line numbers */
+/* Line wrapping */
 .markdown-source-viewer .line {
-  display: inline-block;
-  width: 100%;
+  display: block;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 /* Scrollbar for source viewer */
 .markdown-source-viewer::-webkit-scrollbar {
-  @apply w-2 h-2;
+  @apply w-3 h-3;
 }
 
 .markdown-source-viewer::-webkit-scrollbar-track {
-  @apply bg-gray-100 dark:bg-gray-800;
+  @apply bg-gray-200 dark:bg-gray-800;
 }
 
 .markdown-source-viewer::-webkit-scrollbar-thumb {
-  @apply bg-gray-400 dark:bg-gray-600 rounded hover:bg-gray-500 dark:hover:bg-gray-500;
+  @apply bg-gray-400 dark:bg-gray-600 rounded-lg hover:bg-gray-500 dark:hover:bg-gray-500;
 }
 
 .markdown-source-viewer::-webkit-scrollbar-corner {
-  @apply bg-gray-100 dark:bg-gray-800;
+  @apply bg-gray-200 dark:bg-gray-800;
 }
 
-/* Fullscreen mode adjustments */
-.fixed.inset-0 .markdown-source-viewer {
-  @apply max-h-none;
+/* Selection colors */
+.markdown-source-viewer ::selection {
+  @apply bg-blue-200 dark:bg-blue-800;
+}
+
+/* Better contrast for specific token types */
+.markdown-source-viewer .shiki span {
+  font-weight: 400;
 }
