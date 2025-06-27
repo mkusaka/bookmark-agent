@@ -1,0 +1,217 @@
+import { getBookmarks, getDomains, getTags } from '../actions/bookmark-actions';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
+import { BookmarkTimelineChart } from '@/components/bookmark-timeline-chart';
+
+export default async function StatsPage() {
+  // Fetch all data in parallel
+  const [bookmarksData, domains, tags] = await Promise.all([
+    getBookmarks(
+      { 
+        searchQuery: '', 
+        selectedDomains: [], 
+        selectedTags: [], 
+        selectedUsers: [] 
+      }, 
+      { field: 'bookmarkedAt', order: 'desc' }, 
+      1000
+    ),
+    getDomains(),
+    getTags(),
+  ]);
+
+  // Calculate stats
+  const totalBookmarks = bookmarksData.total;
+  const totalDomains = domains.length;
+  const totalTags = tags.length;
+  
+  // Get top domains by bookmark count
+  const domainCounts = bookmarksData.bookmarks.reduce((acc, bookmark) => {
+    const domain = bookmark.domain;
+    if (domain) {
+      acc[domain] = (acc[domain] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const topDomains = Object.entries(domainCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10);
+  
+  // Get top tags by usage
+  const tagCounts = bookmarksData.bookmarks.reduce((acc, bookmark) => {
+    bookmark.tags.forEach(tag => {
+      acc[tag.label] = (acc[tag.label] || 0) + 1;
+    });
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const topTags = Object.entries(tagCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10);
+  
+  // Get bookmarks by month
+  const bookmarksByMonth = bookmarksData.bookmarks.reduce((acc, bookmark) => {
+    const date = new Date(bookmark.bookmarkedAt);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    acc[monthKey] = (acc[monthKey] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const sortedMonths = Object.entries(bookmarksByMonth)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .slice(-12);
+  
+  // Prepare data for the chart
+  const chartData = sortedMonths.map(([month, count]) => ({
+    month,
+    count,
+  }));
+
+  return (
+    <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 w-full">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            <Link href="/stats" className="hover:underline">
+              Bookmark Statistics
+            </Link>
+          </h2>
+          <p className="text-muted-foreground">
+            Overview of your bookmark collection
+          </p>
+        </div>
+        <ThemeToggle />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Bookmarks
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalBookmarks.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Domains
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalDomains.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Tags
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalTags.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="domains" className="w-full">
+        <TabsList>
+          <TabsTrigger value="domains">Top Domains</TabsTrigger>
+          <TabsTrigger value="tags">Top Tags</TabsTrigger>
+          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="domains" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Top 10 Domains</CardTitle>
+              <CardDescription>
+                Most bookmarked domains in your collection
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {topDomains.map(([domain, count], index) => (
+                  <div key={domain} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {index + 1}.
+                      </span>
+                      <Link 
+                        href={`/search?domains=${encodeURIComponent(domain)}`}
+                        className="text-sm hover:underline"
+                      >
+                        {domain}
+                      </Link>
+                    </div>
+                    <Badge variant="secondary">{count}</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="tags" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Top 10 Tags</CardTitle>
+              <CardDescription>
+                Most used tags in your collection
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {topTags.map(([tag, count], index) => (
+                  <div key={tag} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {index + 1}.
+                      </span>
+                      <Link 
+                        href={`/search?tags=${encodeURIComponent(tag)}`}
+                        className="text-sm hover:underline"
+                      >
+                        {tag}
+                      </Link>
+                    </div>
+                    <Badge variant="secondary">{count}</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="timeline" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Bookmarks Timeline</CardTitle>
+              <CardDescription>
+                Bookmarks added per month (last 12 months)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BookmarkTimelineChart data={chartData} />
+              <div className="mt-6 space-y-2">
+                <h4 className="text-sm font-medium mb-2">Monthly Details</h4>
+                {sortedMonths.map(([month, count]) => (
+                  <div key={month} className="flex items-center justify-between">
+                    <span className="text-sm">{month}</span>
+                    <Badge variant="secondary">{count}</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
