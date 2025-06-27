@@ -72,7 +72,8 @@ export function BookmarkList({
       params.set('cursor', cursor);
     }
     
-    return `?${params.toString()}`;
+    const queryString = params.toString();
+    return queryString ? `?${queryString}` : '';
   };
   const formatDate = (date: Date) => {
     const now = new Date();

@@ -14,8 +14,8 @@ export function BookmarkTitle({ title, url, bookmarkId, returnUrl }: BookmarkTit
   const displayText = title || url;
   
   // Build detail page URL with return URL parameter
-  const detailUrl = returnUrl 
-    ? `/bookmarks/${bookmarkId}?return=${encodeURIComponent(returnUrl)}`
+  const detailUrl = returnUrl && returnUrl !== '' 
+    ? `/bookmarks/${bookmarkId}?return=${encodeURIComponent('/search' + returnUrl)}`
     : `/bookmarks/${bookmarkId}`;
   
   return (
