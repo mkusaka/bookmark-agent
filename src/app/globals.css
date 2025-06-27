@@ -165,3 +165,39 @@ html.dark .shiki-wrapper [style*="--shiki-light"]:not([style*="--shiki-dark"]) {
 .shiki-wrapper pre::-webkit-scrollbar-thumb {
   @apply bg-gray-400 dark:bg-gray-600 rounded;
 }
+
+/* Markdown source viewer styles */
+.markdown-source-viewer {
+  @apply max-h-[600px] overflow-y-auto;
+}
+
+.markdown-source-viewer pre {
+  @apply !m-0 !p-4 !rounded-none;
+}
+
+.markdown-source-viewer code {
+  @apply font-mono text-sm leading-relaxed;
+}
+
+/* Light mode */
+html:not(.dark) .markdown-source-viewer .shiki {
+  background-color: var(--shiki-light-bg, #ffffff) !important;
+}
+
+/* Dark mode */
+html.dark .markdown-source-viewer .shiki {
+  background-color: var(--shiki-dark-bg, #0d1117) !important;
+}
+
+/* Scrollbar for source viewer */
+.markdown-source-viewer::-webkit-scrollbar {
+  @apply w-2;
+}
+
+.markdown-source-viewer::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+.markdown-source-viewer::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 dark:bg-gray-600 rounded hover:bg-gray-500 dark:hover:bg-gray-500;
+}

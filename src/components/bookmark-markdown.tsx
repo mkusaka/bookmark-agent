@@ -1,5 +1,5 @@
 import { fetchMarkdownContent } from '@/app/actions/markdown-actions';
-import { MarkdownRenderer } from './markdown-renderer';
+import { MarkdownSourceViewer } from './markdown-source-viewer';
 
 interface BookmarkMarkdownProps {
   url: string;
@@ -18,5 +18,5 @@ export async function BookmarkMarkdown({ url }: BookmarkMarkdownProps) {
     );
   }
 
-  return <MarkdownRenderer content={markdown} />;
+  return <MarkdownSourceViewer content={markdown} />;
 }
