@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { ExternalLink, Calendar, User, Tag, MessageSquare, Share2, Check, Copy } from 'lucide-react';
+import { ExternalLink, Calendar, User, Tag, MessageSquare, Share2, Check } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
