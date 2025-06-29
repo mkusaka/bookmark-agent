@@ -17,6 +17,8 @@
     "db:migrate-normalized-domain": "tsx src/scripts/migrate-normalized-domain.ts",
     "db:check-normalized-domain": "tsx src/scripts/check-normalized-domain.ts",
     "db:migrate-normalized-domain-simple": "tsx src/scripts/migrate-normalized-domain-simple.ts",
+    "db:renormalize-all-domains": "tsx src/scripts/renormalize-all-domains.ts",
+    "db:fix-protocol-domains": "tsx src/scripts/fix-protocol-domains.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:unit": "vitest --config vitest.config.unit.ts"
