@@ -92,3 +92,34 @@ export async function getOrFetchMarkdownContent(bookmarkId: string, url: string)
     return null;
   }
 }
+
+export async function refreshMarkdownContent(bookmarkId: string, url: string): Promise<string | null> {
+  const { db } = await import('@/db');
+  const { bookmarks } = await import('@/db/schema');
+  const { eq } = await import('drizzle-orm');
+
+  try {
+    // Force fetch from Cloudflare
+    console.log('Force refreshing markdown content from Cloudflare');
+    const markdownContent = await fetchMarkdownContent(url);
+    
+    if (markdownContent) {
+      // Update database
+      await db
+        .update(bookmarks)
+        .set({
+          markdownContent,
+          markdownFetchedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(bookmarks.id, bookmarkId));
+      
+      console.log('Markdown content refreshed and saved to database');
+    }
+
+    return markdownContent;
+  } catch (error) {
+    console.error('Error in refreshMarkdownContent:', error);
+    return null;
+  }
+}

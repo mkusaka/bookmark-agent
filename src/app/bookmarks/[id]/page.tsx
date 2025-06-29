@@ -4,6 +4,7 @@ import { getBookmarkById } from '@/app/actions/bookmark-actions';
 import { BookmarkDetail } from '@/components/bookmark-detail';
 import { BookmarkMarkdown } from '@/components/bookmark-markdown';
 import { MarkdownSkeleton } from '@/components/markdown-skeleton';
+import { MarkdownRefreshButton } from '@/components/markdown-refresh-button';
 
 export default async function BookmarkDetailPage({
   params,
@@ -24,9 +25,12 @@ export default async function BookmarkDetailPage({
       </Suspense>
       
       <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-          Markdown Content
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Markdown Content
+          </h2>
+          <MarkdownRefreshButton bookmarkId={bookmark.id} url={bookmark.url} />
+        </div>
         <Suspense fallback={<MarkdownSkeleton />}>
           <BookmarkMarkdown bookmarkId={bookmark.id} url={bookmark.url} />
         </Suspense>
