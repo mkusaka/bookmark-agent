@@ -16,6 +16,7 @@ export interface Entry {
   rootUrl: string;
   summary: string | null;
   domain: string;
+  normalizedDomain: string | null;
 }
 
 export interface Bookmark {
@@ -24,6 +25,7 @@ export interface Bookmark {
   description: string | null;
   url: string;
   domain: string;
+  normalizedDomain: string | null;
   bookmarkedAt: Date;
   bookmarkUrl: string | null;
   createdAt: Date;

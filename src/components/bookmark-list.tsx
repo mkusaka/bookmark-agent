@@ -163,9 +163,9 @@ export function BookmarkList({
                       <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
                         <FilterLink
                           type="domains"
-                          value={bookmark.entry.rootUrl}
-                          label={bookmark.entry.rootUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                          isSelected={currentFilters.domains.includes(bookmark.entry.rootUrl)}
+                          value={bookmark.entry.normalizedDomain || bookmark.entry.rootUrl}
+                          label={(bookmark.entry.normalizedDomain || bookmark.entry.rootUrl).replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                          isSelected={currentFilters.domains.includes(bookmark.entry.normalizedDomain || bookmark.entry.rootUrl)}
                           currentParams={currentParams}
                         />
                         <div className="flex-1 min-w-0">

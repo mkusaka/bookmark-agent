@@ -54,10 +54,10 @@ export async function getBookmarks(
       );
     }
 
-    // Domain filter (using entry.rootUrl)
+    // Domain filter (using entry.normalizedDomain)
     if (filters.selectedDomains && filters.selectedDomains.length > 0) {
       console.log('Applying domain filter:', filters.selectedDomains);
-      filterConditions.push(inArray(entries.rootUrl, filters.selectedDomains));
+      filterConditions.push(inArray(entries.normalizedDomain, filters.selectedDomains));
     }
 
     // User filter
@@ -214,14 +214,15 @@ export async function getBookmarks(
 
 export async function getDomains() {
   try {
-    // Get distinct root URLs from entries
-    const rootUrls = await db
-      .selectDistinct({ rootUrl: entries.rootUrl })
+    // Get distinct normalized domains from entries
+    const normalizedDomains = await db
+      .selectDistinct({ normalizedDomain: entries.normalizedDomain })
       .from(entries)
       .innerJoin(bookmarks, eq(bookmarks.entryId, entries.id))
-      .orderBy(entries.rootUrl);
+      .where(sql`${entries.normalizedDomain} IS NOT NULL`)
+      .orderBy(entries.normalizedDomain);
 
-    return rootUrls.map(r => r.rootUrl);
+    return normalizedDomains.map(r => r.normalizedDomain).filter(Boolean) as string[];
   } catch (error) {
     console.error('Error fetching domains:', error);
     throw new Error('Failed to fetch domains');

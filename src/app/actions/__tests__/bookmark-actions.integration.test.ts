@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { users, entries, bookmarks, tags, bookmarkTags } from '@/db/schema';
 import type { BookmarkFilters, BookmarkSort } from '@/types/bookmark';
 import { eq } from 'drizzle-orm';
+import { normalizeDomain } from '@/lib/domain-normalizer';
 
 // Skip these tests in CI environment
 const skipInCI = process.env.CI ? describe.skip : describe;
@@ -33,6 +34,7 @@ skipInCI('bookmark-actions integration tests', () => {
       rootUrl: 'https://example.com',
       summary: 'A great article about React development',
       domain: 'example.com',
+      normalizedDomain: normalizeDomain('https://example.com'),
     }).returning();
 
     const [entry2] = await db.insert(entries).values({
@@ -41,6 +43,7 @@ skipInCI('bookmark-actions integration tests', () => {
       rootUrl: 'https://test.com',
       summary: 'Another interesting article',
       domain: 'test.com',
+      normalizedDomain: normalizeDomain('https://test.com'),
     }).returning();
 
     // Create test tags
@@ -60,6 +63,7 @@ skipInCI('bookmark-actions integration tests', () => {
       description: 'This is a detailed comment about React',
       url: 'https://example.com/react',
       domain: 'example.com',
+      normalizedDomain: normalizeDomain('https://example.com/react'),
       bookmarkedAt: new Date('2024-01-01'),
       userId: testUserId,
       entryId: entry1.id,
@@ -71,6 +75,7 @@ skipInCI('bookmark-actions integration tests', () => {
       description: 'Another bookmark description',
       url: 'https://test.com/article',
       domain: 'test.com',
+      normalizedDomain: normalizeDomain('https://test.com/article'),
       bookmarkedAt: new Date('2024-01-02'),
       userId: testUserId,
       entryId: entry2.id,
@@ -168,7 +173,7 @@ skipInCI('bookmark-actions integration tests', () => {
     it('should filter bookmarks by domain', async () => {
       const filters: BookmarkFilters = {
         searchQuery: '',
-        selectedDomains: ['example.com'],
+        selectedDomains: ['https://example.com'],
         selectedTags: [],
         selectedUsers: [],
       };
@@ -182,7 +187,7 @@ skipInCI('bookmark-actions integration tests', () => {
     it('should filter by multiple domains', async () => {
       const filters: BookmarkFilters = {
         searchQuery: '',
-        selectedDomains: ['example.com', 'test.com'],
+        selectedDomains: ['https://example.com', 'https://test.com'],
         selectedTags: [],
         selectedUsers: [],
       };
@@ -226,7 +231,7 @@ skipInCI('bookmark-actions integration tests', () => {
     it('should apply search and domain filters together (AND condition)', async () => {
       const filters: BookmarkFilters = {
         searchQuery: 'React',
-        selectedDomains: ['example.com'],
+        selectedDomains: ['https://example.com'],
         selectedTags: [],
         selectedUsers: [],
       };
@@ -241,7 +246,7 @@ skipInCI('bookmark-actions integration tests', () => {
     it('should apply search, domain, and tag filters together', async () => {
       const filters: BookmarkFilters = {
         searchQuery: 'React',
-        selectedDomains: ['example.com'],
+        selectedDomains: ['https://example.com'],
         selectedTags: [testTagId1],
         selectedUsers: [],
       };
@@ -254,7 +259,7 @@ skipInCI('bookmark-actions integration tests', () => {
     it('should return empty when filters do not match', async () => {
       const filters: BookmarkFilters = {
         searchQuery: 'React',
-        selectedDomains: ['test.com'], // React article is on example.com
+        selectedDomains: ['https://test.com'], // React article is on example.com
         selectedTags: [],
         selectedUsers: [],
       };

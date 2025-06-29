@@ -3,6 +3,7 @@ import { users, entries, bookmarks, tags, bookmarkTags } from '@/db/schema';
 import { HatenaBookmarkClient } from './client';
 import { HatenaBookmark } from './types';
 import { eq } from 'drizzle-orm';
+import { normalizeDomain } from '@/lib/domain-normalizer';
 
 export class HatenaBookmarkImporter {
   private client: HatenaBookmarkClient;
@@ -187,6 +188,7 @@ export class HatenaBookmarkImporter {
         rootUrl: hatenaBookmark.entry.root_url,
         summary: hatenaBookmark.entry.summary || '',
         domain: new URL(hatenaBookmark.entry.canonical_url).hostname,
+        normalizedDomain: normalizeDomain(hatenaBookmark.entry.root_url),
       }).returning();
       entry = newEntry;
     }
@@ -210,6 +212,7 @@ export class HatenaBookmarkImporter {
       description: hatenaBookmark.comment_expanded || '',
       url: hatenaBookmark.url,
       domain,
+      normalizedDomain: normalizeDomain(hatenaBookmark.url),
       bookmarkedAt: new Date(hatenaBookmark.created),
       bookmarkUrl: `https://b.hatena.ne.jp/entry/${hatenaBookmark.location_id}`,
       userId,

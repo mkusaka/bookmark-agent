@@ -1,0 +1,1 @@
+ALTER TABLE "bookmarks" ALTER COLUMN "entry_id" SET NOT NULL;
