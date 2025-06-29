@@ -7,28 +7,26 @@ async function renormalizeAllDomains() {
   console.log('Starting re-normalization of all domains...');
   
   try {
-    // First, check current state
-    const protocolEntries = await db
+    // Get total count
+    const totalCount = await db
       .select({ count: sql<number>`count(*)` })
-      .from(entries)
-      .where(sql`${entries.normalizedDomain} LIKE 'http://%' OR ${entries.normalizedDomain} LIKE 'https://%'`);
+      .from(entries);
     
-    console.log(`Found ${protocolEntries[0].count} entries with protocol in normalizedDomain`);
+    console.log(`Total entries to process: ${totalCount[0].count}`);
     
-    // Get sample of entries with protocol
-    const sampleProtocolEntries = await db
+    // Get sample of current entries
+    const sampleEntries = await db
       .select()
       .from(entries)
-      .where(sql`${entries.normalizedDomain} LIKE 'http://%' OR ${entries.normalizedDomain} LIKE 'https://%'`)
-      .limit(5);
+      .limit(10);
     
-    if (sampleProtocolEntries.length > 0) {
-      console.log('\nSample entries with protocol in normalizedDomain:');
-      sampleProtocolEntries.forEach(entry => {
-        console.log(`- Current: ${entry.normalizedDomain} (from ${entry.canonicalUrl})`);
-        console.log(`  Expected: ${normalizeDomain(entry.canonicalUrl)}`);
-      });
-    }
+    console.log('\nSample of current entries:');
+    sampleEntries.forEach(entry => {
+      const expected = normalizeDomain(entry.canonicalUrl);
+      const needsUpdate = entry.normalizedDomain !== expected;
+      console.log(`- Current: ${entry.normalizedDomain} (from ${entry.canonicalUrl})`);
+      console.log(`  Expected: ${expected} ${needsUpdate ? '⚠️ NEEDS UPDATE' : '✓ OK'}`);
+    });
     
     // Re-normalize ALL entries in batches
     console.log('\nRe-normalizing all entries...');
@@ -74,20 +72,23 @@ async function renormalizeAllDomains() {
     
     console.log(`\nTotal entries updated: ${totalUpdated}`);
     
-    // Verify the update
-    const remainingProtocolEntries = await db
-      .select({ count: sql<number>`count(*)` })
+    // Show sample of updated entries
+    const updatedSampleEntries = await db
+      .select()
       .from(entries)
-      .where(sql`${entries.normalizedDomain} LIKE 'http://%' OR ${entries.normalizedDomain} LIKE 'https://%'`);
+      .limit(10);
     
-    console.log(`\nRemaining entries with protocol: ${remainingProtocolEntries[0].count}`);
+    console.log('\nSample of updated entries:');
+    updatedSampleEntries.forEach(entry => {
+      console.log(`- ${entry.normalizedDomain} (from ${entry.canonicalUrl})`);
+    });
     
     // Show unique normalized domains stats
     const uniqueDomains = await db
       .select({ count: sql<number>`count(DISTINCT ${entries.normalizedDomain})` })
       .from(entries);
     
-    console.log(`Total unique normalized domains: ${uniqueDomains[0].count}`);
+    console.log(`\nTotal unique normalized domains: ${uniqueDomains[0].count}`);
     
     console.log('\nRe-normalization completed successfully!');
     
