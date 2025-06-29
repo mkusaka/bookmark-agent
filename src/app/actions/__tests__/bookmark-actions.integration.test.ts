@@ -173,7 +173,7 @@ skipInCI('bookmark-actions integration tests', () => {
     it('should filter bookmarks by domain', async () => {
       const filters: BookmarkFilters = {
         searchQuery: '',
-        selectedDomains: ['https://example.com'],
+        selectedDomains: ['example.com'],
         selectedTags: [],
         selectedUsers: [],
       };
@@ -187,7 +187,7 @@ skipInCI('bookmark-actions integration tests', () => {
     it('should filter by multiple domains', async () => {
       const filters: BookmarkFilters = {
         searchQuery: '',
-        selectedDomains: ['https://example.com', 'https://test.com'],
+        selectedDomains: ['example.com', 'test.com'],
         selectedTags: [],
         selectedUsers: [],
       };
@@ -231,7 +231,7 @@ skipInCI('bookmark-actions integration tests', () => {
     it('should apply search and domain filters together (AND condition)', async () => {
       const filters: BookmarkFilters = {
         searchQuery: 'React',
-        selectedDomains: ['https://example.com'],
+        selectedDomains: ['example.com'],
         selectedTags: [],
         selectedUsers: [],
       };
@@ -246,7 +246,7 @@ skipInCI('bookmark-actions integration tests', () => {
     it('should apply search, domain, and tag filters together', async () => {
       const filters: BookmarkFilters = {
         searchQuery: 'React',
-        selectedDomains: ['https://example.com'],
+        selectedDomains: ['example.com'],
         selectedTags: [testTagId1],
         selectedUsers: [],
       };
@@ -259,7 +259,7 @@ skipInCI('bookmark-actions integration tests', () => {
     it('should return empty when filters do not match', async () => {
       const filters: BookmarkFilters = {
         searchQuery: 'React',
-        selectedDomains: ['https://test.com'], // React article is on example.com
+        selectedDomains: ['test.com'], // React article is on example.com
         selectedTags: [],
         selectedUsers: [],
       };
