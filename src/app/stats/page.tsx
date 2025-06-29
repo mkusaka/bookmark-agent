@@ -187,7 +187,7 @@ export default async function StatsPage() {
                         href={`/search?domains=${encodeURIComponent(domain)}`}
                         className="text-sm hover:underline"
                       >
-                        {domain.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                        {domain}
                       </Link>
                     </div>
                     <Badge variant="secondary">{count}</Badge>
