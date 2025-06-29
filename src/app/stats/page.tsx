@@ -6,7 +6,7 @@ import { TimelineTabWrapper } from '@/components/stats/timeline-tab-wrapper';
 import { DomainsTab } from '@/components/stats/domains-tab';
 import { TagsTab } from '@/components/stats/tags-tab';
 import { UsersTab } from '@/components/stats/users-tab';
-import { StatsTabs } from '@/components/stats/stats-tabs';
+import { StatsTabsWrapper } from '@/components/stats/stats-tabs-wrapper';
 
 function TabSkeleton() {
   return (
@@ -22,7 +22,7 @@ export default function StatsPage() {
     <div className="container mx-auto py-6 space-y-6">
       <h1 className="text-3xl font-bold">Bookmark Statistics</h1>
       
-      <StatsTabs>
+      <StatsTabsWrapper>
         <TabsContent value="overview">
           <Suspense fallback={<TabSkeleton />}>
             <OverviewTab />
@@ -52,7 +52,7 @@ export default function StatsPage() {
             <UsersTab />
           </Suspense>
         </TabsContent>
-      </StatsTabs>
+      </StatsTabsWrapper>
     </div>
   );
 }
