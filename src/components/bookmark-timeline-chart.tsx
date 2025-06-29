@@ -2,6 +2,7 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 interface BookmarkTimelineChartProps {
   data: Array<{
@@ -12,6 +13,17 @@ interface BookmarkTimelineChartProps {
 
 export function BookmarkTimelineChart({ data }: BookmarkTimelineChartProps) {
   const { theme } = useTheme();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   const isDark = theme === 'dark';
   const axisColor = isDark ? '#666' : '#888';
@@ -29,13 +41,21 @@ export function BookmarkTimelineChart({ data }: BookmarkTimelineChartProps) {
   };
   
   return (
-    <ResponsiveContainer width="100%" height={400}>
-      <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
+    <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
+      <LineChart 
+        data={data} 
+        margin={{ 
+          top: 5, 
+          right: isMobile ? 5 : 30, 
+          left: isMobile ? 0 : 20, 
+          bottom: 60 
+        }}
+      >
         <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
         <XAxis 
           dataKey="month" 
           stroke={axisColor}
-          fontSize={11}
+          fontSize={isMobile ? 10 : 11}
           angle={-45}
           textAnchor="end"
           height={80}
@@ -44,7 +64,8 @@ export function BookmarkTimelineChart({ data }: BookmarkTimelineChartProps) {
         />
         <YAxis 
           stroke={axisColor}
-          fontSize={12}
+          fontSize={isMobile ? 10 : 12}
+          width={isMobile ? 35 : undefined}
         />
         <Tooltip 
           contentStyle={{
