@@ -28,32 +28,48 @@ async function renormalizeAllDomains() {
       console.log(`  Expected: ${expected} ${needsUpdate ? '⚠️ NEEDS UPDATE' : '✓ OK'}`);
     });
     
-    // Re-normalize ALL entries in batches
-    console.log('\nRe-normalizing all entries...');
+    // Re-normalize entries that need updates
+    console.log('\nChecking and re-normalizing entries...');
     const batchSize = 1000;
     let offset = 0;
+    let totalChecked = 0;
     let totalUpdated = 0;
+    let totalSkipped = 0;
     
     while (true) {
       const batch = await db
-        .select({ id: entries.id, canonicalUrl: entries.canonicalUrl })
+        .select({ 
+          id: entries.id, 
+          canonicalUrl: entries.canonicalUrl,
+          normalizedDomain: entries.normalizedDomain 
+        })
         .from(entries)
         .limit(batchSize)
         .offset(offset);
       
       if (batch.length === 0) break;
       
-      // Prepare bulk update data
-      const updates = batch.map(entry => ({
-        id: entry.id,
-        normalizedDomain: normalizeDomain(entry.canonicalUrl)
-      }));
+      // Filter only entries that need updates
+      const updates = batch
+        .map(entry => {
+          const expected = normalizeDomain(entry.canonicalUrl);
+          return {
+            id: entry.id,
+            current: entry.normalizedDomain,
+            expected: expected,
+            needsUpdate: entry.normalizedDomain !== expected
+          };
+        })
+        .filter(item => item.needsUpdate);
       
-      // Execute bulk update using CASE WHEN
+      totalChecked += batch.length;
+      totalSkipped += batch.length - updates.length;
+      
+      // Execute bulk update only for entries that need it
       if (updates.length > 0) {
         let caseStatement = sql`CASE`;
         for (const update of updates) {
-          caseStatement = sql`${caseStatement} WHEN id = ${update.id} THEN ${update.normalizedDomain}`;
+          caseStatement = sql`${caseStatement} WHEN id = ${update.id} THEN ${update.expected}`;
         }
         caseStatement = sql`${caseStatement} END`;
         
@@ -63,14 +79,19 @@ async function renormalizeAllDomains() {
           WHERE id IN (${sql.join(updates.map(u => u.id), sql`, `)})`
         );
         
-        totalUpdated += batch.length;
-        console.log(`Updated ${totalUpdated} entries...`);
+        totalUpdated += updates.length;
+        console.log(`Checked ${totalChecked} | Updated ${totalUpdated} | Skipped ${totalSkipped}`);
+      } else {
+        console.log(`Checked ${totalChecked} | No updates needed in this batch`);
       }
       
       offset += batchSize;
     }
     
-    console.log(`\nTotal entries updated: ${totalUpdated}`);
+    console.log(`\n=== Final Summary ===`);
+    console.log(`Total entries checked: ${totalChecked}`);
+    console.log(`Total entries updated: ${totalUpdated}`);
+    console.log(`Total entries skipped: ${totalSkipped}`);
     
     // Show sample of updated entries
     const updatedSampleEntries = await db
