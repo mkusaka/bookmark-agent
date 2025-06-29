@@ -18,7 +18,6 @@ import {
   CirclePlus,
   X,
   CalendarIcon,
-  Loader2,
   RefreshCw,
 } from 'lucide-react';
 import { type SearchFormValues } from '@/lib/search-params-schema';
@@ -280,14 +279,6 @@ export function SearchForm({
         <RefreshCw className={`h-4 w-4 ${isPending || isNavigationPending ? 'animate-spin' : ''}`} />
         <span className="ml-2">Refresh</span>
       </Button>
-      
-      {/* Loading indicator */}
-      {(isPending || isNavigationPending) && (
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm">Loading...</span>
-        </div>
-      )}
       
       {/* Bulk Actions */}
       <BookmarkBulkActions 
