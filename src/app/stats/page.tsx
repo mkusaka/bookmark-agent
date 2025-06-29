@@ -35,7 +35,7 @@ export default async function StatsPage() {
   
   // Get top domains by bookmark count
   const domainCounts = bookmarksData.bookmarks.reduce((acc, bookmark) => {
-    const domain = bookmark.normalizedDomain || bookmark.domain;
+    const domain = bookmark.entry.normalizedDomain || bookmark.domain;
     if (domain) {
       acc[domain] = (acc[domain] || 0) + 1;
     }

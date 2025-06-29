@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { entries, bookmarks } from '@/db/schema';
+import { entries } from '@/db/schema';
 import { normalizeDomain } from '@/lib/domain-normalizer';
 import { sql } from 'drizzle-orm';
 
@@ -15,7 +15,7 @@ async function migrateNormalizedDomain() {
     
     while (true) {
       const batch = await db
-        .select({ id: entries.id, rootUrl: entries.rootUrl })
+        .select({ id: entries.id, canonicalUrl: entries.canonicalUrl })
         .from(entries)
         .limit(batchSize)
         .offset(offset);
@@ -25,7 +25,7 @@ async function migrateNormalizedDomain() {
       // Prepare bulk update data
       const updates = batch.map(entry => ({
         id: entry.id,
-        normalizedDomain: normalizeDomain(entry.rootUrl)
+        normalizedDomain: normalizeDomain(entry.canonicalUrl)
       }));
       
       // Execute bulk update using CASE WHEN
@@ -50,49 +50,6 @@ async function migrateNormalizedDomain() {
     }
     
     console.log(`Total entries updated: ${totalEntriesUpdated}`);
-    
-    // Migrate bookmarks table in batches
-    console.log('Migrating bookmarks table...');
-    offset = 0;
-    let totalBookmarksUpdated = 0;
-    
-    while (true) {
-      const batch = await db
-        .select({ id: bookmarks.id, url: bookmarks.url })
-        .from(bookmarks)
-        .limit(batchSize)
-        .offset(offset);
-      
-      if (batch.length === 0) break;
-      
-      // Prepare bulk update data
-      const updates = batch.map(bookmark => ({
-        id: bookmark.id,
-        normalizedDomain: normalizeDomain(bookmark.url)
-      }));
-      
-      // Execute bulk update using CASE WHEN
-      if (updates.length > 0) {
-        let caseStatement = sql`CASE`;
-        for (const update of updates) {
-          caseStatement = sql`${caseStatement} WHEN id = ${update.id} THEN ${update.normalizedDomain}`;
-        }
-        caseStatement = sql`${caseStatement} END`;
-        
-        await db.execute(sql`
-          UPDATE bookmarks 
-          SET normalized_domain = ${caseStatement}
-          WHERE id IN (${sql.join(updates.map(u => u.id), sql`, `)})`
-        );
-        
-        totalBookmarksUpdated += batch.length;
-        console.log(`Updated ${totalBookmarksUpdated} bookmarks...`);
-      }
-      
-      offset += batchSize;
-    }
-    
-    console.log(`Total bookmarks updated: ${totalBookmarksUpdated}`);
     console.log('Migration completed successfully!');
     
   } catch (error) {

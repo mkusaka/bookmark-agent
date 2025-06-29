@@ -36,7 +36,6 @@ export const bookmarks = pgTable('bookmarks', {
   description: text('description'),
   url: text('url').notNull(),
   domain: text('domain').notNull(),
-  normalizedDomain: text('normalized_domain'),
   bookmarkedAt: timestamp('bookmarked_at').notNull(),
   bookmarkUrl: text('bookmark_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -46,7 +45,6 @@ export const bookmarks = pgTable('bookmarks', {
 }, (table) => [
   index('bookmarks_user_idx').on(table.userId),
   index('bookmarks_domain_idx').on(table.domain),
-  index('bookmarks_normalized_domain_idx').on(table.normalizedDomain),
   index('bookmarks_bookmarked_at_idx').on(table.bookmarkedAt),
   index('bookmarks_comment_trgm_idx').using('gin', sql`${table.comment} gin_trgm_ops`),
   index('bookmarks_description_trgm_idx').using('gin', sql`${table.description} gin_trgm_ops`),

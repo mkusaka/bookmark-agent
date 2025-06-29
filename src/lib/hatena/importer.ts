@@ -188,7 +188,7 @@ export class HatenaBookmarkImporter {
         rootUrl: hatenaBookmark.entry.root_url,
         summary: hatenaBookmark.entry.summary || '',
         domain: new URL(hatenaBookmark.entry.canonical_url).hostname,
-        normalizedDomain: normalizeDomain(hatenaBookmark.entry.root_url),
+        normalizedDomain: normalizeDomain(hatenaBookmark.entry.canonical_url),
       }).returning();
       entry = newEntry;
     }
@@ -212,7 +212,6 @@ export class HatenaBookmarkImporter {
       description: hatenaBookmark.comment_expanded || '',
       url: hatenaBookmark.url,
       domain,
-      normalizedDomain: normalizeDomain(hatenaBookmark.url),
       bookmarkedAt: new Date(hatenaBookmark.created),
       bookmarkUrl: `https://b.hatena.ne.jp/entry/${hatenaBookmark.location_id}`,
       userId,
