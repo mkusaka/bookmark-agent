@@ -19,6 +19,7 @@ import {
   X,
   CalendarIcon,
   Loader2,
+  RefreshCw,
 } from 'lucide-react';
 import { type SearchFormValues } from '@/lib/search-params-schema';
 import type { DateRange } from 'react-day-picker';
@@ -123,6 +124,12 @@ export function SearchForm({
     });
     updateURL();
   }, [reset, updateURL]);
+
+  const handleRefresh = useCallback(() => {
+    startTransition(() => {
+      router.refresh();
+    });
+  }, [router]);
 
   const dateRange: DateRange | undefined = formValues.from || formValues.to ? {
     from: formValues.from,
@@ -262,6 +269,17 @@ export function SearchForm({
           <X className="ml-2 h-4 w-4" />
         </Button>
       )}
+      
+      {/* Refresh button */}
+      <Button 
+        variant="ghost" 
+        onClick={handleRefresh} 
+        className="h-8 px-2 lg:px-3"
+        disabled={isPending || isNavigationPending}
+      >
+        <RefreshCw className={`h-4 w-4 ${isPending || isNavigationPending ? 'animate-spin' : ''}`} />
+        <span className="ml-2">Refresh</span>
+      </Button>
       
       {/* Loading indicator */}
       {(isPending || isNavigationPending) && (
