@@ -12,6 +12,7 @@ import {
   ExternalLink,
   MoreHorizontal,
   Copy,
+  Share2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -44,7 +45,28 @@ export function SelectAllCheckbox({ bookmarkIds }: { bookmarkIds: string[]; book
   );
 }
 
-export function BookmarkActions({ url }: { url: string }) {
+export function BookmarkActions({ url, bookmarkId }: { url: string; bookmarkId: string }) {
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/bookmarks/${bookmarkId}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Bookmark',
+          url: shareUrl,
+        });
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          navigator.clipboard.writeText(shareUrl);
+          toast.success('Link copied to clipboard');
+        }
+      }
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success('Link copied to clipboard');
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -67,6 +89,10 @@ export function BookmarkActions({ url }: { url: string }) {
         }}>
           <Copy className="mr-2 h-4 w-4" />
           Copy link
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleShare}>
+          <Share2 className="mr-2 h-4 w-4" />
+          Share
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -217,7 +217,7 @@ export function BookmarkList({
                     />
                   </TableCell>
                   <TableCell className="p-2 align-middle whitespace-nowrap">
-                    <BookmarkActions url={bookmark.url} />
+                    <BookmarkActions url={bookmark.url} bookmarkId={bookmark.id} />
                   </TableCell>
                 </TableRow>
               ))
