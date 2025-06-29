@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { BookmarkTimelineChart } from '@/components/bookmark-timeline-chart';
+import { TimelineTabContent } from '@/components/timeline-tab-content';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -42,9 +42,8 @@ export default async function StatsPage() {
     return acc;
   }, {} as Record<string, number>);
   
-  const topDomains = Object.entries(domainCounts)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 10);
+  const allDomains = Object.entries(domainCounts)
+    .sort(([, a], [, b]) => b - a);
   
   // Get top tags by usage
   const tagCounts = bookmarksData.bookmarks.reduce((acc, bookmark) => {
@@ -54,9 +53,8 @@ export default async function StatsPage() {
     return acc;
   }, {} as Record<string, number>);
   
-  const topTags = Object.entries(tagCounts)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 10);
+  const allTags = Object.entries(tagCounts)
+    .sort(([, a], [, b]) => b - a);
   
   // Get bookmarks by month
   const bookmarksByMonth = bookmarksData.bookmarks.reduce((acc, bookmark) => {
@@ -69,14 +67,6 @@ export default async function StatsPage() {
   const sortedMonths = Object.entries(bookmarksByMonth)
     .sort(([a], [b]) => a.localeCompare(b));
   
-  // Get last 24 months for the chart
-  const last24Months = sortedMonths.slice(-24);
-  
-  // Prepare data for the chart
-  const chartData = last24Months.map(([month, count]) => ({
-    month,
-    count,
-  }));
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 w-full">
@@ -138,46 +128,25 @@ export default async function StatsPage() {
       <Tabs defaultValue="timeline" className="w-full">
         <TabsList>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="domains">Top Domains</TabsTrigger>
-          <TabsTrigger value="tags">Top Tags</TabsTrigger>
+          <TabsTrigger value="domains">All Domains</TabsTrigger>
+          <TabsTrigger value="tags">All Tags</TabsTrigger>
         </TabsList>
         
         <TabsContent value="timeline" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Bookmarks Timeline</CardTitle>
-              <CardDescription>
-                Bookmarks added per month (last 24 months)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <BookmarkTimelineChart data={chartData} />
-              <div className="mt-6 space-y-2">
-                <h4 className="text-sm font-medium mb-2">Monthly Details (Last 24 months)</h4>
-                <div className="max-h-96 overflow-y-auto space-y-1">
-                  {last24Months.slice().reverse().map(([month, count]) => (
-                    <div key={month} className="flex items-center justify-between py-1">
-                      <span className="text-sm">{month}</span>
-                      <Badge variant="secondary">{count}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <TimelineTabContent sortedMonths={sortedMonths} />
         </TabsContent>
         
         <TabsContent value="domains" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Top 10 Domains</CardTitle>
+              <CardTitle>All Domains</CardTitle>
               <CardDescription>
-                Most bookmarked domains in your collection
+                All bookmarked domains sorted by frequency
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {topDomains.map(([domain, count], index) => (
+                {allDomains.map(([domain, count], index) => (
                   <div key={domain} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">
@@ -201,14 +170,14 @@ export default async function StatsPage() {
         <TabsContent value="tags" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Top 10 Tags</CardTitle>
+              <CardTitle>All Tags</CardTitle>
               <CardDescription>
-                Most used tags in your collection
+                All tags sorted by usage frequency
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {topTags.map(([tag, count], index) => (
+                {allTags.map(([tag, count], index) => (
                   <div key={tag} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">
