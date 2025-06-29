@@ -38,6 +38,8 @@ export const bookmarks = pgTable('bookmarks', {
   domain: text('domain').notNull(),
   bookmarkedAt: timestamp('bookmarked_at').notNull(),
   bookmarkUrl: text('bookmark_url'),
+  markdownContent: text('markdown_content'),
+  markdownFetchedAt: timestamp('markdown_fetched_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   userId: uuid('user_id').notNull().references(() => users.id),

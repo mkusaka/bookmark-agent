@@ -46,3 +46,49 @@ export async function fetchMarkdownContent(url: string): Promise<string | null> 
     return null;
   }
 }
+
+export async function getOrFetchMarkdownContent(bookmarkId: string, url: string): Promise<string | null> {
+  const { db } = await import('@/db');
+  const { bookmarks } = await import('@/db/schema');
+  const { eq } = await import('drizzle-orm');
+
+  try {
+    // First, check if we have cached markdown content
+    const bookmark = await db
+      .select({
+        markdownContent: bookmarks.markdownContent,
+        markdownFetchedAt: bookmarks.markdownFetchedAt,
+      })
+      .from(bookmarks)
+      .where(eq(bookmarks.id, bookmarkId))
+      .limit(1);
+
+    if (bookmark.length > 0 && bookmark[0].markdownContent) {
+      console.log('Returning cached markdown content');
+      return bookmark[0].markdownContent;
+    }
+
+    // If not cached, fetch from Cloudflare
+    console.log('Fetching markdown content from Cloudflare');
+    const markdownContent = await fetchMarkdownContent(url);
+    
+    if (markdownContent) {
+      // Save to database
+      await db
+        .update(bookmarks)
+        .set({
+          markdownContent,
+          markdownFetchedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(bookmarks.id, bookmarkId));
+      
+      console.log('Markdown content saved to database');
+    }
+
+    return markdownContent;
+  } catch (error) {
+    console.error('Error in getOrFetchMarkdownContent:', error);
+    return null;
+  }
+}

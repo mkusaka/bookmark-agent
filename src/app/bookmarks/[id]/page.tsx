@@ -28,7 +28,7 @@ export default async function BookmarkDetailPage({
           Markdown Content
         </h2>
         <Suspense fallback={<MarkdownSkeleton />}>
-          <BookmarkMarkdown url={bookmark.url} />
+          <BookmarkMarkdown bookmarkId={bookmark.id} url={bookmark.url} />
         </Suspense>
       </div>
     </div>
