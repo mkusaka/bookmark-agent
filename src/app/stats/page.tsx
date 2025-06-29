@@ -1,11 +1,12 @@
 import { Suspense } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OverviewTab } from '@/components/stats/overview-tab';
 import { TimelineTabWrapper } from '@/components/stats/timeline-tab-wrapper';
 import { DomainsTab } from '@/components/stats/domains-tab';
 import { TagsTab } from '@/components/stats/tags-tab';
 import { UsersTab } from '@/components/stats/users-tab';
+import { StatsTabs } from '@/components/stats/stats-tabs';
 
 function TabSkeleton() {
   return (
@@ -21,15 +22,7 @@ export default function StatsPage() {
     <div className="container mx-auto py-6 space-y-6">
       <h1 className="text-3xl font-bold">Bookmark Statistics</h1>
       
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="domains">Domains</TabsTrigger>
-          <TabsTrigger value="tags">Tags</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
-        </TabsList>
-        
+      <StatsTabs>
         <TabsContent value="overview">
           <Suspense fallback={<TabSkeleton />}>
             <OverviewTab />
@@ -59,7 +52,7 @@ export default function StatsPage() {
             <UsersTab />
           </Suspense>
         </TabsContent>
-      </Tabs>
+      </StatsTabs>
     </div>
   );
 }
