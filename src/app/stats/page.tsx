@@ -8,6 +8,9 @@ import { BookmarkTimelineChart } from '@/components/bookmark-timeline-chart';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function StatsPage() {
   // Fetch all data in parallel
   const [bookmarksData, domains, tags] = await Promise.all([
