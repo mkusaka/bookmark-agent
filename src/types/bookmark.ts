@@ -16,7 +16,7 @@ export interface Entry {
   rootUrl: string;
   summary: string | null;
   domain: string;
-  normalizedDomain: string | null;
+  normalizedDomain: string;
 }
 
 export interface Bookmark {

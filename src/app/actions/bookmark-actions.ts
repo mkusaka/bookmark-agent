@@ -219,10 +219,9 @@ export async function getDomains() {
       .selectDistinct({ normalizedDomain: entries.normalizedDomain })
       .from(entries)
       .innerJoin(bookmarks, eq(bookmarks.entryId, entries.id))
-      .where(sql`${entries.normalizedDomain} IS NOT NULL`)
       .orderBy(entries.normalizedDomain);
 
-    return normalizedDomains.map(r => r.normalizedDomain).filter(Boolean) as string[];
+    return normalizedDomains.map(r => r.normalizedDomain);
   } catch (error) {
     console.error('Error fetching domains:', error);
     throw new Error('Failed to fetch domains');

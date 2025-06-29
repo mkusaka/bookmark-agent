@@ -19,7 +19,7 @@ export const entries = pgTable('entries', {
   rootUrl: text('root_url').notNull(),
   summary: text('summary'),
   domain: text('domain').notNull(),
-  normalizedDomain: text('normalized_domain'),
+  normalizedDomain: text('normalized_domain').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => [
