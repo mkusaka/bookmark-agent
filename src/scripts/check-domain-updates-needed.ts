@@ -1,7 +1,6 @@
 import { db } from '@/db';
 import { entries } from '@/db/schema';
 import { normalizeDomain } from '@/lib/domain-normalizer';
-import { sql } from 'drizzle-orm';
 
 async function checkDomainUpdatesNeeded() {
   console.log('Checking which entries need domain normalization updates...');
@@ -11,7 +10,7 @@ async function checkDomainUpdatesNeeded() {
     let offset = 0;
     let totalNeedUpdate = 0;
     let totalUpToDate = 0;
-    const samplesToShow: any[] = [];
+    const samplesToShow: { current: string; expected: string; canonicalUrl: string }[] = [];
     
     while (true) {
       const batch = await db
@@ -21,6 +20,7 @@ async function checkDomainUpdatesNeeded() {
           normalizedDomain: entries.normalizedDomain 
         })
         .from(entries)
+        .orderBy(entries.id)
         .limit(batchSize)
         .offset(offset);
       

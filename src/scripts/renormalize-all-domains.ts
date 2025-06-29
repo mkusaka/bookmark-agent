@@ -44,6 +44,7 @@ async function renormalizeAllDomains() {
           normalizedDomain: entries.normalizedDomain 
         })
         .from(entries)
+        .orderBy(entries.id)
         .limit(batchSize)
         .offset(offset);
       

@@ -17,6 +17,7 @@ async function migrateNormalizedDomain() {
       const batch = await db
         .select({ id: entries.id, canonicalUrl: entries.canonicalUrl })
         .from(entries)
+        .orderBy(entries.id)
         .limit(batchSize)
         .offset(offset);
       

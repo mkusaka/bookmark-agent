@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import { entries } from '@/db/schema';
 import { normalizeDomain } from '@/lib/domain-normalizer';
-import { eq, isNull } from 'drizzle-orm';
+import { eq, isNull, asc } from 'drizzle-orm';
 
 async function migrateNormalizedDomain() {
   console.log('Starting normalized domain migration (simple version)...');
@@ -12,7 +12,8 @@ async function migrateNormalizedDomain() {
     const nullEntries = await db
       .select()
       .from(entries)
-      .where(isNull(entries.normalizedDomain));
+      .where(isNull(entries.normalizedDomain))
+      .orderBy(asc(entries.id));
     
     console.log(`Found ${nullEntries.length} entries to update`);
     
