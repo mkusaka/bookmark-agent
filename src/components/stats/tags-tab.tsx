@@ -24,7 +24,7 @@ export async function TagsTab() {
               <div className="flex items-center gap-4">
                 <span className="text-sm text-muted-foreground w-8">#{index + 1}</span>
                 <Link
-                  href={`/search?tags=${encodeURIComponent(tag.label)}`}
+                  href={`/search?tags=${encodeURIComponent(tag.id)}`}
                   className="font-medium hover:underline"
                 >
                   {tag.label}
