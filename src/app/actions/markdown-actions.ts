@@ -1,5 +1,9 @@
 'use server';
 
+import { db } from '@/db';
+import { bookmarks } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+
 interface CloudflareMarkdownResponse {
   result: string;
   success: boolean;
@@ -48,9 +52,6 @@ export async function fetchMarkdownContent(url: string): Promise<string | null> 
 }
 
 export async function getOrFetchMarkdownContent(bookmarkId: string, url: string): Promise<string | null> {
-  const { db } = await import('@/db');
-  const { bookmarks } = await import('@/db/schema');
-  const { eq } = await import('drizzle-orm');
 
   try {
     // First, check if we have cached markdown content
@@ -94,9 +95,6 @@ export async function getOrFetchMarkdownContent(bookmarkId: string, url: string)
 }
 
 export async function refreshMarkdownContent(bookmarkId: string, url: string): Promise<string | null> {
-  const { db } = await import('@/db');
-  const { bookmarks } = await import('@/db/schema');
-  const { eq } = await import('drizzle-orm');
 
   try {
     // Force fetch from Cloudflare
