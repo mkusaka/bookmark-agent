@@ -162,37 +162,62 @@ This application provides an MCP server that allows AI assistants like Claude De
 
 2. **Add the MCP server using Claude Code CLI**:
    ```bash
-   # Add MCP server configuration
-   claude-code mcp add bookmark-agent --url http://localhost:3000/api/mcp
+   # Add MCP server with SSE transport (recommended for HTTP endpoints)
+   claude mcp add --transport sse bookmark-agent http://localhost:3000/api/mcp
    
    # For production deployment
-   claude-code mcp add bookmark-agent --url https://your-app.vercel.app/api/mcp
+   claude mcp add --transport sse bookmark-agent https://your-app.vercel.app/api/mcp
+   
+   # Alternative: Add with project scope for team sharing
+   claude mcp add --transport sse bookmark-agent https://your-app.vercel.app/api/mcp -s project
    ```
 
 3. **Verify the configuration**:
    ```bash
-   claude-code mcp list
+   # List all configured MCP servers
+   claude mcp list
+   
+   # Get details of specific server
+   claude mcp get bookmark-agent
    ```
 
-4. **Test the connection**:
+4. **Check connection status**:
    ```bash
-   claude-code mcp test bookmark-agent
+   # In Claude Code, use the slash command:
+   /mcp
    ```
 
 #### Managing Claude Code MCP Configuration
 
 ```bash
 # List all configured MCP servers
-claude-code mcp list
+claude mcp list
+
+# Get server details
+claude mcp get bookmark-agent
 
 # Remove an MCP server
-claude-code mcp remove bookmark-agent
+claude mcp remove bookmark-agent
 
-# Update an existing MCP server URL
-claude-code mcp update bookmark-agent --url https://new-url.vercel.app/api/mcp
+# Import servers from Claude Desktop
+claude mcp import-desktop
 
-# Get help for MCP commands
-claude-code mcp --help
+# Debug MCP issues
+claude --mcp-debug
+
+# Reset project configuration choices
+claude mcp reset-project-choices
+```
+
+#### MCP Server Scopes
+
+- **`local`** (default): Personal use, project-specific
+- **`project`**: Shared with team via `.mcp.json` file (recommended for teams)
+- **`user`**: Available across all your projects
+
+```bash
+# Add with specific scope
+claude mcp add --transport sse bookmark-agent https://your-app.vercel.app/api/mcp -s project
 ```
 
 #### For Claude Desktop
