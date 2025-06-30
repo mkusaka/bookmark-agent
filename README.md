@@ -169,7 +169,7 @@ This application provides an MCP server that allows AI assistants like Claude De
    claude mcp add --transport sse bookmark-agent https://your-app.vercel.app/api/mcp
    
    # Alternative: Add with project scope for team sharing
-   claude mcp add --transport sse bookmark-agent https://your-app.vercel.app/api/mcp -s project
+   claude mcp add --transport sse --scope project bookmark-agent https://your-app.vercel.app/api/mcp
    ```
 
 3. **Verify the configuration**:
@@ -207,6 +207,12 @@ claude --mcp-debug
 
 # Reset project configuration choices
 claude mcp reset-project-choices
+
+# Add with custom headers (for API authentication)
+claude mcp add --transport sse --header "X-API-Key: your-api-key" bookmark-agent https://your-app.vercel.app/api/mcp
+
+# Add with environment variables
+claude mcp add --transport sse --env API_KEY=your-key bookmark-agent https://your-app.vercel.app/api/mcp
 ```
 
 #### MCP Server Scopes
@@ -217,7 +223,7 @@ claude mcp reset-project-choices
 
 ```bash
 # Add with specific scope
-claude mcp add --transport sse bookmark-agent https://your-app.vercel.app/api/mcp -s project
+claude mcp add --transport sse --scope project bookmark-agent https://your-app.vercel.app/api/mcp
 ```
 
 #### For Claude Desktop
