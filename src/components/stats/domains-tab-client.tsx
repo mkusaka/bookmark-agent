@@ -60,7 +60,7 @@ export function DomainsTabClient({ domainStats, totalDomains }: DomainsTabClient
                   <div className="flex items-center gap-4">
                     <span className="text-sm text-muted-foreground w-8">#{virtualItem.index + 1}</span>
                     <Link
-                      href={`/?domain=${encodeURIComponent(stat.domain)}`}
+                      href={`/search?domains=${encodeURIComponent(stat.domain)}`}
                       className="font-medium hover:underline"
                     >
                       {stat.domain}

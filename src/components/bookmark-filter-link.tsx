@@ -70,7 +70,7 @@ export function FilterLink({ type, value, label, isSelected, currentParams }: Fi
     : (isSelected ? "default" : "secondary");
     
   const className = type === 'domains'
-    ? "font-mono text-xs w-fit whitespace-nowrap shrink-0"
+    ? "font-mono text-xs max-w-[200px] break-all"
     : "text-xs w-fit whitespace-nowrap shrink-0";
   
   return (
