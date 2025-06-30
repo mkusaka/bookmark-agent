@@ -155,22 +155,44 @@ This application provides an MCP server that allows AI assistants like Claude De
 
 #### For Claude Code (CLI)
 
+> **Transport Compatibility Note**: Claude Code may not yet fully support the new Streamable HTTP transport. If you encounter HTTP 405 errors with SSE transport, use Option B with mcp-remote as a proxy.
+
 1. **Start the development server**:
    ```bash
    pnpm dev
    ```
 
 2. **Add the MCP server using Claude Code CLI**:
+   
+   **Option A: Direct Streamable HTTP (if supported by your Claude Code version)**:
    ```bash
-   # Add MCP server with SSE transport (recommended for HTTP endpoints)
-   claude mcp add --transport sse bookmark-agent http://localhost:3000/api/mcp
+   # Add MCP server with HTTP transport (default for @vercel/mcp-adapter)
+   claude mcp add --transport http bookmark-agent http://localhost:3000/api/mcp
    
    # For production deployment
-   claude mcp add --transport sse bookmark-agent https://your-app.vercel.app/api/mcp
+   claude mcp add --transport http bookmark-agent https://your-app.vercel.app/api/mcp
+   ```
+   
+   **Option B: Using mcp-remote proxy (recommended for compatibility)**:
+   ```bash
+   # Install mcp-remote globally first
+   npm install -g mcp-remote
+   
+   # Add MCP server via mcp-remote proxy (stdio transport)
+   claude mcp add bookmark-agent npx mcp-remote -y http://localhost:3000/api/mcp
+   
+   # For production deployment
+   claude mcp add bookmark-agent npx mcp-remote -y https://your-app.vercel.app/api/mcp
    
    # Alternative: Add with project scope for team sharing
-   claude mcp add --transport sse --scope project bookmark-agent https://your-app.vercel.app/api/mcp
+   claude mcp add --scope project bookmark-agent npx mcp-remote -y https://your-app.vercel.app/api/mcp
    ```
+
+   **Why use mcp-remote?**
+   - The @vercel/mcp-adapter uses Streamable HTTP transport by default (newer protocol)
+   - Claude Code may only support older SSE transport, which requires Redis configuration
+   - mcp-remote acts as a proxy to bridge the compatibility gap
+   - This approach works with all MCP clients regardless of their transport support
 
 3. **Verify the configuration**:
    ```bash
@@ -208,11 +230,11 @@ claude --mcp-debug
 # Reset project configuration choices
 claude mcp reset-project-choices
 
-# Add with custom headers (for API authentication)
-claude mcp add --transport sse --header "X-API-Key: your-api-key" bookmark-agent https://your-app.vercel.app/api/mcp
+# Add with custom headers (for HTTP transport)
+claude mcp add --transport http --header "X-API-Key: your-api-key" bookmark-agent https://your-app.vercel.app/api/mcp
 
-# Add with environment variables
-claude mcp add --transport sse --env API_KEY=your-key bookmark-agent https://your-app.vercel.app/api/mcp
+# Add with environment variables (for stdio transport via mcp-remote)
+claude mcp add --env API_KEY=your-key bookmark-agent npx mcp-remote -y https://your-app.vercel.app/api/mcp
 ```
 
 #### MCP Server Scopes
@@ -222,8 +244,8 @@ claude mcp add --transport sse --env API_KEY=your-key bookmark-agent https://you
 - **`user`**: Available across all your projects
 
 ```bash
-# Add with specific scope
-claude mcp add --transport sse --scope project bookmark-agent https://your-app.vercel.app/api/mcp
+# Add with specific scope (using mcp-remote for compatibility)
+claude mcp add --scope project bookmark-agent npx mcp-remote -y https://your-app.vercel.app/api/mcp
 ```
 
 #### For Claude Desktop
