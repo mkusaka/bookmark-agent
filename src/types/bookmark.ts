@@ -27,6 +27,8 @@ export interface Bookmark {
   domain: string;
   bookmarkedAt: Date;
   bookmarkUrl: string | null;
+  markdownContent: string | null;
+  markdownFetchedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   user: User;

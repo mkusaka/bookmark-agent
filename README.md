@@ -140,6 +140,186 @@ src/
 └── types/                # TypeScript types
 ```
 
+## MCP (Model Context Protocol) Integration
+
+This application provides an MCP server that allows AI assistants like Claude Desktop to search and filter your bookmarks directly.
+
+### MCP Server Features
+
+- **Advanced Search**: Search across titles, URLs, comments, descriptions, and markdown content
+- **Smart Filtering**: Filter by domains, tags, users, and date ranges
+- **Metadata Access**: Get available domains, tags, and users for informed filtering
+- **Rich Results**: Returns comprehensive bookmark information with context
+
+### Setting up MCP Access
+
+#### For Claude Code (CLI)
+
+1. **Start the development server**:
+   ```bash
+   pnpm dev
+   ```
+
+2. **Add the MCP server using Claude Code CLI**:
+   ```bash
+   # Add MCP server configuration
+   claude-code mcp add bookmark-agent --url http://localhost:3000/api/mcp
+   
+   # For production deployment
+   claude-code mcp add bookmark-agent --url https://your-app.vercel.app/api/mcp
+   ```
+
+3. **Verify the configuration**:
+   ```bash
+   claude-code mcp list
+   ```
+
+4. **Test the connection**:
+   ```bash
+   claude-code mcp test bookmark-agent
+   ```
+
+#### Managing Claude Code MCP Configuration
+
+```bash
+# List all configured MCP servers
+claude-code mcp list
+
+# Remove an MCP server
+claude-code mcp remove bookmark-agent
+
+# Update an existing MCP server URL
+claude-code mcp update bookmark-agent --url https://new-url.vercel.app/api/mcp
+
+# Get help for MCP commands
+claude-code mcp --help
+```
+
+#### For Claude Desktop
+
+1. **Start the development server**:
+   ```bash
+   pnpm dev
+   ```
+
+2. **Configure Claude Desktop**:
+   Edit your Claude Desktop configuration file:
+   
+   **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+3. **Add the MCP server configuration**:
+   ```json
+   {
+     "mcpServers": {
+       "bookmark-agent": {
+         "command": "npx",
+         "args": [
+           "mcp-remote",
+           "-y",
+           "http://localhost:3000/api/mcp"
+         ]
+       }
+     }
+   }
+   ```
+
+4. **Install mcp-remote** (if not already installed):
+   ```bash
+   npm install -g mcp-remote
+   ```
+
+5. **Restart Claude Desktop** to pick up the configuration changes.
+
+#### For Cursor
+
+1. **Configure Cursor**:
+   Edit the MCP configuration file at `~/.cursor/mcp.json`:
+   ```json
+   {
+     "bookmark-agent": {
+       "command": "npx",
+       "args": [
+         "mcp-remote",
+         "-y",
+         "http://localhost:3000/api/mcp"
+       ]
+     }
+   }
+   ```
+
+2. **Restart Cursor** to apply the changes.
+
+#### For Windsurf
+
+1. **Configure Windsurf**:
+   Edit the configuration file at `~/.codeium/windsurf/mcp_config.json`:
+   ```json
+   {
+     "bookmark-agent": {
+       "command": "npx",
+       "args": [
+         "mcp-remote",
+         "-y",
+         "http://localhost:3000/api/mcp"
+       ]
+     }
+   }
+   ```
+
+2. **Restart Windsurf** to apply the changes.
+
+### Available MCP Tools
+
+Once configured, you can use these tools in your AI assistant:
+
+1. **`search_bookmarks`**: Search bookmarks with advanced filtering
+   - Parameters: query, domains, tags, users, from, to, sortBy, order, limit
+   - Returns bookmark IDs for detailed lookup
+   - Example: "Find bookmarks about React from the last month"
+
+2. **`get_bookmark`**: Get detailed information about a specific bookmark
+   - Parameters: id (required), fetchMarkdown (optional)
+   - Includes full content, markdown if available/requested
+   - Example: "Get details for bookmark ID abc-123"
+
+3. **`get_domains`**: List all available domains for filtering
+   - Example: "What domains do I have bookmarks from?"
+
+4. **`get_tags`**: List all available tags for filtering
+   - Example: "Show me all my bookmark tags"
+
+5. **`get_users`**: List all available users for filtering
+   - Example: "What users have bookmarks in my collection?"
+
+### Example MCP Queries
+
+- "Search my bookmarks for TypeScript tutorials"
+- "Find bookmarks from github.com with the tag 'frontend'"
+- "Show me recent bookmarks from the last week"
+- "What domains do I bookmark most frequently?"
+- "Find bookmarks by user 'john-doe' about databases"
+- "Get full details for bookmark ID abc-123-def with markdown content"
+- "Show me the content of that first bookmark result"
+
+### Production Deployment
+
+For production use, replace `http://localhost:3000` with your deployed application URL:
+```json
+{
+  "mcpServers": {
+    "bookmark-agent": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "-y",
+        "https://your-app.vercel.app/api/mcp"
+      ]
+    }
+  }
+}
+```
+
 ## Technologies
 
 - Next.js 15 (App Router)
@@ -149,6 +329,7 @@ src/
 - shadcn/ui components
 - React Hook Form
 - Zod validation
+- **MCP (Model Context Protocol)** with @vercel/mcp-adapter
 
 ## Deployment
 

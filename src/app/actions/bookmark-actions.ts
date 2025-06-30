@@ -38,7 +38,7 @@ export async function getBookmarks(
       }
     }
 
-    // Search query - search in title, summary, comment, description, and url
+    // Search query - search in title, summary, comment, description, url, and markdownContent
     if (filters.searchQuery && filters.searchQuery.trim() !== '') {
       const searchPattern = `%${filters.searchQuery}%`;
       console.log('Applying search filter:', searchPattern);
@@ -49,7 +49,8 @@ export async function getBookmarks(
           ilike(entries.summary, searchPattern),
           ilike(bookmarks.comment, searchPattern),
           ilike(bookmarks.description, searchPattern),
-          ilike(bookmarks.url, searchPattern)
+          ilike(bookmarks.url, searchPattern),
+          ilike(bookmarks.markdownContent, searchPattern)
         )
       );
     }
