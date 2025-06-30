@@ -9,8 +9,13 @@ interface TimelineTabProps {
 }
 
 export function TimelineTab({ initialData }: TimelineTabProps) {
-  const [timeRange, setTimeRange] = useState<{ start?: Date; end?: Date }>({});
-  const [selectedPreset, setSelectedPreset] = useState<string>('all');
+  const [timeRange, setTimeRange] = useState<{ start?: Date; end?: Date }>(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setMonth(start.getMonth() - 6);
+    return { start, end };
+  });
+  const [selectedPreset, setSelectedPreset] = useState<string>('6m');
   
   const applyPresetFilter = (months: number | null) => {
     if (months === null) {
@@ -43,13 +48,6 @@ export function TimelineTab({ initialData }: TimelineTabProps) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 mb-4">
-        <Button
-          variant={selectedPreset === 'all' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => applyPresetFilter(null)}
-        >
-          全期間
-        </Button>
         <Button
           variant={selectedPreset === '6m' ? 'default' : 'outline'}
           size="sm"
@@ -84,6 +82,13 @@ export function TimelineTab({ initialData }: TimelineTabProps) {
           onClick={() => applyPresetFilter(48)}
         >
           48ヶ月
+        </Button>
+        <Button
+          variant={selectedPreset === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => applyPresetFilter(null)}
+        >
+          全期間
         </Button>
       </div>
       
