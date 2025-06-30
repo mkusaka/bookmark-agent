@@ -155,24 +155,6 @@ export function BookmarkDetail({ bookmark }: BookmarkDetailProps) {
         </div>
       )}
 
-      {/* External Links */}
-      <div>
-        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
-          External Links
-        </h2>
-        <div className="space-y-2">
-          <a
-            href={bookmark.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-          >
-            <ExternalLink className="w-4 h-4" />
-            Original Article
-          </a>
-        </div>
-      </div>
-
       {/* Back to list */}
       <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
         <Link
