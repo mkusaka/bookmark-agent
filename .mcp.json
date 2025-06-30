@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "bookmark-agent": {
+      "type": "http",
+      "url": "https://bookmark-agent.vercel.app/api/mcp"
+    }
+  }
+}
