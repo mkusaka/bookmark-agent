@@ -1,8 +1,11 @@
+// This file shows what the schema will look like after migration
+// DO NOT USE THIS FILE YET - it's for reference only
+
 import { pgTable, text, timestamp, uuid, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { relations, sql } from 'drizzle-orm';
 
-// Users table
+// Users table (unchanged)
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: text('name').notNull(),
@@ -11,27 +14,10 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Entries table (bookmark targets)
-export const entries = pgTable('entries', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  title: text('title').notNull(),
-  canonicalUrl: text('canonical_url').notNull().unique(),
-  rootUrl: text('root_url').notNull(),
-  summary: text('summary'),
-  domain: text('domain').notNull(),
-  normalizedDomain: text('normalized_domain').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}, (table) => [
-  index('entries_domain_idx').on(table.domain),
-  index('entries_normalized_domain_idx').on(table.normalizedDomain),
-  index('entries_title_trgm_idx').using('gin', sql`${table.title} gin_trgm_ops`),
-  index('entries_summary_trgm_idx').using('gin', sql`${table.summary} gin_trgm_ops`),
-]);
-
-// Bookmarks table
+// Bookmarks table (with integrated entry data)
 export const bookmarks = pgTable('bookmarks', {
   id: uuid('id').defaultRandom().primaryKey(),
+  // Original bookmark fields
   comment: text('comment'),
   description: text('description'),
   url: text('url').notNull(),
@@ -43,27 +29,31 @@ export const bookmarks = pgTable('bookmarks', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   userId: uuid('user_id').notNull().references(() => users.id),
-  entryId: uuid('entry_id').notNull().references(() => entries.id),
-  // New fields from entries table (for migration)
-  title: text('title'),
-  canonicalUrl: text('canonical_url'),
-  rootUrl: text('root_url'),
+  
+  // New fields from entries table
+  title: text('title').notNull(),
+  canonicalUrl: text('canonical_url').notNull(),
+  rootUrl: text('root_url').notNull(),
   summary: text('summary'),
-  normalizedDomain: text('normalized_domain'),
+  normalizedDomain: text('normalized_domain').notNull(),
+  
+  // Note: entry_id will be removed after migration is complete
 }, (table) => [
+  // Original indexes
   index('bookmarks_user_idx').on(table.userId),
   index('bookmarks_domain_idx').on(table.domain),
   index('bookmarks_bookmarked_at_idx').on(table.bookmarkedAt),
   index('bookmarks_comment_trgm_idx').using('gin', sql`${table.comment} gin_trgm_ops`),
   index('bookmarks_description_trgm_idx').using('gin', sql`${table.description} gin_trgm_ops`),
   uniqueIndex('bookmarks_user_url_unique').on(table.userId, table.url),
-  // New indexes for migrated fields
+  
+  // New indexes from entries
   index('bookmarks_normalized_domain_idx').on(table.normalizedDomain),
   index('bookmarks_title_trgm_idx').using('gin', sql`${table.title} gin_trgm_ops`),
   index('bookmarks_summary_trgm_idx').using('gin', sql`${table.summary} gin_trgm_ops`),
 ]);
 
-// Tags table
+// Tags table (unchanged)
 export const tags = pgTable('tags', {
   id: uuid('id').defaultRandom().primaryKey(),
   label: text('label').notNull().unique(),
@@ -73,7 +63,7 @@ export const tags = pgTable('tags', {
   index('tags_label_idx').on(table.label),
 ]);
 
-// Bookmark-Tags join table
+// Bookmark-Tags join table (unchanged)
 export const bookmarkTags = pgTable('bookmark_tags', {
   id: uuid('id').defaultRandom().primaryKey(),
   bookmarkId: uuid('bookmark_id').notNull().references(() => bookmarks.id, { onDelete: 'cascade' }),
@@ -88,24 +78,16 @@ export const bookmarkTags = pgTable('bookmark_tags', {
   uniqueIndex('bookmark_tags_unique').on(table.bookmarkId, table.tagId),
 ]);
 
-// Relations
+// Relations (simplified - no more entry relation)
 export const usersRelations = relations(users, ({ many }) => ({
   bookmarks: many(bookmarks),
   bookmarkTags: many(bookmarkTags),
-}));
-
-export const entriesRelations = relations(entries, ({ many }) => ({
-  bookmarks: many(bookmarks),
 }));
 
 export const bookmarksRelations = relations(bookmarks, ({ one, many }) => ({
   user: one(users, {
     fields: [bookmarks.userId],
     references: [users.id],
-  }),
-  entry: one(entries, {
-    fields: [bookmarks.entryId],
-    references: [entries.id],
   }),
   bookmarkTags: many(bookmarkTags),
 }));
@@ -133,9 +115,6 @@ export const bookmarkTagsRelations = relations(bookmarkTags, ({ one }) => ({
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
 
-export const insertEntrySchema = createInsertSchema(entries);
-export const selectEntrySchema = createSelectSchema(entries);
-
 export const insertBookmarkSchema = createInsertSchema(bookmarks);
 export const selectBookmarkSchema = createSelectSchema(bookmarks);
 
@@ -148,9 +127,6 @@ export const selectBookmarkTagSchema = createSelectSchema(bookmarkTags);
 // Types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
-
-export type Entry = typeof entries.$inferSelect;
-export type NewEntry = typeof entries.$inferInsert;
 
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type NewBookmark = typeof bookmarks.$inferInsert;

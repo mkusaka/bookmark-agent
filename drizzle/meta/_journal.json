@@ -43,6 +43,13 @@
       "when": 1751218242786,
       "tag": "0005_square_junta",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1751395457945,
+      "tag": "0006_adorable_human_robot",
+      "breakpoints": true
     }
   ]
 }
