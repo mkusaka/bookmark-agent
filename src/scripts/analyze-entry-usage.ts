@@ -68,12 +68,13 @@ async function analyzeEntryUsage() {
   });
 
   // 4. Check for orphaned entries (entries with no bookmarks)
-  const [orphanedEntries] = await db.execute(sql`
+  const orphanedResult = await db.execute(sql`
     SELECT COUNT(*) as count
     FROM ${entries} e
     LEFT JOIN ${bookmarks} b ON e.id = b.entry_id
     WHERE b.id IS NULL
   `);
+  const orphanedEntries = orphanedResult.rows[0] as { count: number };
 
   console.log(`\nOrphaned entries (no bookmarks): ${orphanedEntries.count}`);
 

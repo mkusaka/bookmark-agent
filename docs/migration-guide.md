@@ -61,20 +61,35 @@ NODE_ENV=production pnpm db:migrate
 
 ### 5. データの移行
 
-マイグレーションでカラムが追加されたら、既存のデータを移行します：
+マイグレーションでカラムが追加されたら、既存のデータを移行します。
+
+#### 移行スクリプトの選択
+
+データ量に応じて適切なスクリプトを選択してください：
+
+1. **少量のデータ（〜1万件）**: `migrate-entry-data.ts`
+   - 1件ずつ丁寧に処理
+   - エラー時の詳細なログ
+
+2. **中量のデータ（〜10万件）**: `migrate-entry-data-fast.ts`
+   - バッチ処理で高速化
+   - CASE文を使った一括更新
+
+3. **大量のデータ（10万件〜）**: `migrate-entry-data-bulk.ts`
+   - 単一のUPDATE文で超高速処理
+   - JOINを使った一括更新
 
 ```bash
 # 開発環境（.envファイルを使用）
-pnpm tsx src/scripts/migrate-entry-data.ts
-
-# 開発環境（環境変数を直接指定）
-LOCAL_DATABASE_URL=postgresql://user:pass@localhost:5432/db pnpm tsx src/scripts/migrate-entry-data.ts
+pnpm tsx src/scripts/migrate-entry-data.ts        # 通常版
+pnpm tsx src/scripts/migrate-entry-data-fast.ts   # 高速版
+pnpm tsx src/scripts/migrate-entry-data-bulk.ts   # 超高速版
 
 # 本番環境（.envファイルを使用）
-NODE_ENV=production pnpm tsx src/scripts/migrate-entry-data.ts
+NODE_ENV=production pnpm tsx src/scripts/migrate-entry-data-bulk.ts
 
-# 本番環境（環境変数を直接指定）
-DATABASE_URL=postgresql://user:pass@host/db NODE_ENV=production pnpm tsx src/scripts/migrate-entry-data.ts
+# 環境変数を直接指定する場合
+DATABASE_URL=postgresql://user:pass@host/db NODE_ENV=production pnpm tsx src/scripts/migrate-entry-data-bulk.ts
 ```
 
 このスクリプトは以下を実行します：
