@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { getBookmarks } from '../bookmark-actions';
 import { db } from '@/db';
-import { users, entries, bookmarks, tags, bookmarkTags } from '@/db/schema';
+import { users, bookmarks, tags, bookmarkTags } from '@/db/schema';
 import type { BookmarkFilters, BookmarkSort } from '@/types/bookmark';
 import { eq } from 'drizzle-orm';
 import { normalizeDomain } from '@/lib/domain-normalizer';
@@ -27,25 +27,6 @@ skipInCI('bookmark-actions integration tests', () => {
     }).returning();
     testUserId = testUser.id;
 
-    // Create test entries
-    const [entry1] = await db.insert(entries).values({
-      title: 'Test Entry about React',
-      canonicalUrl: 'https://example.com/react',
-      rootUrl: 'https://example.com',
-      summary: 'A great article about React development',
-      domain: 'example.com',
-      normalizedDomain: normalizeDomain('https://example.com'),
-    }).returning();
-
-    const [entry2] = await db.insert(entries).values({
-      title: 'Another Test Entry',
-      canonicalUrl: 'https://test.com/article',
-      rootUrl: 'https://test.com',
-      summary: 'Another interesting article',
-      domain: 'test.com',
-      normalizedDomain: normalizeDomain('https://test.com'),
-    }).returning();
-
     // Create test tags
     const [tag1] = await db.insert(tags).values({
       label: 'React',
@@ -57,7 +38,7 @@ skipInCI('bookmark-actions integration tests', () => {
     }).returning();
     testTagId2 = tag2.id;
 
-    // Create test bookmarks
+    // Create test bookmarks with integrated entry data
     const [bookmark1] = await db.insert(bookmarks).values({
       comment: 'Great React article',
       description: 'This is a detailed comment about React',
@@ -65,7 +46,12 @@ skipInCI('bookmark-actions integration tests', () => {
       domain: 'example.com',
       bookmarkedAt: new Date('2024-01-01'),
       userId: testUserId,
-      entryId: entry1.id,
+      // Entry data now part of bookmark
+      title: 'Test Entry about React',
+      canonicalUrl: 'https://example.com/react',
+      rootUrl: 'https://example.com',
+      summary: 'A great article about React development',
+      normalizedDomain: normalizeDomain('https://example.com'),
     }).returning();
     testBookmarkId1 = bookmark1.id;
 
@@ -76,7 +62,12 @@ skipInCI('bookmark-actions integration tests', () => {
       domain: 'test.com',
       bookmarkedAt: new Date('2024-01-02'),
       userId: testUserId,
-      entryId: entry2.id,
+      // Entry data now part of bookmark
+      title: 'Another Test Entry',
+      canonicalUrl: 'https://test.com/article',
+      rootUrl: 'https://test.com',
+      summary: 'Another interesting article',
+      normalizedDomain: normalizeDomain('https://test.com'),
     }).returning();
     testBookmarkId2 = bookmark2.id;
 
@@ -113,8 +104,6 @@ skipInCI('bookmark-actions integration tests', () => {
       }
       await db.delete(tags).where(eq(tags.label, 'React'));
       await db.delete(tags).where(eq(tags.label, 'JavaScript'));
-      await db.delete(entries).where(eq(entries.domain, 'example.com'));
-      await db.delete(entries).where(eq(entries.domain, 'test.com'));
       await db.delete(users).where(eq(users.hatenaId, 'testuser'));
     } catch (error) {
       // Ignore errors during cleanup

@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { users, entries, bookmarks, tags, bookmarkTags } from '@/db/schema';
+import { users, bookmarks, tags, bookmarkTags } from '@/db/schema';
 import { HatenaBookmarkClient } from './client';
 import { HatenaBookmark } from './types';
 import { eq } from 'drizzle-orm';
@@ -175,23 +175,7 @@ export class HatenaBookmarkImporter {
   private async importSingleBookmark(hatenaBookmark: HatenaBookmark, userId: string): Promise<'imported' | 'skipped'> {
     // Extract domain from URL
     const domain = new URL(hatenaBookmark.url).hostname;
-
-    // Get or create entry
-    let entry = await db.query.entries.findFirst({
-      where: eq(entries.canonicalUrl, hatenaBookmark.entry.canonical_url),
-    });
-
-    if (!entry) {
-      const [newEntry] = await db.insert(entries).values({
-        title: hatenaBookmark.entry.title,
-        canonicalUrl: hatenaBookmark.entry.canonical_url,
-        rootUrl: hatenaBookmark.entry.root_url,
-        summary: hatenaBookmark.entry.summary || '',
-        domain: new URL(hatenaBookmark.entry.canonical_url).hostname,
-        normalizedDomain: normalizeDomain(hatenaBookmark.entry.canonical_url),
-      }).returning();
-      entry = newEntry;
-    }
+    const canonicalUrl = hatenaBookmark.entry.canonical_url;
 
     // Check if bookmark already exists
     const existingBookmark = await db.query.bookmarks.findFirst({
@@ -206,7 +190,7 @@ export class HatenaBookmarkImporter {
       return 'skipped';
     }
 
-    // Create bookmark
+    // Create bookmark with all entry data
     const [newBookmark] = await db.insert(bookmarks).values({
       comment: hatenaBookmark.comment || '',
       description: hatenaBookmark.comment_expanded || '',
@@ -215,7 +199,12 @@ export class HatenaBookmarkImporter {
       bookmarkedAt: new Date(hatenaBookmark.created),
       bookmarkUrl: `https://b.hatena.ne.jp/entry/${hatenaBookmark.location_id}`,
       userId,
-      entryId: entry.id,
+      // Entry data now part of bookmark
+      title: hatenaBookmark.entry.title,
+      canonicalUrl: canonicalUrl,
+      rootUrl: hatenaBookmark.entry.root_url,
+      summary: hatenaBookmark.entry.summary || '',
+      normalizedDomain: normalizeDomain(canonicalUrl),
     }).returning();
 
     // Process tags
@@ -258,24 +247,19 @@ export class HatenaBookmarkImporter {
       
       let imported = 0;
       let page = 0;
-      let hasMore = true;
-      let shouldContinue = true;
+      let foundExisting = false;
 
-      while (hasMore && shouldContinue) {
-        // Fetch bookmarks page by page
+      while (!foundExisting) {
         const response = await this.client.fetchUserBookmarks(hatenaId, page);
         
         if (response.item.bookmarks.length === 0) {
-          hasMore = false;
           break;
         }
 
         for (const hatenaBookmark of response.item.bookmarks) {
-          const bookmarkDate = new Date(hatenaBookmark.created);
-          
-          // Stop processing if we've reached bookmarks older than sinceDate
-          if (sinceDate && bookmarkDate <= sinceDate) {
-            shouldContinue = false;
+          // Check if we've reached bookmarks before sinceDate
+          if (sinceDate && new Date(hatenaBookmark.created) < sinceDate) {
+            foundExisting = true;
             break;
           }
 
@@ -288,35 +272,30 @@ export class HatenaBookmarkImporter {
           });
 
           if (existingBookmark) {
-            // If we found an existing bookmark, we can stop here
-            // as we've likely already imported all newer bookmarks
-            console.log(`Found existing bookmark, stopping: ${hatenaBookmark.url}`);
-            shouldContinue = false;
+            console.log(`Found existing bookmark, stopping import`);
+            foundExisting = true;
             break;
           }
 
-          try {
-            const result = await this.importSingleBookmark(hatenaBookmark, user.id);
-            if (result === 'imported') {
-              imported++;
-            }
-          } catch (error) {
-            console.error(`Error importing bookmark: ${hatenaBookmark.url}`, error);
+          const result = await this.importSingleBookmark(hatenaBookmark, user.id);
+          if (result === 'imported') {
+            imported++;
+            console.log(`Imported: ${hatenaBookmark.url}`);
           }
         }
 
         page++;
         
-        // Add a small delay to avoid rate limiting
-        if (hasMore && shouldContinue) {
+        // Add delay to avoid rate limiting
+        if (!foundExisting) {
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
 
-      console.log(`Latest import completed. Imported: ${imported}`);
-      return { imported };
+      console.log(`Import completed. Total new bookmarks imported: ${imported}`);
+      return imported;
     } catch (error) {
-      console.error('Latest import failed:', error);
+      console.error('Import failed:', error);
       throw error;
     }
   }

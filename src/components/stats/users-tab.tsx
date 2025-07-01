@@ -16,10 +16,10 @@ export async function UsersTab() {
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground w-8">#{index + 1}</span>
               <Link
-                href={`/?user=${encodeURIComponent(user.hatenaId)}`}
+                href={`/search?users=${encodeURIComponent(user.id)}`}
                 className="font-medium hover:underline"
               >
-                {user.hatenaId}
+                {user.name}
               </Link>
             </div>
             <span className="text-sm text-muted-foreground">

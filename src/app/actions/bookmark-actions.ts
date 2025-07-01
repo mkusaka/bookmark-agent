@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/db';
-import { bookmarks, users, entries, tags, bookmarkTags } from '@/db/schema';
+import { bookmarks, users, tags, bookmarkTags } from '@/db/schema';
 import { eq, and, or, ilike, desc, asc, gte, lte, sql, inArray } from 'drizzle-orm';
 import type { BookmarkFilters, BookmarkSort, Bookmark, PaginationInfo } from '@/types/bookmark';
 
@@ -42,11 +42,11 @@ export async function getBookmarks(
     if (filters.searchQuery && filters.searchQuery.trim() !== '') {
       const searchPattern = `%${filters.searchQuery}%`;
       console.log('Applying search filter:', searchPattern);
-      // First, let's use simple ILIKE search
+      // Use bookmarks table columns
       filterConditions.push(
         or(
-          ilike(entries.title, searchPattern),
-          ilike(entries.summary, searchPattern),
+          ilike(bookmarks.title, searchPattern),
+          ilike(bookmarks.summary, searchPattern),
           ilike(bookmarks.comment, searchPattern),
           ilike(bookmarks.description, searchPattern),
           ilike(bookmarks.url, searchPattern),
@@ -55,10 +55,10 @@ export async function getBookmarks(
       );
     }
 
-    // Domain filter (using entry.normalizedDomain)
+    // Domain filter (using bookmarks.normalizedDomain)
     if (filters.selectedDomains && filters.selectedDomains.length > 0) {
       console.log('Applying domain filter:', filters.selectedDomains);
-      filterConditions.push(inArray(entries.normalizedDomain, filters.selectedDomains));
+      filterConditions.push(inArray(bookmarks.normalizedDomain, filters.selectedDomains));
     }
 
     // User filter
@@ -111,27 +111,24 @@ export async function getBookmarks(
       allConditions.push(cursorCondition);
     }
 
-    // Build the query
+    // Build the query - no more join with entries
     const query = db
       .select({
         bookmark: bookmarks,
         user: users,
-        entry: entries,
       })
       .from(bookmarks)
       .leftJoin(users, eq(bookmarks.userId, users.id))
-      .leftJoin(entries, eq(bookmarks.entryId, entries.id))
       .where(allConditions.length > 0 ? and(...allConditions) : undefined)
-
       .orderBy(
         sort.order === 'desc' 
           ? desc(
-              sort.field === 'title' ? entries.title :
+              sort.field === 'title' ? bookmarks.title :
               sort.field === 'user' ? users.name :
               bookmarks.bookmarkedAt
             )
           : asc(
-              sort.field === 'title' ? entries.title :
+              sort.field === 'title' ? bookmarks.title :
               sort.field === 'user' ? users.name :
               bookmarks.bookmarkedAt
             )
@@ -163,13 +160,21 @@ export async function getBookmarks(
       return acc;
     }, {} as Record<string, typeof tags.$inferSelect[]>);
 
-    // Format the results - filter out bookmarks without entries
+    // Format the results
     const formattedBookmarks = actualResults
-      .filter((result) => result.entry !== null)
       .map((result) => ({
         ...result.bookmark,
         user: result.user!,
-        entry: result.entry!,
+        // entry data is now part of bookmark
+        entry: {
+          id: result.bookmark.id, // Use bookmark ID as a placeholder
+          title: result.bookmark.title,
+          canonicalUrl: result.bookmark.canonicalUrl,
+          rootUrl: result.bookmark.rootUrl,
+          summary: result.bookmark.summary,
+          domain: result.bookmark.domain,
+          normalizedDomain: result.bookmark.normalizedDomain,
+        },
         tags: tagsByBookmark[result.bookmark.id] || [],
       }));
 
@@ -192,7 +197,6 @@ export async function getBookmarks(
       .select({ count: sql<number>`count(*)` })
       .from(bookmarks)
       .leftJoin(users, eq(bookmarks.userId, users.id))
-      .leftJoin(entries, eq(bookmarks.entryId, entries.id))
       .where(filterConditions.length > 0 ? and(...filterConditions) : undefined);
 
     const [{ count }] = await countQuery;
@@ -213,81 +217,176 @@ export async function getBookmarks(
   }
 }
 
-export async function getDomains() {
+export async function getUniqueDomains(): Promise<string[]> {
   try {
-    // Get distinct normalized domains from entries
-    const normalizedDomains = await db
-      .selectDistinct({ normalizedDomain: entries.normalizedDomain })
-      .from(entries)
-      .innerJoin(bookmarks, eq(bookmarks.entryId, entries.id))
-      .orderBy(entries.normalizedDomain);
-
-    return normalizedDomains.map(r => r.normalizedDomain);
+    const result = await db
+      .selectDistinct({ domain: bookmarks.normalizedDomain })
+      .from(bookmarks)
+      .orderBy(bookmarks.normalizedDomain);
+    
+    return result.map(r => r.domain).filter(Boolean);
   } catch (error) {
     console.error('Error fetching domains:', error);
     throw new Error('Failed to fetch domains');
   }
 }
 
-export async function getTags() {
+export async function getUniqueTags(): Promise<Array<{ id: string; label: string }>> {
   try {
-    const allTags = await db.select().from(tags).orderBy(tags.label);
-    return allTags;
+    const result = await db
+      .select({ id: tags.id, label: tags.label })
+      .from(tags)
+      .orderBy(tags.label);
+    
+    return result;
   } catch (error) {
     console.error('Error fetching tags:', error);
     throw new Error('Failed to fetch tags');
   }
 }
 
-export async function getUsers() {
+export async function getUniqueUsers(): Promise<Array<{ id: string; name: string }>> {
   try {
-    const allUsers = await db.select().from(users).orderBy(users.name);
-    return allUsers;
+    const result = await db
+      .select({ id: users.id, name: users.name })
+      .from(users)
+      .orderBy(users.name);
+    
+    return result;
   } catch (error) {
     console.error('Error fetching users:', error);
     throw new Error('Failed to fetch users');
   }
 }
 
-export async function getBookmarkById(id: string): Promise<Bookmark | null> {
+export async function getBookmarkById(bookmarkId: string): Promise<Bookmark | null> {
   try {
     const result = await db
       .select({
         bookmark: bookmarks,
         user: users,
-        entry: entries,
       })
       .from(bookmarks)
       .leftJoin(users, eq(bookmarks.userId, users.id))
-      .leftJoin(entries, eq(bookmarks.entryId, entries.id))
-      .where(eq(bookmarks.id, id))
+      .where(eq(bookmarks.id, bookmarkId))
       .limit(1);
 
-    if (result.length === 0 || !result[0].entry) {
+    if (result.length === 0) {
       return null;
     }
 
-    // Get tags for this bookmark
-    const tagsResult = await db
+    // Get tags for the bookmark
+    const tagsData = await db
       .select({
         tag: tags,
       })
       .from(bookmarkTags)
       .leftJoin(tags, eq(bookmarkTags.tagId, tags.id))
-      .where(eq(bookmarkTags.bookmarkId, id));
+      .where(eq(bookmarkTags.bookmarkId, bookmarkId));
 
-    const bookmarkTagsList = tagsResult
+    const bookmarkTagList = tagsData
       .filter(({ tag }) => tag !== null)
       .map(({ tag }) => tag!);
 
+    // Format the result
+    const { bookmark, user } = result[0];
     return {
-      ...result[0].bookmark,
-      user: result[0].user!,
-      entry: result[0].entry!,
-      tags: bookmarkTagsList,
+      ...bookmark,
+      user: user!,
+      // entry data is now part of bookmark
+      entry: {
+        id: bookmark.id,
+        title: bookmark.title,
+        canonicalUrl: bookmark.canonicalUrl,
+        rootUrl: bookmark.rootUrl,
+        summary: bookmark.summary,
+        domain: bookmark.domain,
+        normalizedDomain: bookmark.normalizedDomain,
+      },
+      tags: bookmarkTagList,
     };
   } catch (error) {
     console.error('Error fetching bookmark by ID:', error);
     throw new Error('Failed to fetch bookmark');
   }
 }
+
+export async function getSimilarBookmarks(bookmarkId: string, limit: number = 10): Promise<Bookmark[]> {
+  try {
+    // Get the bookmark
+    const targetBookmark = await db.query.bookmarks.findFirst({
+      where: eq(bookmarks.id, bookmarkId),
+    });
+
+    if (!targetBookmark) {
+      return [];
+    }
+
+    // Get similar bookmarks based on domain and tags
+    const tagIds = await db
+      .select({ tagId: bookmarkTags.tagId })
+      .from(bookmarkTags)
+      .where(eq(bookmarkTags.bookmarkId, bookmarkId));
+
+    const similarByDomain = await db
+      .select({
+        bookmark: bookmarks,
+        user: users,
+      })
+      .from(bookmarks)
+      .leftJoin(users, eq(bookmarks.userId, users.id))
+      .where(
+        and(
+          eq(bookmarks.normalizedDomain, targetBookmark.normalizedDomain),
+          sql`${bookmarks.id} != ${bookmarkId}`
+        )
+      )
+      .limit(limit);
+
+    // Get tags for each bookmark
+    const bookmarkIds = similarByDomain.map((r) => r.bookmark.id);
+    const bookmarkTagsData = await db
+      .select({
+        bookmarkId: bookmarkTags.bookmarkId,
+        tag: tags,
+      })
+      .from(bookmarkTags)
+      .leftJoin(tags, eq(bookmarkTags.tagId, tags.id))
+      .where(inArray(bookmarkTags.bookmarkId, bookmarkIds));
+
+    // Group tags by bookmark
+    const tagsByBookmark = bookmarkTagsData.reduce((acc, { bookmarkId, tag }) => {
+      if (!acc[bookmarkId]) acc[bookmarkId] = [];
+      if (tag) acc[bookmarkId].push(tag);
+      return acc;
+    }, {} as Record<string, typeof tags.$inferSelect[]>);
+
+    // Format the results
+    const formattedBookmarks = similarByDomain
+      .map((result) => ({
+        ...result.bookmark,
+        user: result.user!,
+        // entry data is now part of bookmark
+        entry: {
+          id: result.bookmark.id,
+          title: result.bookmark.title,
+          canonicalUrl: result.bookmark.canonicalUrl,
+          rootUrl: result.bookmark.rootUrl,
+          summary: result.bookmark.summary,
+          domain: result.bookmark.domain,
+          normalizedDomain: result.bookmark.normalizedDomain,
+        },
+        tags: tagsByBookmark[result.bookmark.id] || [],
+      }));
+
+    return formattedBookmarks;
+  } catch (error) {
+    console.error('Error fetching similar bookmarks:', error);
+    throw new Error('Failed to fetch similar bookmarks');
+  }
+}
+
+// Alias functions for backwards compatibility
+export const getDomains = getUniqueDomains;
+export const getTags = getUniqueTags;
+export const getUsers = getUniqueUsers;

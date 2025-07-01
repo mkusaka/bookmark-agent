@@ -11,23 +11,6 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Entries table (bookmark targets)
-export const entries = pgTable('entries', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  title: text('title').notNull(),
-  canonicalUrl: text('canonical_url').notNull().unique(),
-  rootUrl: text('root_url').notNull(),
-  summary: text('summary'),
-  domain: text('domain').notNull(),
-  normalizedDomain: text('normalized_domain').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}, (table) => [
-  index('entries_domain_idx').on(table.domain),
-  index('entries_normalized_domain_idx').on(table.normalizedDomain),
-  index('entries_title_trgm_idx').using('gin', sql`${table.title} gin_trgm_ops`),
-  index('entries_summary_trgm_idx').using('gin', sql`${table.summary} gin_trgm_ops`),
-]);
 
 // Bookmarks table
 export const bookmarks = pgTable('bookmarks', {
@@ -43,13 +26,12 @@ export const bookmarks = pgTable('bookmarks', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   userId: uuid('user_id').notNull().references(() => users.id),
-  entryId: uuid('entry_id').notNull().references(() => entries.id),
-  // New fields from entries table (for migration)
-  title: text('title'),
-  canonicalUrl: text('canonical_url'),
-  rootUrl: text('root_url'),
+  // Fields migrated from entries table
+  title: text('title').notNull(),
+  canonicalUrl: text('canonical_url').notNull(),
+  rootUrl: text('root_url').notNull(),
   summary: text('summary'),
-  normalizedDomain: text('normalized_domain'),
+  normalizedDomain: text('normalized_domain').notNull(),
 }, (table) => [
   index('bookmarks_user_idx').on(table.userId),
   index('bookmarks_domain_idx').on(table.domain),
@@ -94,18 +76,11 @@ export const usersRelations = relations(users, ({ many }) => ({
   bookmarkTags: many(bookmarkTags),
 }));
 
-export const entriesRelations = relations(entries, ({ many }) => ({
-  bookmarks: many(bookmarks),
-}));
 
 export const bookmarksRelations = relations(bookmarks, ({ one, many }) => ({
   user: one(users, {
     fields: [bookmarks.userId],
     references: [users.id],
-  }),
-  entry: one(entries, {
-    fields: [bookmarks.entryId],
-    references: [entries.id],
   }),
   bookmarkTags: many(bookmarkTags),
 }));
@@ -133,8 +108,6 @@ export const bookmarkTagsRelations = relations(bookmarkTags, ({ one }) => ({
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
 
-export const insertEntrySchema = createInsertSchema(entries);
-export const selectEntrySchema = createSelectSchema(entries);
 
 export const insertBookmarkSchema = createInsertSchema(bookmarks);
 export const selectBookmarkSchema = createSelectSchema(bookmarks);
@@ -149,8 +122,6 @@ export const selectBookmarkTagSchema = createSelectSchema(bookmarkTags);
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
-export type Entry = typeof entries.$inferSelect;
-export type NewEntry = typeof entries.$inferInsert;
 
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type NewBookmark = typeof bookmarks.$inferInsert;

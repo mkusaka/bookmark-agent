@@ -224,7 +224,7 @@ ${description}`;
       async () => {
         try {
           const users = await getUsers();
-          const userText = users.map((user: User, index: number) => 
+          const userText = users.map((user, index) => 
             `${index + 1}. ${user.name}`
           ).join("\n");
 

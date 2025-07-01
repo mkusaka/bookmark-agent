@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
 
         results.push({
           hatenaId: user.hatenaId,
-          ...result,
+          imported: result,
           sinceDate: sinceDate?.toISOString(),
         });
 

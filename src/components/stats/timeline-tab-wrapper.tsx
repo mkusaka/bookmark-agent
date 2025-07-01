@@ -3,5 +3,10 @@ import { TimelineTab } from './timeline-tab';
 
 export async function TimelineTabWrapper() {
   const timelineData = await getTimelineStats();
-  return <TimelineTab initialData={timelineData} />;
+  // Transform data to match expected format
+  const transformedData = timelineData.map(item => ({
+    month: new Date(item.date),
+    count: item.count
+  }));
+  return <TimelineTab initialData={transformedData} />;
 }

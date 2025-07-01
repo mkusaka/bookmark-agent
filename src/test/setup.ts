@@ -8,7 +8,7 @@ config({ path: '.env.test' });
 
 // Now import db after environment is set up
 const { db } = await import('@/db');
-const { users, entries, bookmarks, tags, bookmarkTags } = await import('@/db/schema');
+const { users, bookmarks, tags, bookmarkTags } = await import('@/db/schema');
 
 // Setup and teardown for tests
 beforeAll(async () => {
@@ -21,6 +21,5 @@ afterAll(async () => {
   await db.delete(bookmarkTags);
   await db.delete(bookmarks);
   await db.delete(tags);
-  await db.delete(entries);
   await db.delete(users);
 });

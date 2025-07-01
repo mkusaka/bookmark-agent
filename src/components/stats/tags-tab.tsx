@@ -3,7 +3,8 @@ import { getTagStats } from '@/app/actions/stats-actions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export async function TagsTab() {
-  const { totalTags, tags } = await getTagStats();
+  const tags = await getTagStats();
+  const totalTags = tags.length;
 
   return (
     <div className="space-y-4">
