@@ -2,7 +2,7 @@ import { createMcpHandler } from "@vercel/mcp-adapter";
 import { z } from "zod";
 import { getBookmarks, getDomains, getTags, getUsers, getBookmarkById } from "@/app/actions/bookmark-actions";
 import { getOrFetchMarkdownContent } from "@/app/actions/markdown-actions";
-import type { Bookmark, BookmarkFilters, BookmarkSort, BookmarkTag, User } from "@/types/bookmark";
+import type { Bookmark, BookmarkFilters, BookmarkSort, BookmarkTag } from "@/types/bookmark";
 
 const handler = createMcpHandler(
   (server) => {

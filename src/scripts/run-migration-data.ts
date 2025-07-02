@@ -15,7 +15,7 @@ async function migrateEntriesData() {
       WHERE title IS NULL AND entry_id IS NOT NULL
     `);
     
-    const nullCount = parseInt(checkResult.rows[0].null_count);
+    const nullCount = parseInt(String(checkResult.rows[0].null_count));
     
     if (nullCount === 0) {
       console.log('✅ No data migration needed - all bookmarks already have titles');
@@ -47,7 +47,7 @@ async function migrateEntriesData() {
       WHERE title IS NULL AND entry_id IS NOT NULL
     `);
     
-    const remainingNulls = parseInt(verifyResult.rows[0].remaining_nulls);
+    const remainingNulls = parseInt(String(verifyResult.rows[0].remaining_nulls));
     
     if (remainingNulls > 0) {
       console.error(`⚠️  Warning: ${remainingNulls} bookmarks still have NULL titles`);

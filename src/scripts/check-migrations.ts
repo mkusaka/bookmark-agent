@@ -16,7 +16,7 @@ async function checkMigrations() {
     `);
 
     console.log('Applied migrations:');
-    migrations.rows.forEach((row: any) => {
+    migrations.rows.forEach((row) => {
       console.log(`- ID: ${row.id}, Hash: ${row.hash}, Applied: ${row.created_at}`);
     });
 
@@ -29,7 +29,7 @@ async function checkMigrations() {
       ORDER BY ordinal_position
     `);
 
-    columns.rows.forEach((col: any) => {
+    columns.rows.forEach((col) => {
       console.log(`  - ${col.column_name} (${col.data_type})`);
     });
 

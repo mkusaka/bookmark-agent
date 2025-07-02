@@ -12,7 +12,7 @@ async function check() {
   `);
 
   console.log('Sample bookmarks after migration:');
-  result.rows.forEach((row: any, i: number) => {
+  result.rows.forEach((row, i: number) => {
     console.log(`\n📌 Bookmark ${i + 1}:`);
     console.log(`  ID: ${row.id}`);
     console.log(`  URL: ${row.url}`);

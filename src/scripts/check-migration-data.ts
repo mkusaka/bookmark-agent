@@ -29,7 +29,7 @@ async function checkMigrationData() {
     `);
 
     console.log('Sample bookmark data with entry comparison:');
-    result.rows.forEach((row: any, index: number) => {
+    result.rows.forEach((row, index: number) => {
       console.log(`\n📌 Bookmark ${index + 1}:`);
       console.log(`  ID: ${row.id}`);
       console.log(`  URL: ${row.url}`);

@@ -65,7 +65,7 @@ async function verifyMigrationComplete() {
           WHERE title IS NULL 
           LIMIT 5
         `);
-        nullTitleBookmarks.rows.forEach((row: any) => {
+        nullTitleBookmarks.rows.forEach((row) => {
           console.log(`  - ID: ${row.id}, URL: ${row.url}, Entry ID: ${row.entry_id}`);
         });
       }

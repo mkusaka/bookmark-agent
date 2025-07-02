@@ -322,12 +322,7 @@ export async function getSimilarBookmarks(bookmarkId: string, limit: number = 10
       return [];
     }
 
-    // Get similar bookmarks based on domain and tags
-    const tagIds = await db
-      .select({ tagId: bookmarkTags.tagId })
-      .from(bookmarkTags)
-      .where(eq(bookmarkTags.bookmarkId, bookmarkId));
-
+    // Get similar bookmarks based on domain
     const similarByDomain = await db
       .select({
         bookmark: bookmarks,

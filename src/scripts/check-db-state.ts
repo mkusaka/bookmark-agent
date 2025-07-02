@@ -17,7 +17,7 @@ async function checkDatabaseState() {
     `);
 
     console.log('Existing tables:');
-    tables.rows.forEach((row: any) => {
+    tables.rows.forEach((row) => {
       console.log(`  - ${row.tablename}`);
     });
 
@@ -31,7 +31,7 @@ async function checkDatabaseState() {
     `);
 
     if (bookmarkColumns.rows.length > 0) {
-      bookmarkColumns.rows.forEach((col: any) => {
+      bookmarkColumns.rows.forEach((col) => {
         console.log(`  - ${col.column_name} (${col.data_type}) ${col.is_nullable === 'NO' ? 'NOT NULL' : ''}`);
       });
     } else {
@@ -48,7 +48,7 @@ async function checkDatabaseState() {
     `);
 
     if (entriesColumns.rows.length > 0) {
-      entriesColumns.rows.forEach((col: any) => {
+      entriesColumns.rows.forEach((col) => {
         console.log(`  - ${col.column_name} (${col.data_type}) ${col.is_nullable === 'NO' ? 'NOT NULL' : ''}`);
       });
     } else {
