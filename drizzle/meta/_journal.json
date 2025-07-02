@@ -57,6 +57,13 @@
       "when": 1751398710585,
       "tag": "0007_wonderful_raider",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1751467174343,
+      "tag": "0008_melted_blindfold",
+      "breakpoints": true
     }
   ]
 }

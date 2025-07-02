@@ -15,12 +15,12 @@ export const users = pgTable('users', {
 // Bookmarks table
 export const bookmarks = pgTable('bookmarks', {
   id: uuid('id').defaultRandom().primaryKey(),
-  comment: text('comment'),
-  description: text('description'),
+  comment: text('comment').notNull(),
+  description: text('description').notNull(),
   url: text('url').notNull(),
   domain: text('domain').notNull(),
   bookmarkedAt: timestamp('bookmarked_at').notNull(),
-  bookmarkUrl: text('bookmark_url'),
+  bookmarkUrl: text('bookmark_url').notNull(),
   markdownContent: text('markdown_content'),
   markdownFetchedAt: timestamp('markdown_fetched_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -30,7 +30,7 @@ export const bookmarks = pgTable('bookmarks', {
   title: text('title').notNull(),
   canonicalUrl: text('canonical_url').notNull(),
   rootUrl: text('root_url').notNull(),
-  summary: text('summary'),
+  summary: text('summary').notNull(),
   normalizedDomain: text('normalized_domain').notNull(),
 }, (table) => [
   index('bookmarks_user_idx').on(table.userId),
