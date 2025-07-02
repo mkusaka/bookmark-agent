@@ -34,7 +34,6 @@ export const bookmarks = pgTable('bookmarks', {
   normalizedDomain: text('normalized_domain').notNull(),
 }, (table) => [
   index('bookmarks_user_idx').on(table.userId),
-  index('bookmarks_domain_idx').on(table.domain),
   index('bookmarks_bookmarked_at_idx').on(table.bookmarkedAt),
   index('bookmarks_comment_trgm_idx').using('gin', sql`${table.comment} gin_trgm_ops`),
   index('bookmarks_description_trgm_idx').using('gin', sql`${table.description} gin_trgm_ops`),
@@ -43,6 +42,12 @@ export const bookmarks = pgTable('bookmarks', {
   index('bookmarks_normalized_domain_idx').on(table.normalizedDomain),
   index('bookmarks_title_trgm_idx').using('gin', sql`${table.title} gin_trgm_ops`),
   index('bookmarks_summary_trgm_idx').using('gin', sql`${table.summary} gin_trgm_ops`),
+  // Performance optimization indexes
+  index('bookmarks_url_trgm_idx').using('gin', sql`${table.url} gin_trgm_ops`),
+  index('bookmarks_markdown_content_trgm_idx').using('gin', sql`${table.markdownContent} gin_trgm_ops`),
+  index('bookmarks_title_idx').on(table.title),
+  index('bookmarks_user_bookmarked_at_idx').on(table.userId, table.bookmarkedAt.desc()),
+  index('bookmarks_bookmarked_at_brin_idx').using('brin', table.bookmarkedAt),
 ]);
 
 // Tags table
