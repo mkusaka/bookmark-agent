@@ -45,6 +45,7 @@ skipInCI('bookmark-actions integration tests', () => {
       url: 'https://example.com/react',
       domain: 'example.com',
       bookmarkedAt: new Date('2024-01-01'),
+      bookmarkUrl: 'https://b.hatena.ne.jp/entry/s/example.com/react',
       userId: testUserId,
       // Entry data now part of bookmark
       title: 'Test Entry about React',
@@ -61,6 +62,7 @@ skipInCI('bookmark-actions integration tests', () => {
       url: 'https://test.com/article',
       domain: 'test.com',
       bookmarkedAt: new Date('2024-01-02'),
+      bookmarkUrl: 'https://b.hatena.ne.jp/entry/s/test.com/article',
       userId: testUserId,
       // Entry data now part of bookmark
       title: 'Another Test Entry',
