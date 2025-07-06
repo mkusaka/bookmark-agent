@@ -1,86 +1,39 @@
-import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import Link from 'next/link';
-import { getBookmarkById } from '@/app/actions/bookmark-actions';
-import { BookmarkDetail } from '@/components/bookmark-detail';
-import { BookmarkMarkdown } from '@/components/bookmark-markdown';
-import { MarkdownSkeleton } from '@/components/markdown-skeleton';
-import { MarkdownRefreshButton } from '@/components/markdown-refresh-button';
-import { PageLayout } from '@/components/page-layout';
-import { Button } from '@/components/ui/button';
-import { Search, BarChart3 } from 'lucide-react';
+import { BookmarkDetailPageContent } from './bookmark-detail-page-content';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Disable static generation for dynamic routes
 export async function generateStaticParams() {
   return [];
 }
 
-async function BookmarkDetailContent({ id }: { id: string }) {
-  const bookmark = await getBookmarkById(id);
-
-  if (!bookmark) {
-    notFound();
-  }
-
-  return (
-    <>
-      <Suspense fallback={<div>Loading...</div>}>
-        <BookmarkDetail bookmark={bookmark} />
-      </Suspense>
-      
-      <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Markdown Content
-          </h2>
-          <MarkdownRefreshButton bookmarkId={bookmark.id} url={bookmark.url} />
-        </div>
-        <Suspense fallback={<MarkdownSkeleton />}>
-          <BookmarkMarkdown bookmarkId={bookmark.id} url={bookmark.url} />
-        </Suspense>
-      </div>
-    </>
-  );
-}
-
-export default async function BookmarkDetailPage({
+export default function BookmarkDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-
   return (
-    <PageLayout
-      title="Bookmark Details"
-      description="Viewing bookmark details"
-      actions={
-        <>
-          <Link href="/search">
-            <Button variant="outline" size="sm">
-              <Search className="h-4 w-4 mr-2" />
-              Search
-            </Button>
-          </Link>
-          <Link href="/stats">
-            <Button variant="outline" size="sm">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Stats
-            </Button>
-          </Link>
-        </>
-      }
-    >
-      <Suspense fallback={
+    <Suspense fallback={
+      <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 w-full">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-col gap-1">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-24" />
+          </div>
+        </div>
         <div className="space-y-4">
           <div className="animate-pulse">
             <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
             <div className="h-4 bg-gray-200 rounded w-1/2"></div>
           </div>
         </div>
-      }>
-        <BookmarkDetailContent id={id} />
-      </Suspense>
-    </PageLayout>
+      </div>
+    }>
+      <BookmarkDetailPageContent params={params} />
+    </Suspense>
   );
 }
