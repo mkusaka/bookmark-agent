@@ -75,6 +75,33 @@ export function BookmarkList({
     const queryString = params.toString();
     return queryString ? `?${queryString}` : '';
   };
+
+  // Helper to build URL with sort params while preserving other params
+  const buildSortUrl = (sortBy?: string, order?: string) => {
+    const params = new URLSearchParams();
+    
+    // Copy all existing params except sortBy and order
+    Object.entries(currentParams).forEach(([key, val]) => {
+      if (val && key !== 'sortBy' && key !== 'order' && key !== 'cursor') {
+        if (Array.isArray(val)) {
+          val.forEach(v => params.append(key, v));
+        } else {
+          params.set(key, val);
+        }
+      }
+    });
+    
+    // Add sort params if provided
+    if (sortBy) {
+      params.set('sortBy', sortBy);
+    }
+    if (order) {
+      params.set('order', order);
+    }
+    
+    const queryString = params.toString();
+    return queryString ? `?${queryString}` : '';
+  };
   const formatDate = (date: Date) => {
     const now = new Date();
     const diffInMs = now.getTime() - date.getTime();
@@ -117,9 +144,9 @@ export function BookmarkList({
                   href={
                     currentSort.field === 'title'
                       ? currentSort.order === 'asc'
-                        ? '?sortBy=title&order=desc'
-                        : '?'  // Reset to default (no sort)
-                      : '?sortBy=title&order=asc'
+                        ? buildSortUrl('title', 'desc')
+                        : buildSortUrl()  // Reset to default (no sort)
+                      : buildSortUrl('title', 'asc')
                   }
                   sortState={currentSort.field === 'title' ? currentSort.order as 'asc' | 'desc' : null}
                 >
@@ -131,9 +158,9 @@ export function BookmarkList({
                   href={
                     currentSort.field === 'bookmarkedAt'
                       ? currentSort.order === 'desc'
-                        ? '?sortBy=bookmarkedAt&order=asc'
-                        : '?'  // Reset to default (no sort)
-                      : '?sortBy=bookmarkedAt&order=desc'
+                        ? buildSortUrl('bookmarkedAt', 'asc')
+                        : buildSortUrl()  // Reset to default (no sort)
+                      : buildSortUrl('bookmarkedAt', 'desc')
                   }
                   sortState={currentSort.field === 'bookmarkedAt' ? currentSort.order as 'asc' | 'desc' : null}
                 >
