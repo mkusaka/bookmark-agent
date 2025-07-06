@@ -52,6 +52,19 @@ export function BookmarkList({
   currentFilters,
   currentParams,
 }: BookmarkListProps) {
+  // Check if any filters are active
+  const hasActiveFilters = 
+    (currentFilters.domains.length > 0) || 
+    (currentFilters.tags.length > 0) ||
+    currentParams.q ||
+    currentParams.selectedUsers ||
+    currentParams.dateRange;
+
+  // Format number with comma separators
+  const formatNumber = (num: number) => {
+    return num.toLocaleString();
+  };
+
   // Helper to build URL with current params
   const buildUrlWithParams = (cursor?: string) => {
     const params = new URLSearchParams();
@@ -70,6 +83,34 @@ export function BookmarkList({
     // Add cursor if provided
     if (cursor) {
       params.set('cursor', cursor);
+    }
+    
+    const queryString = params.toString();
+    return queryString ? `?${queryString}` : '';
+  };
+
+  // Helper to build URL with sort params while preserving other params
+  const buildSortUrl = (sortBy?: string, order?: string) => {
+    const params = new URLSearchParams();
+    
+    // Copy all existing params except sortBy and order (keep cursor)
+    Object.entries(currentParams).forEach(([key, val]) => {
+      if (val && key !== 'sortBy' && key !== 'order') {
+        if (Array.isArray(val)) {
+          val.forEach(v => params.append(key, v));
+        } else {
+          params.set(key, val);
+        }
+      }
+    });
+    
+    // Only add sort params if they're not default values
+    // Default is sortBy='bookmarkedAt' and order='desc'
+    if (sortBy && !(sortBy === 'bookmarkedAt' && order === 'desc')) {
+      params.set('sortBy', sortBy);
+      if (order) {
+        params.set('order', order);
+      }
     }
     
     const queryString = params.toString();
@@ -117,9 +158,9 @@ export function BookmarkList({
                   href={
                     currentSort.field === 'title'
                       ? currentSort.order === 'asc'
-                        ? '?sortBy=title&order=desc'
-                        : '?'  // Reset to default (no sort)
-                      : '?sortBy=title&order=asc'
+                        ? buildSortUrl('title', 'desc')
+                        : buildSortUrl()  // Reset to default (no sort)
+                      : buildSortUrl('title', 'asc')
                   }
                   sortState={currentSort.field === 'title' ? currentSort.order as 'asc' | 'desc' : null}
                 >
@@ -131,9 +172,9 @@ export function BookmarkList({
                   href={
                     currentSort.field === 'bookmarkedAt'
                       ? currentSort.order === 'desc'
-                        ? '?sortBy=bookmarkedAt&order=asc'
-                        : '?'  // Reset to default (no sort)
-                      : '?sortBy=bookmarkedAt&order=desc'
+                        ? buildSortUrl('bookmarkedAt', 'asc')
+                        : buildSortUrl()  // Reset to default (no sort)
+                      : buildSortUrl('bookmarkedAt', 'desc')
                   }
                   sortState={currentSort.field === 'bookmarkedAt' ? currentSort.order as 'asc' | 'desc' : null}
                 >
@@ -228,7 +269,8 @@ export function BookmarkList({
 
         <div className="flex items-center justify-between px-2 py-3">
           <div className="flex-1 text-sm text-muted-foreground">
-          Showing {bookmarks.length} of {total} bookmark(s)
+            <span className="font-medium">{formatNumber(total)}</span> bookmark{total !== 1 ? 's' : ''}
+            {hasActiveFilters && <span className="ml-1 text-xs">(filtered)</span>}
           </div>
           <div className="flex items-center gap-2">
             <Link href={hasPreviousPage ? buildUrlWithParams() : '#'}>

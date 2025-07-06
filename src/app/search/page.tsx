@@ -2,7 +2,7 @@ import { parseSearchParams, buildFiltersFromParams, buildSortFromParams } from '
 import { SearchFormWrapper } from '@/components/search-form-wrapper';
 import { BookmarkListWrapper } from '@/components/bookmark-list-wrapper';
 import { BookmarkBulkActionsWrapper } from '@/components/bookmark-bulk-actions-wrapper';
-import { ThemeToggle } from '@/components/theme-toggle';
+import { PageLayout } from '@/components/page-layout';
 import { SearchPageClient } from '@/components/search-page-client';
 import { Suspense } from 'react';
 import Link from 'next/link';
@@ -38,73 +38,64 @@ export default async function SearchPage({
 
   return (
     <SearchPageClient>
-      <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 w-full">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              <Link href="/search" className="hover:underline">
-                Bookmark Search
-              </Link>
-            </h2>
-            <p className="text-muted-foreground">
-              Search and manage bookmarks with advanced filtering
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link href="/stats">
-              <Button variant="outline" size="sm">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Stats
-              </Button>
-            </Link>
-            <ThemeToggle />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <Suspense fallback={
-              <div className="flex flex-1 items-center gap-2 flex-wrap">
-                <Skeleton className="h-8 w-[150px] lg:w-[250px]" />
-                <Skeleton className="h-8 w-[100px]" />
-                <Skeleton className="h-8 w-[100px]" />
-                <Skeleton className="h-8 w-[100px]" />
-              </div>
-            }>
-              <SearchFormWrapper
-                initialValues={formValues}
-              />
-            </Suspense>
-            
-            <Suspense fallback={null}>
-              <BookmarkBulkActionsWrapper
-                filters={filters}
-                sort={sort}
-                cursor={params.cursor}
-              />
-            </Suspense>
-          </div>
-
+      <PageLayout
+        title={
+          <Link href="/search" className="hover:underline">
+            Bookmark Search
+          </Link>
+        }
+        description="Search and manage bookmarks with advanced filtering"
+        actions={
+          <Link href="/stats">
+            <Button variant="outline" size="sm">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Stats
+            </Button>
+          </Link>
+        }
+      >
+        <div className="flex items-center justify-between gap-2 flex-wrap">
           <Suspense fallback={
-            <div className="rounded-md border">
-              <div className="flex items-center justify-center h-24">
-                <div className="text-sm text-muted-foreground">Loading bookmarks...</div>
-              </div>
+            <div className="flex flex-1 items-center gap-2 flex-wrap">
+              <Skeleton className="h-8 w-[150px] lg:w-[250px]" />
+              <Skeleton className="h-8 w-[100px]" />
+              <Skeleton className="h-8 w-[100px]" />
+              <Skeleton className="h-8 w-[100px]" />
             </div>
           }>
-            <BookmarkListWrapper
+            <SearchFormWrapper
+              initialValues={formValues}
+            />
+          </Suspense>
+          
+          <Suspense fallback={null}>
+            <BookmarkBulkActionsWrapper
               filters={filters}
               sort={sort}
               cursor={params.cursor}
-              currentFilters={{
-                domains: params.domains,
-                tags: params.tags,
-              }}
-              currentParams={rawParams}
             />
           </Suspense>
         </div>
-      </div>
+
+        <Suspense fallback={
+          <div className="rounded-md border">
+            <div className="flex items-center justify-center h-24">
+              <div className="text-sm text-muted-foreground">Loading bookmarks...</div>
+            </div>
+          </div>
+        }>
+          <BookmarkListWrapper
+            filters={filters}
+            sort={sort}
+            cursor={params.cursor}
+            currentFilters={{
+              domains: params.domains,
+              tags: params.tags,
+            }}
+            currentParams={rawParams}
+          />
+        </Suspense>
+      </PageLayout>
     </SearchPageClient>
   );
 }
