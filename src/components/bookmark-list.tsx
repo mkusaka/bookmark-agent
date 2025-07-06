@@ -52,6 +52,19 @@ export function BookmarkList({
   currentFilters,
   currentParams,
 }: BookmarkListProps) {
+  // Check if any filters are active
+  const hasActiveFilters = 
+    (currentFilters.domains.length > 0) || 
+    (currentFilters.tags.length > 0) ||
+    currentParams.q ||
+    currentParams.selectedUsers ||
+    currentParams.dateRange;
+
+  // Format number with comma separators
+  const formatNumber = (num: number) => {
+    return num.toLocaleString();
+  };
+
   // Helper to build URL with current params
   const buildUrlWithParams = (cursor?: string) => {
     const params = new URLSearchParams();
@@ -228,7 +241,8 @@ export function BookmarkList({
 
         <div className="flex items-center justify-between px-2 py-3">
           <div className="flex-1 text-sm text-muted-foreground">
-          Showing {bookmarks.length} of {total} bookmark(s)
+            <span className="font-medium">{formatNumber(total)}</span> bookmark{total !== 1 ? 's' : ''}
+            {hasActiveFilters && <span className="ml-1 text-xs">(filtered)</span>}
           </div>
           <div className="flex items-center gap-2">
             <Link href={hasPreviousPage ? buildUrlWithParams() : '#'}>
