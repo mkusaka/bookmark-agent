@@ -26,28 +26,22 @@ import { format } from 'date-fns';
 import { fuzzyMatch } from '@/lib/fuzzy-match';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useNavigationPending } from '@/contexts/navigation-context';
-import { BookmarkBulkActions } from './bookmark-bulk-actions';
-import { useSelection } from './search-page-client';
-import type { Bookmark } from '@/types/bookmark';
 
 interface SearchFormProps {
   domains: string[];
   tags: { id: string; label: string }[];
-  bookmarks: Bookmark[];
   initialValues: SearchFormValues;
 }
 
 export function SearchForm({
   domains,
   tags,
-  bookmarks,
   initialValues,
 }: SearchFormProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const { isPending: isNavigationPending, setIsPending } = useNavigationPending();
-  const { selectedBookmarks, clearSelection } = useSelection();
   
   useEffect(() => {
     setIsPending(isPending);
@@ -279,13 +273,6 @@ export function SearchForm({
         <RefreshCw className={`h-4 w-4 ${isPending || isNavigationPending ? 'animate-spin' : ''}`} />
         <span className="ml-2">Refresh</span>
       </Button>
-      
-      {/* Bulk Actions */}
-      <BookmarkBulkActions 
-        bookmarks={bookmarks} 
-        selectedBookmarks={selectedBookmarks}
-        onClearSelection={clearSelection}
-      />
     </div>
   );
 }

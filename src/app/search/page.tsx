@@ -1,13 +1,14 @@
-import { getBookmarks, getDomains, getTags } from '../actions/bookmark-actions';
 import { parseSearchParams, buildFiltersFromParams, buildSortFromParams } from '@/lib/search-params-schema';
-import { SearchForm } from '@/components/search-form';
-import { BookmarkList } from '@/components/bookmark-list';
+import { SearchFormWrapper } from '@/components/search-form-wrapper';
+import { BookmarkListWrapper } from '@/components/bookmark-list-wrapper';
+import { BookmarkBulkActionsWrapper } from '@/components/bookmark-bulk-actions-wrapper';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SearchPageClient } from '@/components/search-page-client';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { BarChart3 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default async function SearchPage({
   searchParams,
@@ -21,13 +22,6 @@ export default async function SearchPage({
   // Build filters and sort from parsed params
   const filters = buildFiltersFromParams(params);
   const sort = buildSortFromParams(params);
-  
-  // Fetch all data in parallel
-  const [bookmarksData, domains, tags] = await Promise.all([
-    getBookmarks(filters, sort, 25, params.cursor),
-    getDomains(),
-    getTags(),
-  ]);
   
   // Convert params to form values
   const formValues = {
@@ -68,28 +62,40 @@ export default async function SearchPage({
         </div>
 
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <SearchForm
-              domains={domains}
-              tags={tags}
-              initialValues={formValues}
-              bookmarks={bookmarksData.bookmarks}
-            />
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <Suspense fallback={
+              <div className="flex flex-1 items-center gap-2 flex-wrap">
+                <Skeleton className="h-8 w-[150px] lg:w-[250px]" />
+                <Skeleton className="h-8 w-[100px]" />
+                <Skeleton className="h-8 w-[100px]" />
+                <Skeleton className="h-8 w-[100px]" />
+              </div>
+            }>
+              <SearchFormWrapper
+                initialValues={formValues}
+              />
+            </Suspense>
+            
+            <Suspense fallback={null}>
+              <BookmarkBulkActionsWrapper
+                filters={filters}
+                sort={sort}
+                cursor={params.cursor}
+              />
+            </Suspense>
           </div>
 
           <Suspense fallback={
             <div className="rounded-md border">
               <div className="flex items-center justify-center h-24">
-                <div className="text-sm text-muted-foreground">Loading...</div>
+                <div className="text-sm text-muted-foreground">Loading bookmarks...</div>
               </div>
             </div>
           }>
-            <BookmarkList
-              bookmarks={bookmarksData.bookmarks}
-              total={bookmarksData.total}
-              hasNextPage={bookmarksData.pagination.hasNextPage}
-              hasPreviousPage={bookmarksData.pagination.hasPreviousPage}
-              currentSort={sort}
+            <BookmarkListWrapper
+              filters={filters}
+              sort={sort}
+              cursor={params.cursor}
               currentFilters={{
                 domains: params.domains,
                 tags: params.tags,
