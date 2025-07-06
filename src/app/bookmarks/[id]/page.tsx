@@ -15,6 +15,7 @@ export default async function BookmarkDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  'use cache';
   const { id } = await params;
   const bookmark = await getBookmarkById(id);
 
