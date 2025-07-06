@@ -8,7 +8,7 @@ interface StatsTabsProps {
   children: ReactNode;
 }
 
-const validTabs = ['overview', 'timeline', 'domains', 'tags', 'users'] as const;
+const validTabs = ['overview', 'timeline', 'domains', 'tags'] as const;
 type TabValue = typeof validTabs[number];
 
 export function StatsTabs({ children }: StatsTabsProps) {
@@ -31,12 +31,11 @@ export function StatsTabs({ children }: StatsTabsProps) {
   
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-5">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="timeline">Timeline</TabsTrigger>
         <TabsTrigger value="domains">Domains</TabsTrigger>
         <TabsTrigger value="tags">Tags</TabsTrigger>
-        <TabsTrigger value="users">Users</TabsTrigger>
       </TabsList>
       {children}
     </Tabs>

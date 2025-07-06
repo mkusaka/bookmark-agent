@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/db';
-import { bookmarks, tags, bookmarkTags, users } from '@/db/schema';
+import { bookmarks, tags, bookmarkTags } from '@/db/schema';
 import { sql, eq, desc } from 'drizzle-orm';
 
 export async function getBookmarkStats() {
@@ -9,15 +9,12 @@ export async function getBookmarkStats() {
     .select({
       totalBookmarks: sql<number>`count(distinct ${bookmarks.id})`,
       totalDomains: sql<number>`count(distinct ${bookmarks.normalizedDomain})`,
-      totalUsers: sql<number>`count(distinct ${users.id})`,
     })
-    .from(bookmarks)
-    .innerJoin(users, eq(bookmarks.userId, users.id));
+    .from(bookmarks);
 
   return {
     totalBookmarks: stats[0]?.totalBookmarks || 0,
     totalEntries: stats[0]?.totalDomains || 0, // Keep as totalEntries for backward compatibility
-    totalUsers: stats[0]?.totalUsers || 0,
   };
 }
 
@@ -58,24 +55,6 @@ export async function getTagStats() {
   }));
 }
 
-export async function getUserStats() {
-  const userStats = await db
-    .select({
-      id: users.id,
-      name: users.name,
-      count: sql<number>`count(${bookmarks.id})`,
-    })
-    .from(users)
-    .leftJoin(bookmarks, eq(users.id, bookmarks.userId))
-    .groupBy(users.id, users.name)
-    .orderBy(desc(sql`count(${bookmarks.id})`));
-
-  return userStats.map(stat => ({
-    id: stat.id,
-    name: stat.name,
-    count: stat.count,
-  }));
-}
 
 export async function getTimelineStats() {
   const timelineStats = await db
