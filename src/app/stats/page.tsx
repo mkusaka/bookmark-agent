@@ -10,7 +10,7 @@ import { DomainsTab } from '@/components/stats/domains-tab';
 import { TagsTab } from '@/components/stats/tags-tab';
 import { UsersTab } from '@/components/stats/users-tab';
 import { StatsTabsWrapper } from '@/components/stats/stats-tabs-wrapper';
-import { ThemeToggle } from '@/components/theme-toggle';
+import { PageLayout } from '@/components/page-layout';
 
 function TabSkeleton() {
   return (
@@ -23,20 +23,22 @@ function TabSkeleton() {
 
 export default function StatsPage() {
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="text-3xl font-bold">Bookmark Statistics</h1>
-        <div className="flex items-center gap-2">
-          <Link href="/search">
-            <Button variant="outline" size="sm">
-              <Search className="h-4 w-4 mr-2" />
-              Search
-            </Button>
-          </Link>
-          <ThemeToggle />
-        </div>
-      </div>
-      
+    <PageLayout
+      title={
+        <Link href="/stats" className="hover:underline">
+          Bookmark Statistics
+        </Link>
+      }
+      description="Analyze your bookmarking patterns and trends"
+      actions={
+        <Link href="/search">
+          <Button variant="outline" size="sm">
+            <Search className="h-4 w-4 mr-2" />
+            Search
+          </Button>
+        </Link>
+      }
+    >
       <StatsTabsWrapper>
         <TabsContent value="overview">
           <Suspense fallback={<TabSkeleton />}>
@@ -68,6 +70,6 @@ export default function StatsPage() {
           </Suspense>
         </TabsContent>
       </StatsTabsWrapper>
-    </div>
+    </PageLayout>
   );
 }
