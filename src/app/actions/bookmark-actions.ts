@@ -3,6 +3,7 @@
 import { db } from '@/db';
 import { bookmarks, users, tags, bookmarkTags } from '@/db/schema';
 import { eq, and, or, ilike, desc, asc, gte, lte, sql, inArray } from 'drizzle-orm';
+import { unstable_cacheTag as cacheTag } from 'next/cache';
 import type { BookmarkFilters, BookmarkSort, Bookmark, PaginationInfo } from '@/types/bookmark';
 
 export async function getBookmarks(
@@ -219,6 +220,8 @@ export async function getBookmarks(
 
 export async function getUniqueDomains(): Promise<string[]> {
   'use cache';
+  cacheTag('domains');
+  
   try {
     const result = await db
       .selectDistinct({ domain: bookmarks.normalizedDomain })
@@ -234,6 +237,8 @@ export async function getUniqueDomains(): Promise<string[]> {
 
 export async function getUniqueTags(): Promise<Array<{ id: string; label: string }>> {
   'use cache';
+  cacheTag('tags');
+  
   try {
     const result = await db
       .select({ id: tags.id, label: tags.label })

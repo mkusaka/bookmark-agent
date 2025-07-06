@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { bookmarks, users } from '@/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { HatenaBookmarkImporter } from '@/lib/hatena/importer';
+import { revalidateTag } from 'next/cache';
 import crypto from 'crypto';
 
 export async function GET(request: NextRequest) {
@@ -87,11 +88,20 @@ export async function GET(request: NextRequest) {
 
     console.log('Bookmark sync cron job completed');
 
+    // Revalidate cached domains and tags if any bookmarks were imported
+    const totalImported = results.reduce((sum, r) => sum + (r.imported || 0), 0);
+    if (totalImported > 0) {
+      console.log(`Revalidating cache tags after importing ${totalImported} bookmarks`);
+      revalidateTag('domains');
+      revalidateTag('tags');
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Bookmark sync completed',
       results,
       timestamp: new Date().toISOString(),
+      cacheRevalidated: totalImported > 0,
     });
 
   } catch (error) {
