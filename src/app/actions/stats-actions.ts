@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/db';
-import { bookmarks, tags, bookmarkTags, users } from '@/db/schema';
+import { bookmarks, tags, bookmarkTags } from '@/db/schema';
 import { sql, eq, desc } from 'drizzle-orm';
 
 export async function getBookmarkStats() {
@@ -9,15 +9,12 @@ export async function getBookmarkStats() {
     .select({
       totalBookmarks: sql<number>`count(distinct ${bookmarks.id})`,
       totalDomains: sql<number>`count(distinct ${bookmarks.normalizedDomain})`,
-      totalUsers: sql<number>`count(distinct ${users.id})`,
     })
-    .from(bookmarks)
-    .innerJoin(users, eq(bookmarks.userId, users.id));
+    .from(bookmarks);
 
   return {
-    totalBookmarks: stats[0]?.totalBookmarks || 0,
-    totalEntries: stats[0]?.totalDomains || 0, // Keep as totalEntries for backward compatibility
-    totalUsers: stats[0]?.totalUsers || 0,
+    totalBookmarks: Number(stats[0]?.totalBookmarks) || 0,
+    totalEntries: Number(stats[0]?.totalDomains) || 0, // Keep as totalEntries for backward compatibility
   };
 }
 
@@ -34,7 +31,7 @@ export async function getDomainStats() {
 
   return domainStats.map(stat => ({
     domain: stat.domain!,
-    count: stat.count,
+    count: Number(stat.count),
   }));
 }
 
@@ -54,28 +51,10 @@ export async function getTagStats() {
   return tagStats.map(stat => ({
     id: stat.id,
     label: stat.label,
-    count: stat.count,
+    count: Number(stat.count),
   }));
 }
 
-export async function getUserStats() {
-  const userStats = await db
-    .select({
-      id: users.id,
-      name: users.name,
-      count: sql<number>`count(${bookmarks.id})`,
-    })
-    .from(users)
-    .leftJoin(bookmarks, eq(users.id, bookmarks.userId))
-    .groupBy(users.id, users.name)
-    .orderBy(desc(sql`count(${bookmarks.id})`));
-
-  return userStats.map(stat => ({
-    id: stat.id,
-    name: stat.name,
-    count: stat.count,
-  }));
-}
 
 export async function getTimelineStats() {
   const timelineStats = await db
@@ -89,7 +68,7 @@ export async function getTimelineStats() {
 
   return timelineStats.map(stat => ({
     date: stat.date,
-    count: stat.count,
+    count: Number(stat.count),
   }));
 }
 
@@ -106,7 +85,7 @@ export async function getBookmarkGrowthStats() {
 
   return growthStats.map(stat => ({
     date: stat.date,
-    count: stat.count,
-    cumulative: stat.cumulative,
+    count: Number(stat.count),
+    cumulative: Number(stat.cumulative),
   }));
 }

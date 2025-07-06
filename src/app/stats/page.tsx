@@ -8,7 +8,6 @@ import { OverviewTab } from '@/components/stats/overview-tab';
 import { TimelineTabWrapper } from '@/components/stats/timeline-tab-wrapper';
 import { DomainsTab } from '@/components/stats/domains-tab';
 import { TagsTab } from '@/components/stats/tags-tab';
-import { UsersTab } from '@/components/stats/users-tab';
 import { StatsTabsWrapper } from '@/components/stats/stats-tabs-wrapper';
 import { PageLayout } from '@/components/page-layout';
 
@@ -64,11 +63,6 @@ export default function StatsPage() {
           </Suspense>
         </TabsContent>
         
-        <TabsContent value="users">
-          <Suspense fallback={<TabSkeleton />}>
-            <UsersTab />
-          </Suspense>
-        </TabsContent>
       </StatsTabsWrapper>
     </PageLayout>
   );

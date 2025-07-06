@@ -66,6 +66,7 @@ export function BookmarkTimelineChart({ data }: BookmarkTimelineChartProps) {
           stroke={axisColor}
           fontSize={isMobile ? 10 : 12}
           width={isMobile ? 35 : undefined}
+          tickFormatter={(value: number) => value.toLocaleString()}
         />
         <Tooltip 
           contentStyle={{
@@ -76,7 +77,7 @@ export function BookmarkTimelineChart({ data }: BookmarkTimelineChartProps) {
           labelStyle={{
             color: isDark ? '#e5e7eb' : '#111827',
           }}
-          formatter={(value: number) => [`${value} bookmarks`, 'Count']}
+          formatter={(value: number) => [`${value.toLocaleString()} bookmarks`, 'Count']}
           labelFormatter={(label: string) => {
             const [year, month] = label.split('-');
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
