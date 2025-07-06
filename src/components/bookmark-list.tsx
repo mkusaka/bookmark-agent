@@ -80,9 +80,9 @@ export function BookmarkList({
   const buildSortUrl = (sortBy?: string, order?: string) => {
     const params = new URLSearchParams();
     
-    // Copy all existing params except sortBy and order
+    // Copy all existing params except sortBy and order (keep cursor)
     Object.entries(currentParams).forEach(([key, val]) => {
-      if (val && key !== 'sortBy' && key !== 'order' && key !== 'cursor') {
+      if (val && key !== 'sortBy' && key !== 'order') {
         if (Array.isArray(val)) {
           val.forEach(v => params.append(key, v));
         } else {
@@ -91,12 +91,13 @@ export function BookmarkList({
       }
     });
     
-    // Add sort params if provided
-    if (sortBy) {
+    // Only add sort params if they're not default values
+    // Default is sortBy='bookmarkedAt' and order='desc'
+    if (sortBy && !(sortBy === 'bookmarkedAt' && order === 'desc')) {
       params.set('sortBy', sortBy);
-    }
-    if (order) {
-      params.set('order', order);
+      if (order) {
+        params.set('order', order);
+      }
     }
     
     const queryString = params.toString();
