@@ -10,6 +10,11 @@ import { PageLayout } from '@/components/page-layout';
 import { Button } from '@/components/ui/button';
 import { Search, BarChart3 } from 'lucide-react';
 
+// Disable static generation for dynamic routes
+export async function generateStaticParams() {
+  return [];
+}
+
 async function BookmarkDetailContent({ id }: { id: string }) {
   const bookmark = await getBookmarkById(id);
 
@@ -66,7 +71,14 @@ export default async function BookmarkDetailPage({
         </>
       }
     >
-      <Suspense fallback={<div>Loading bookmark...</div>}>
+      <Suspense fallback={
+        <div className="space-y-4">
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </div>
+      }>
         <BookmarkDetailContent id={id} />
       </Suspense>
     </PageLayout>
