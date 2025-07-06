@@ -273,7 +273,10 @@ export function BookmarkList({
             {hasActiveFilters && <span className="ml-1 text-xs">(filtered)</span>}
           </div>
           <div className="flex items-center gap-2">
-            <Link href={hasPreviousPage ? buildUrlWithParams() : '#'}>
+            <Link 
+              href={hasPreviousPage ? buildUrlWithParams() : '#'}
+              prefetch={hasPreviousPage}
+            >
               <Button
               variant="outline"
               size="sm"
@@ -283,7 +286,10 @@ export function BookmarkList({
               Previous
             </Button>
           </Link>
-          <Link href={hasNextPage ? buildUrlWithParams(`${bookmarks[bookmarks.length - 1]?.bookmarkedAt.toISOString()}_${bookmarks[bookmarks.length - 1]?.id}`) : '#'}>
+          <Link 
+            href={hasNextPage ? buildUrlWithParams(`${bookmarks[bookmarks.length - 1]?.bookmarkedAt.toISOString()}_${bookmarks[bookmarks.length - 1]?.id}`) : '#'}
+            prefetch={hasNextPage}
+          >
             <Button
               variant="outline"
               size="sm"
