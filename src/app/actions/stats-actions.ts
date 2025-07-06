@@ -13,8 +13,8 @@ export async function getBookmarkStats() {
     .from(bookmarks);
 
   return {
-    totalBookmarks: stats[0]?.totalBookmarks || 0,
-    totalEntries: stats[0]?.totalDomains || 0, // Keep as totalEntries for backward compatibility
+    totalBookmarks: Number(stats[0]?.totalBookmarks) || 0,
+    totalEntries: Number(stats[0]?.totalDomains) || 0, // Keep as totalEntries for backward compatibility
   };
 }
 
@@ -31,7 +31,7 @@ export async function getDomainStats() {
 
   return domainStats.map(stat => ({
     domain: stat.domain!,
-    count: stat.count,
+    count: Number(stat.count),
   }));
 }
 
@@ -51,7 +51,7 @@ export async function getTagStats() {
   return tagStats.map(stat => ({
     id: stat.id,
     label: stat.label,
-    count: stat.count,
+    count: Number(stat.count),
   }));
 }
 
@@ -68,7 +68,7 @@ export async function getTimelineStats() {
 
   return timelineStats.map(stat => ({
     date: stat.date,
-    count: stat.count,
+    count: Number(stat.count),
   }));
 }
 
@@ -85,7 +85,7 @@ export async function getBookmarkGrowthStats() {
 
   return growthStats.map(stat => ({
     date: stat.date,
-    count: stat.count,
-    cumulative: stat.cumulative,
+    count: Number(stat.count),
+    cumulative: Number(stat.cumulative),
   }));
 }
