@@ -1,5 +1,8 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/app/sw.ts"
+  ],
   "project": [
     "src/**/*.{js,jsx,ts,tsx}"
   ],
@@ -12,6 +15,15 @@
     "src/test/**",
     "src/__tests__/**"
   ],
+  "ignoreDependencies": [
+    "tailwindcss",
+    "eslint",
+    "eslint-config-next"
+  ],
+  "ignoreExportsUsedInFile": {
+    "type": true,
+    "interface": true
+  },
   "paths": {
     "@/*": ["./src/*"]
   }
