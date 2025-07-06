@@ -10,13 +10,7 @@ import { PageLayout } from '@/components/page-layout';
 import { Button } from '@/components/ui/button';
 import { Search, BarChart3 } from 'lucide-react';
 
-export default async function BookmarkDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  'use cache';
-  const { id } = await params;
+async function BookmarkDetailContent({ id }: { id: string }) {
   const bookmark = await getBookmarkById(id);
 
   if (!bookmark) {
@@ -24,9 +18,37 @@ export default async function BookmarkDetailPage({
   }
 
   return (
+    <>
+      <Suspense fallback={<div>Loading...</div>}>
+        <BookmarkDetail bookmark={bookmark} />
+      </Suspense>
+      
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Markdown Content
+          </h2>
+          <MarkdownRefreshButton bookmarkId={bookmark.id} url={bookmark.url} />
+        </div>
+        <Suspense fallback={<MarkdownSkeleton />}>
+          <BookmarkMarkdown bookmarkId={bookmark.id} url={bookmark.url} />
+        </Suspense>
+      </div>
+    </>
+  );
+}
+
+export default async function BookmarkDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  return (
     <PageLayout
       title="Bookmark Details"
-      description={`Viewing bookmark for ${bookmark.entry.title}`}
+      description="Viewing bookmark details"
       actions={
         <>
           <Link href="/search">
@@ -44,21 +66,9 @@ export default async function BookmarkDetailPage({
         </>
       }
     >
-      <Suspense fallback={<div>Loading...</div>}>
-        <BookmarkDetail bookmark={bookmark} />
+      <Suspense fallback={<div>Loading bookmark...</div>}>
+        <BookmarkDetailContent id={id} />
       </Suspense>
-      
-      <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Markdown Content
-          </h2>
-          <MarkdownRefreshButton bookmarkId={bookmark.id} url={bookmark.url} />
-        </div>
-        <Suspense fallback={<MarkdownSkeleton />}>
-          <BookmarkMarkdown bookmarkId={bookmark.id} url={bookmark.url} />
-        </Suspense>
-      </div>
     </PageLayout>
   );
 }
