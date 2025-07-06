@@ -58,7 +58,7 @@ export function DomainsTabClient({ domainStats, totalDomains }: DomainsTabClient
               >
                 <div className="flex items-center justify-between py-2 px-4 hover:bg-muted/50 rounded-lg h-full">
                   <div className="flex items-center gap-4">
-                    <span className="text-sm text-muted-foreground w-8">#{virtualItem.index + 1}</span>
+                    <span className="text-sm text-muted-foreground w-12">#{(virtualItem.index + 1).toLocaleString()}</span>
                     <Link
                       href={`/search?domains=${encodeURIComponent(stat.domain)}`}
                       className="font-medium hover:underline"

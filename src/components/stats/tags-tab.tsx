@@ -23,7 +23,7 @@ export async function TagsTab() {
           {tags.map((tag, index) => (
             <div key={tag.id} className="flex items-center justify-between py-2 px-4 hover:bg-muted/50 rounded-lg">
               <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground w-8">#{index + 1}</span>
+                <span className="text-sm text-muted-foreground w-12">#{(index + 1).toLocaleString()}</span>
                 <Link
                   href={`/search?tags=${encodeURIComponent(tag.id)}`}
                   className="font-medium hover:underline"
