@@ -218,6 +218,7 @@ export async function getBookmarks(
 }
 
 export async function getUniqueDomains(): Promise<string[]> {
+  'use cache';
   try {
     const result = await db
       .selectDistinct({ domain: bookmarks.normalizedDomain })
@@ -232,6 +233,7 @@ export async function getUniqueDomains(): Promise<string[]> {
 }
 
 export async function getUniqueTags(): Promise<Array<{ id: string; label: string }>> {
+  'use cache';
   try {
     const result = await db
       .select({ id: tags.id, label: tags.label })

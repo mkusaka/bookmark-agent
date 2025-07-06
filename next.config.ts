@@ -8,7 +8,9 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    dynamicIO: true, // Enable use cache directive and cacheTag/cacheLife APIs
+  },
 };
 
 export default withSerwist(nextConfig);
