@@ -93,6 +93,43 @@ self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
+  
+  // Handle cache refresh on network reconnection
+  if (event.data && event.data.type === "REFRESH_CACHES") {
+    event.waitUntil(
+      (async () => {
+        // Get all cache names
+        const cacheNames = await caches.keys();
+        
+        // Clear runtime caches (not precache)
+        const runtimeCaches = ["api-cache", "pages-cache", "static-assets"];
+        
+        await Promise.all(
+          runtimeCaches.map(async (cacheName) => {
+            if (cacheNames.includes(cacheName)) {
+              const cache = await caches.open(cacheName);
+              const requests = await cache.keys();
+              
+              // Delete all entries in the cache
+              await Promise.all(
+                requests.map((request) => cache.delete(request))
+              );
+            }
+          })
+        );
+        
+        // Optionally, prefetch critical routes after clearing cache
+        const criticalUrls = ["/search", "/"];
+        await Promise.all(
+          criticalUrls.map((url) => 
+            fetch(url).catch(() => {
+              // Ignore errors for prefetching
+            })
+          )
+        );
+      })()
+    );
+  }
 });
 
 serwist.addEventListeners();
