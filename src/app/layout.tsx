@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { OfflineIndicator } from "@/components/offline-indicator";
 import { ServiceWorkerManager } from "@/components/service-worker-manager";
+import { NetworkRefreshManager } from "@/components/network-refresh-manager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,6 +86,7 @@ export default function RootLayout({
           <Toaster />
           <OfflineIndicator />
           <ServiceWorkerManager />
+          <NetworkRefreshManager />
         </ThemeProvider>
       </body>
     </html>
