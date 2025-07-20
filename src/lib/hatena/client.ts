@@ -43,8 +43,8 @@ export class HatenaBookmarkClient {
 
         // Add a small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 1000));
-      } catch (error) {
-        console.error(`Error fetching page ${currentPage}:`, error);
+      } catch {
+        // Stop iteration on fetch error
         break;
       }
     }

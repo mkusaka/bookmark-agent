@@ -27,8 +27,8 @@ export function MarkdownSourceViewer({ content }: MarkdownSourceViewerProps) {
           },
         });
         setHtml(highlighted);
-      } catch (error) {
-        console.error('Failed to highlight markdown:', error);
+      } catch {
+        // Fallback to plain text if highlighting fails
         setHtml(`<pre><code>${escapeHtml(content)}</code></pre>`);
       } finally {
         setIsLoading(false);
@@ -43,8 +43,8 @@ export function MarkdownSourceViewer({ content }: MarkdownSourceViewerProps) {
       await navigator.clipboard.writeText(content);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
+    } catch {
+      // Copy failed, toast already shown
     }
   };
 

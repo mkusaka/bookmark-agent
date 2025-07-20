@@ -65,7 +65,7 @@ export function parseSearchParams(params: Record<string, string | string[] | und
   }
   
   // Return default values on parse error
-  console.warn('Invalid search params:', result.error);
+  // Invalid params are handled by returning defaults
   return {
     q: undefined,
     domains: [],

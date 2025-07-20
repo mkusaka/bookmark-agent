@@ -15,7 +15,6 @@ export async function fetchMarkdownContent(url: string): Promise<string | null> 
   const apiToken = process.env.CLOUDFLARE_API_TOKEN;
 
   if (!accountId || !apiToken) {
-    console.error('Cloudflare credentials not configured');
     return null;
   }
 
@@ -33,20 +32,17 @@ export async function fetchMarkdownContent(url: string): Promise<string | null> 
     );
 
     if (!response.ok) {
-      console.error('Cloudflare API error:', response.status, response.statusText);
       return null;
     }
 
     const data: CloudflareMarkdownResponse = await response.json();
 
     if (!data.success || !data.result) {
-      console.error('Cloudflare API returned error:', data.errors);
       return null;
     }
 
     return data.result;
   } catch (error) {
-    console.error('Error fetching markdown:', error);
     return null;
   }
 }
@@ -65,12 +61,10 @@ export async function getOrFetchMarkdownContent(bookmarkId: string, url: string)
       .limit(1);
 
     if (bookmark.length > 0 && bookmark[0].markdownContent) {
-      console.log('Returning cached markdown content');
       return bookmark[0].markdownContent;
     }
 
     // If not cached, fetch from Cloudflare
-    console.log('Fetching markdown content from Cloudflare');
     const markdownContent = await fetchMarkdownContent(url);
     
     if (markdownContent) {
@@ -84,12 +78,10 @@ export async function getOrFetchMarkdownContent(bookmarkId: string, url: string)
         })
         .where(eq(bookmarks.id, bookmarkId));
       
-      console.log('Markdown content saved to database');
     }
 
     return markdownContent;
   } catch (error) {
-    console.error('Error in getOrFetchMarkdownContent:', error);
     return null;
   }
 }
@@ -98,7 +90,6 @@ export async function refreshMarkdownContent(bookmarkId: string, url: string): P
 
   try {
     // Force fetch from Cloudflare
-    console.log('Force refreshing markdown content from Cloudflare');
     const markdownContent = await fetchMarkdownContent(url);
     
     if (markdownContent) {
@@ -112,12 +103,10 @@ export async function refreshMarkdownContent(bookmarkId: string, url: string): P
         })
         .where(eq(bookmarks.id, bookmarkId));
       
-      console.log('Markdown content refreshed and saved to database');
     }
 
     return markdownContent;
   } catch (error) {
-    console.error('Error in refreshMarkdownContent:', error);
     return null;
   }
 }
