@@ -18,7 +18,6 @@ export function FocusRefresher() {
         setIsPending(true);
         router.refresh();
         lastRefreshTime.current = now;
-        console.log('Page refreshed due to focus/visibility change');
         
         // Give some time for the refresh to complete
         setTimeout(() => {

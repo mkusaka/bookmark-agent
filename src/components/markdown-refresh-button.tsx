@@ -25,8 +25,7 @@ export function MarkdownRefreshButton({ bookmarkId, url }: MarkdownRefreshButton
       } else {
         toast.error('Failed to refresh markdown content');
       }
-    } catch (error) {
-      console.error('Error refreshing markdown:', error);
+    } catch {
       toast.error('Failed to refresh markdown content');
     } finally {
       setIsRefreshing(false);

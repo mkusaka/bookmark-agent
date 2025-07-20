@@ -42,7 +42,6 @@ export async function getBookmarks(
     // Search query - search in title, summary, comment, description, url, and markdownContent
     if (filters.searchQuery && filters.searchQuery.trim() !== '') {
       const { phrases, terms } = parseSearchQuery(filters.searchQuery);
-      console.log('Parsed search query:', { phrases, terms });
       
       const searchConditions = [];
       
@@ -84,13 +83,11 @@ export async function getBookmarks(
 
     // Domain filter (using bookmarks.normalizedDomain)
     if (filters.selectedDomains && filters.selectedDomains.length > 0) {
-      console.log('Applying domain filter:', filters.selectedDomains);
       filterConditions.push(inArray(bookmarks.normalizedDomain, filters.selectedDomains));
     }
 
     // User filter
     if (filters.selectedUsers && filters.selectedUsers.length > 0) {
-      console.log('Applying user filter:', filters.selectedUsers);
       filterConditions.push(inArray(bookmarks.userId, filters.selectedUsers));
     }
 
@@ -105,7 +102,6 @@ export async function getBookmarks(
     // Apply tag filter if needed - get bookmark IDs first
     let bookmarkIdsWithTags: string[] = [];
     if (filters.selectedTags && filters.selectedTags.length > 0) {
-      console.log('Applying tag filter:', filters.selectedTags);
       const tagResults = await db
         .select({ bookmarkId: bookmarkTags.bookmarkId })
         .from(bookmarkTags)
@@ -239,7 +235,6 @@ export async function getBookmarks(
       },
     };
   } catch (error) {
-    console.error('Error fetching bookmarks:', error);
     throw new Error('Failed to fetch bookmarks');
   }
 }
@@ -253,7 +248,6 @@ export async function getUniqueDomains(): Promise<string[]> {
     
     return result.map(r => r.domain).filter(Boolean);
   } catch (error) {
-    console.error('Error fetching domains:', error);
     throw new Error('Failed to fetch domains');
   }
 }
@@ -267,7 +261,6 @@ export async function getUniqueTags(): Promise<Array<{ id: string; label: string
     
     return result;
   } catch (error) {
-    console.error('Error fetching tags:', error);
     throw new Error('Failed to fetch tags');
   }
 }
@@ -281,7 +274,6 @@ export async function getUniqueUsers(): Promise<Array<{ id: string; name: string
     
     return result;
   } catch (error) {
-    console.error('Error fetching users:', error);
     throw new Error('Failed to fetch users');
   }
 }
@@ -333,7 +325,6 @@ export async function getBookmarkById(bookmarkId: string): Promise<Bookmark | nu
       tags: bookmarkTagList,
     };
   } catch (error) {
-    console.error('Error fetching bookmark by ID:', error);
     throw new Error('Failed to fetch bookmark');
   }
 }
@@ -403,7 +394,6 @@ export async function getSimilarBookmarks(bookmarkId: string, limit: number = 10
 
     return formattedBookmarks;
   } catch (error) {
-    console.error('Error fetching similar bookmarks:', error);
     throw new Error('Failed to fetch similar bookmarks');
   }
 }

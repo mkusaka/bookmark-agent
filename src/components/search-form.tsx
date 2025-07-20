@@ -305,6 +305,11 @@ function DomainSelector({
   const inputRef = useRef<HTMLInputElement>(null);
   const parentRef = useRef<HTMLDivElement>(null);
   
+  // Focus input when component mounts (popover opens)
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   const filteredDomains = searchQuery
     ? domains.filter(domain => fuzzyMatch(searchQuery, domain))
     : domains;
@@ -370,7 +375,6 @@ function DomainSelector({
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         onKeyDown={handleKeyDown}
-        autoFocus
       />
       {sortedDomains.length === 0 ? (
         <div className="text-sm text-muted-foreground text-center py-2">
@@ -411,7 +415,16 @@ function DomainSelector({
                       isFocused ? 'bg-accent' : 'hover:bg-accent'
                     }`}
                     onClick={() => onToggle(domain)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onToggle(domain);
+                      }
+                    }}
                     onMouseEnter={() => setFocusedIndex(virtualItem.index)}
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    tabIndex={isFocused ? 0 : -1}
                   >
                     <Checkbox
                       id={`domain-${virtualItem.index}`}
@@ -448,6 +461,11 @@ function TagSelector({
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Focus input when component mounts (popover opens)
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
   
   const filteredTags = searchQuery
     ? tags.filter(tag => fuzzyMatch(searchQuery, tag.label))
@@ -498,7 +516,6 @@ function TagSelector({
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         onKeyDown={handleKeyDown}
-        autoFocus
       />
       <div className="max-h-[200px] overflow-y-auto">
         {sortedTags.length === 0 ? (
@@ -513,7 +530,16 @@ function TagSelector({
                 index === focusedIndex ? 'bg-accent' : 'hover:bg-accent'
               }`}
               onClick={() => onToggle(tag.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onToggle(tag.id);
+                }
+              }}
               onMouseEnter={() => setFocusedIndex(index)}
+              role="checkbox"
+              aria-checked={selectedTags.includes(tag.id)}
+              tabIndex={index === focusedIndex ? 0 : -1}
             >
               <Checkbox
                 id={`tag-${tag.id}`}

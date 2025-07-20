@@ -19,9 +19,9 @@ export function normalizeDomain(url: string): string {
     }
     
     return normalized;
-  } catch (error) {
+  } catch {
     // If URL parsing fails, return the original string
-    console.error('Failed to normalize domain:', error);
+    // This is expected behavior for invalid URLs
     return url;
   }
 }
@@ -30,8 +30,8 @@ export function normalizeDomain(url: string): string {
 export function extractDomainName(url: string): string {
   try {
     return new URL(url).hostname;
-  } catch (error) {
-    console.error('Failed to extract domain:', error);
+  } catch {
+    // Return original URL if extraction fails
     return url;
   }
 }
