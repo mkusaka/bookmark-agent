@@ -4,46 +4,20 @@ import { neon } from '@neondatabase/serverless';
 import { Pool } from 'pg';
 import * as schema from './schema';
 
+type DbType = ReturnType<typeof drizzle<typeof schema>>;
+
 const isProduction = process.env.NODE_ENV === 'production';
-const isTest = process.env.NODE_ENV === 'test';
-const isBuild = process.env.NEXT_PHASE === 'phase-production-build';
 
 // Production: Neon serverless
-const getNeonDb = () => {
-  const connectionString = process.env.DATABASE_URL;
-  
-  // During build, we need a valid connection string format even if it's a placeholder
-  if (isBuild && (!connectionString || connectionString === 'postgresql://localhost/placeholder')) {
-    // Return a mock database object during build
-    return new Proxy({} as any, {
-      get: () => () => Promise.resolve([]),
-    });
-  }
-  
-  if (!connectionString) {
-    throw new Error('DATABASE_URL is not defined');
-  }
-  
+const getNeonDb = (): DbType => {
+  const connectionString = process.env.DATABASE_URL || 'postgresql://user:pass@host:5432/db';
   const sql = neon(connectionString);
   return drizzle(sql, { schema });
 };
 
 // Development/Test: Local PostgreSQL
-const getLocalDb = () => {
-  const connectionString = process.env.LOCAL_DATABASE_URL || process.env.DATABASE_URL;
-  
-  // During build, we need a valid connection string format even if it's a placeholder
-  if (isBuild && (!connectionString || connectionString === 'postgresql://localhost/placeholder')) {
-    // Return a mock database object during build
-    return new Proxy({} as any, {
-      get: () => () => Promise.resolve([]),
-    });
-  }
-  
-  if (!connectionString) {
-    throw new Error('Database connection string is not defined');
-  }
-  
+const getLocalDb = (): DbType => {
+  const connectionString = process.env.LOCAL_DATABASE_URL || process.env.DATABASE_URL || 'postgresql://user:pass@localhost:5432/db';
   const pool = new Pool({
     connectionString,
   });
