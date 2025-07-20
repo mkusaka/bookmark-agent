@@ -24,7 +24,7 @@ export function NetworkRefreshManager() {
     lastRefreshRef.current = now;
     
     // Show toast notification with spinning refresh icon
-    toast.custom((t) => (
+    toast.custom(() => (
       <div className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <RefreshCw className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
       </div>
