@@ -5,27 +5,24 @@ import { Pool } from 'pg';
 import * as schema from './schema';
 
 const isProduction = process.env.NODE_ENV === 'production';
-const isTest = process.env.NODE_ENV === 'test';
 
-// Production: Neon serverless
-const getNeonDb = () => {
-  const sql = neon(process.env.DATABASE_URL!);
-  return drizzle(sql, { schema });
-};
-
-// Development/Test: Local PostgreSQL
-const getLocalDb = () => {
-  const connectionString = isTest ? process.env.LOCAL_DATABASE_URL : process.env.LOCAL_DATABASE_URL;
-  if (!connectionString) {
-    throw new Error('Database connection string is not defined');
+// Create database instance based on environment
+const createDb = () => {
+  if (isProduction) {
+    // Production: Neon serverless
+    const connectionString = process.env.DATABASE_URL || 'postgresql://user:pass@host:5432/db';
+    const sql = neon(connectionString);
+    return drizzle(sql, { schema });
+  } else {
+    // Development/Test: Local PostgreSQL
+    const connectionString = process.env.LOCAL_DATABASE_URL || process.env.DATABASE_URL || 'postgresql://user:pass@localhost:5432/db';
+    const pool = new Pool({
+      connectionString,
+    });
+    return drizzlePg(pool, { schema });
   }
-  
-  const pool = new Pool({
-    connectionString,
-  });
-  return drizzlePg(pool, { schema });
 };
 
-export const db = isProduction ? getNeonDb() : getLocalDb();
+export const db = createDb();
 
 export * from './schema';

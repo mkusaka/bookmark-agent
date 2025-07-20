@@ -10,6 +10,9 @@ import { PageLayout } from '@/components/page-layout';
 import { Button } from '@/components/ui/button';
 import { Search, BarChart3 } from 'lucide-react';
 
+// This page uses server-side database queries, so it should not be statically generated
+export const dynamic = 'force-dynamic';
+
 export default async function BookmarkDetailPage({
   params,
 }: {

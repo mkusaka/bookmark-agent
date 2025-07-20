@@ -11,6 +11,9 @@ import { TagsTab } from '@/components/stats/tags-tab';
 import { StatsTabsWrapper } from '@/components/stats/stats-tabs-wrapper';
 import { PageLayout } from '@/components/page-layout';
 
+// This page uses server-side database queries, so it should not be statically generated
+export const dynamic = 'force-dynamic';
+
 function TabSkeleton() {
   return (
     <div className="space-y-4">
