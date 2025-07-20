@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { bookmarks, users, tags, bookmarkTags } from '@/db/schema';
 import { eq, and, or, ilike, desc, asc, gte, lte, sql, inArray } from 'drizzle-orm';
 import type { BookmarkFilters, BookmarkSort, Bookmark, PaginationInfo } from '@/types/bookmark';
+import { parseSearchQuery } from '@/lib/search-query-parser';
 
 export async function getBookmarks(
   filters: BookmarkFilters,
@@ -40,19 +41,45 @@ export async function getBookmarks(
 
     // Search query - search in title, summary, comment, description, url, and markdownContent
     if (filters.searchQuery && filters.searchQuery.trim() !== '') {
-      const searchPattern = `%${filters.searchQuery}%`;
-      console.log('Applying search filter:', searchPattern);
-      // Use bookmarks table columns
-      filterConditions.push(
-        or(
-          ilike(bookmarks.title, searchPattern),
-          ilike(bookmarks.summary, searchPattern),
-          ilike(bookmarks.comment, searchPattern),
-          ilike(bookmarks.description, searchPattern),
-          ilike(bookmarks.url, searchPattern),
-          ilike(bookmarks.markdownContent, searchPattern)
-        )
-      );
+      const { phrases, terms } = parseSearchQuery(filters.searchQuery);
+      console.log('Parsed search query:', { phrases, terms });
+      
+      const searchConditions = [];
+      
+      // Phrase search (double-quoted parts)
+      for (const phrase of phrases) {
+        const phrasePattern = `%${phrase}%`;
+        searchConditions.push(
+          or(
+            ilike(bookmarks.title, phrasePattern),
+            ilike(bookmarks.summary, phrasePattern),
+            ilike(bookmarks.comment, phrasePattern),
+            ilike(bookmarks.description, phrasePattern),
+            ilike(bookmarks.url, phrasePattern),
+            ilike(bookmarks.markdownContent, phrasePattern)
+          )
+        );
+      }
+      
+      // AND search for individual terms
+      for (const term of terms) {
+        const termPattern = `%${term}%`;
+        searchConditions.push(
+          or(
+            ilike(bookmarks.title, termPattern),
+            ilike(bookmarks.summary, termPattern),
+            ilike(bookmarks.comment, termPattern),
+            ilike(bookmarks.description, termPattern),
+            ilike(bookmarks.url, termPattern),
+            ilike(bookmarks.markdownContent, termPattern)
+          )
+        );
+      }
+      
+      // Combine all search conditions with AND
+      if (searchConditions.length > 0) {
+        filterConditions.push(and(...searchConditions));
+      }
     }
 
     // Domain filter (using bookmarks.normalizedDomain)
