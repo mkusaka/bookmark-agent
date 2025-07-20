@@ -98,7 +98,7 @@ jobs:
           echo "LOCAL_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bookmark_agent_test" >> $GITHUB_ENV
 
       - name: Push database schema
-        run: pnpm db:push
+        run: pnpm drizzle-kit push --force
 
       - name: Run tests
         run: pnpm test
@@ -132,7 +132,7 @@ jobs:
       - name: Build application
         run: pnpm build
         env:
-          DATABASE_URL: postgresql://localhost/placeholder
+          DATABASE_URL: postgresql://user:pass@host:5432/db
           HATENA_USER_ID: placeholder
           CRON_SECRET: placeholder
 
