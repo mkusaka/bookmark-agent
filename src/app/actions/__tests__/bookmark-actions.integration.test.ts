@@ -156,6 +156,64 @@ skipInCI('bookmark-actions integration tests', () => {
       expect(result.bookmarks).toHaveLength(0);
       expect(result.total).toBe(0);
     });
+
+    it('should support AND search with space-separated terms', async () => {
+      const filters: BookmarkFilters = {
+        searchQuery: 'React development',
+        selectedDomains: [],
+        selectedTags: [],
+        selectedUsers: [],
+      };
+
+      const result = await getBookmarks(filters);
+
+      expect(result.bookmarks).toHaveLength(1);
+      expect(result.bookmarks[0].entry?.title).toContain('React');
+      expect(result.bookmarks[0].entry?.summary).toContain('development');
+    });
+
+    it('should support phrase search with double quotes', async () => {
+      const filters: BookmarkFilters = {
+        searchQuery: '"React development"',
+        selectedDomains: [],
+        selectedTags: [],
+        selectedUsers: [],
+      };
+
+      const result = await getBookmarks(filters);
+
+      expect(result.bookmarks).toHaveLength(1);
+      expect(result.bookmarks[0].entry?.summary).toContain('React development');
+    });
+
+    it('should support mixed phrase and term search', async () => {
+      const filters: BookmarkFilters = {
+        searchQuery: '"Test Entry" interesting',
+        selectedDomains: [],
+        selectedTags: [],
+        selectedUsers: [],
+      };
+
+      const result = await getBookmarks(filters);
+
+      expect(result.bookmarks).toHaveLength(1);
+      expect(result.bookmarks[0].entry?.title).toBe('Another Test Entry');
+      expect(result.bookmarks[0].entry?.summary).toContain('interesting');
+    });
+
+    it('should require all terms in AND search', async () => {
+      const filters: BookmarkFilters = {
+        searchQuery: 'React JavaScript',
+        selectedDomains: [],
+        selectedTags: [],
+        selectedUsers: [],
+      };
+
+      const result = await getBookmarks(filters);
+
+      // Should not find any bookmarks because no single bookmark contains both "React" and "JavaScript" in text
+      expect(result.bookmarks).toHaveLength(0);
+    });
   });
 
   describe('domain filtering', () => {
