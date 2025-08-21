@@ -39,8 +39,10 @@ export function SyncNowButton() {
       disabled={pending}
       title="Sync bookmarks now"
     >
-      <RefreshCw className={`h-4 w-4 mr-2 ${pending ? 'animate-spin' : ''}`} />
-      {pending ? 'Syncing...' : 'Sync Now'}
+      <RefreshCw className={`h-4 w-4 ${pending ? 'animate-spin' : ''}`} />
+      <span className="ml-2 hidden sm:inline">
+        {pending ? 'Syncing...' : 'Sync Now'}
+      </span>
     </Button>
   );
 }

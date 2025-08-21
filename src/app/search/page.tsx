@@ -56,11 +56,11 @@ export default async function SearchPage({
         }
         description="Search and manage bookmarks with advanced filtering"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Link href="/stats">
-              <Button variant="outline" size="sm">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Stats
+              <Button variant="outline" size="sm" className="gap-2">
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Stats</span>
               </Button>
             </Link>
             <SyncNowButton />
