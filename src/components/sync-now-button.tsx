@@ -13,19 +13,26 @@ export function SyncNowButton() {
 
   const onClick = async () => {
     setPending(true);
+    const loadingId = toast.loading('Syncing bookmarks…');
     try {
       const res = await syncLatestBookmarks();
       if (res.success) {
         const totalImported = res.results
           .filter((r) => typeof r.imported === 'number')
           .reduce((sum, r) => sum + (r.imported as number), 0);
-        toast.success(`Sync completed: ${totalImported} new bookmarks imported`);
+
+        toast.success(`Sync completed: ${totalImported} new bookmarks imported`, { id: loadingId });
+
+        const refreshId = toast.loading('Refreshing results…');
         router.refresh();
+        setTimeout(() => {
+          toast.success('Refresh completed', { id: refreshId });
+        }, 600);
       } else {
-        toast.error('Sync failed');
+        toast.error('Sync failed', { id: loadingId });
       }
     } catch {
-      toast.error('Sync failed');
+      toast.error('Sync failed', { id: loadingId });
     } finally {
       setPending(false);
     }
@@ -41,7 +48,7 @@ export function SyncNowButton() {
     >
       <RefreshCw className={`h-4 w-4 ${pending ? 'animate-spin' : ''}`} />
       <span className="ml-2 hidden sm:inline">
-        {pending ? 'Syncing...' : 'Sync Now'}
+        {pending ? 'Syncing…' : 'Sync Now'}
       </span>
     </Button>
   );
