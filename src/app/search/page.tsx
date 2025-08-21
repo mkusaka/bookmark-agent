@@ -8,6 +8,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { BarChart3 } from 'lucide-react';
+import { SyncNowButton } from '@/components/sync-now-button';
 
 // This page uses server-side database queries, so it should not be statically generated
 export const dynamic = 'force-dynamic';
@@ -55,12 +56,15 @@ export default async function SearchPage({
         }
         description="Search and manage bookmarks with advanced filtering"
         actions={
-          <Link href="/stats">
-            <Button variant="outline" size="sm">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Stats
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/stats">
+              <Button variant="outline" size="sm">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Stats
+              </Button>
+            </Link>
+            <SyncNowButton />
+          </div>
         }
       >
         <div className="flex items-center justify-between">
