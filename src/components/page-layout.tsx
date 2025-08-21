@@ -18,7 +18,7 @@ export function PageLayout({
 }: PageLayoutProps) {
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col gap-3 sm:gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
           <h2 className="text-2xl font-semibold tracking-tight">
             {title}
@@ -29,7 +29,7 @@ export function PageLayout({
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-start sm:justify-end gap-2 flex-wrap">
           {actions}
           {!hideThemeToggle && <ThemeToggle />}
         </div>
