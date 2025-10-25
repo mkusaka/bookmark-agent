@@ -3,7 +3,7 @@
   "extends": [
     "config:best-practices",
     "group:definitelyTyped",
-    ":separateMultipleMajor"
+    ":separateMultipleMajorReleases"
   ],
   "packageRules": [
     {
