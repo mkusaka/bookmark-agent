@@ -57,7 +57,7 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "@serwist/next": "9.0.15",
+    "@serwist/next": "9.2.1",
     "@tailwindcss/postcss": "4.1.10",
     "@types/node": "20.19.23",
     "@types/pg": "8.15.4",
