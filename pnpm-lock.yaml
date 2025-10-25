@@ -97,16 +97,16 @@ importers:
         version: 3.25.67
     devDependencies:
       '@serwist/next':
-        specifier: ^9.0.15
+        specifier: 9.0.15
         version: 9.0.15(next@15.3.4(@babel/core@7.27.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(typescript@5.8.3)
       '@tailwindcss/postcss':
-        specifier: ^4
+        specifier: 4.1.10
         version: 4.1.10
       '@types/node':
-        specifier: ^20.19.1
+        specifier: 20.19.1
         version: 20.19.1
       '@types/pg':
-        specifier: ^8.15.4
+        specifier: 8.15.4
         version: 8.15.4
       '@types/react':
         specifier: 19.1.8
@@ -115,43 +115,43 @@ importers:
         specifier: 19.1.6
         version: 19.1.6(@types/react@19.1.8)
       '@vitejs/plugin-react':
-        specifier: ^4.5.2
+        specifier: 4.5.2
         version: 4.5.2(vite@6.3.5(@types/node@20.19.1)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3))
       '@vitest/ui':
-        specifier: ^3.2.4
+        specifier: 3.2.4
         version: 3.2.4(vitest@3.2.4)
       dotenv:
-        specifier: ^16.5.0
+        specifier: 16.5.0
         version: 16.5.0
       drizzle-kit:
-        specifier: ^0.31.1
+        specifier: 0.31.1
         version: 0.31.1
       knip:
-        specifier: ^5.61.3
+        specifier: 5.61.3
         version: 5.61.3(@types/node@20.19.1)(typescript@5.8.3)
       oxlint:
-        specifier: ^1.7.0
+        specifier: 1.7.0
         version: 1.7.0
       postcss:
-        specifier: ^8.5.6
+        specifier: 8.5.6
         version: 8.5.6
       postgres:
-        specifier: ^3.4.7
+        specifier: 3.4.7
         version: 3.4.7
       serwist:
-        specifier: ^9.0.15
+        specifier: 9.0.15
         version: 9.0.15(typescript@5.8.3)
       tailwindcss:
-        specifier: ^4
+        specifier: 4.1.10
         version: 4.1.10
       tsx:
-        specifier: ^4.20.3
+        specifier: 4.20.3
         version: 4.20.3
       typescript:
-        specifier: ^5
+        specifier: 5.8.3
         version: 5.8.3
       vitest:
-        specifier: ^3.2.4
+        specifier: 3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.1)(@vitest/ui@3.2.4)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)
 
 packages:
