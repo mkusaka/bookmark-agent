@@ -13,13 +13,16 @@ const handler = createMcpHandler(
       {
         query: z.string().optional().describe("Search query (searches in title, URL, comment, description, and markdown content)"),
         domains: z.array(z.string()).optional().describe("Filter by domains"),
-        tags: z.array(z.string()).optional().describe("Filter by tags"), 
+        tags: z.array(z.string()).optional().describe("Filter by tags"),
         users: z.array(z.string()).optional().describe("Filter by users"),
         from: z.string().optional().describe("Start date (YYYY-MM-DD format)"),
         to: z.string().optional().describe("End date (YYYY-MM-DD format)"),
         sortBy: z.enum(["bookmarkedAt", "title", "user"]).optional().describe("Sort field"),
         order: z.enum(["asc", "desc"]).optional().describe("Sort order"),
         limit: z.number().int().min(1).max(100).optional().describe("Number of results to return (max 100)")
+      },
+      {
+        readOnlyHint: true
       },
       async (params) => {
         try {
@@ -92,6 +95,10 @@ ${comment}
         id: z.string().describe("The bookmark ID"),
         fetchMarkdown: z.boolean().optional().describe("Whether to fetch/refresh markdown content (default: false)")
       },
+      {
+        readOnlyHint: true,
+        openWorldHint: true
+      },
       async (params) => {
         try {
           const bookmark = await getBookmarkById(params.id);
@@ -163,6 +170,9 @@ ${description}`;
       "get_domains",
       "Get list of available domains for filtering bookmarks",
       {},
+      {
+        readOnlyHint: true
+      },
       async () => {
         try {
           const domains = await getDomains();
@@ -192,6 +202,9 @@ ${description}`;
       "get_tags",
       "Get list of available tags for filtering bookmarks",
       {},
+      {
+        readOnlyHint: true
+      },
       async () => {
         try {
           const tags = await getTags();
@@ -221,6 +234,9 @@ ${description}`;
       "get_users",
       "Get list of available users for filtering bookmarks",
       {},
+      {
+        readOnlyHint: true
+      },
       async () => {
         try {
           const users = await getUsers();
