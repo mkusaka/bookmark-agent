@@ -59,7 +59,7 @@
   "devDependencies": {
     "@serwist/next": "9.0.15",
     "@tailwindcss/postcss": "4.1.10",
-    "@types/node": "20.19.23",
+    "@types/node": "22.18.12",
     "@types/pg": "8.15.4",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",
