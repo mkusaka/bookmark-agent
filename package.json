@@ -71,7 +71,7 @@
     "oxlint": "1.7.0",
     "postcss": "8.5.6",
     "postgres": "3.4.7",
-    "serwist": "9.0.15",
+    "serwist": "9.2.1",
     "tailwindcss": "4.1.10",
     "tsx": "4.20.3",
     "typescript": "5.8.3",
