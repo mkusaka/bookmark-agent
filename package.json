@@ -73,7 +73,7 @@
     "postgres": "3.4.7",
     "serwist": "9.2.3",
     "tailwindcss": "4.1.17",
-    "tsx": "4.20.6",
+    "tsx": "4.21.0",
     "typescript": "5.9.3",
     "vitest": "4.0.14"
   }
