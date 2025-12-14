@@ -91,8 +91,10 @@ Examples:
   const importer = new HatenaBookmarkImporter();
   
   try {
-    const totalImported = await importer.importUserBookmarks(hatenaUserId, limit, totalCount, skip);
-    console.log(`Successfully imported ${totalImported} bookmarks`);
+    const result = await importer.importUserBookmarks(hatenaUserId, limit, totalCount, skip);
+    console.log(
+      `Completed. imported=${result.imported}, updated=${result.updated}, skipped=${result.skipped}`
+    );
   } catch (error) {
     console.error('Import failed:', error);
     process.exit(1);

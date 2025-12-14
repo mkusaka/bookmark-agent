@@ -2,17 +2,24 @@ import { db } from '@/db';
 import { users, bookmarks, tags, bookmarkTags } from '@/db/schema';
 import { HatenaBookmarkClient } from './client';
 import { HatenaBookmark } from './types';
-import { eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { normalizeDomain } from '@/lib/domain-normalizer';
 
 export class HatenaBookmarkImporter {
   private client: HatenaBookmarkClient;
+  private tagIdCache: Map<string, string>;
 
   constructor() {
     this.client = new HatenaBookmarkClient();
+    this.tagIdCache = new Map();
   }
 
-  async importUserBookmarks(hatenaId: string, limit?: number, totalCount?: number, skip?: number) {
+  async importUserBookmarks(
+    hatenaId: string,
+    limit?: number,
+    totalCount?: number,
+    skip?: number
+  ): Promise<{ imported: number; updated: number; skipped: number }> {
     try {
       // Get or create user
       let user = await db.query.users.findFirst({
@@ -30,7 +37,9 @@ export class HatenaBookmarkImporter {
       console.log(`Fetching bookmarks for user: ${hatenaId}`);
       const itemsPerPage = 20; // Hatena API returns 20 items per page
       
-      let totalImported = 0;
+      let imported = 0;
+      let updated = 0;
+      let skippedCount = 0;
 
       // If both limit and totalCount are provided, fetch from the last page backwards
       if (limit && totalCount) {
@@ -68,18 +77,23 @@ export class HatenaBookmarkImporter {
         const bookmarkGenerator = fetchOldestBookmarks();
         
         for await (const hatenaBookmark of bookmarkGenerator) {
-          if (totalImported >= limit) {
+          if (imported + updated >= limit) {
             break;
           }
           
           try {
             const result = await this.importSingleBookmark(hatenaBookmark, user.id);
-            if (result !== 'skipped') {
-              totalImported++;
+            if (result === 'imported') {
+              imported++;
+            } else if (result === 'updated') {
+              updated++;
+            } else {
+              skippedCount++;
+            }
               
-              if (totalImported % 10 === 0) {
-                console.log(`Imported ${totalImported}/${limit} bookmarks...`);
-              }
+            const changed = imported + updated;
+            if (changed % 10 === 0) {
+              console.log(`Processed ${changed}/${limit} bookmarks (imported=${imported}, updated=${updated}, skipped=${skippedCount})...`);
             }
           } catch (error) {
             console.error(`Error importing bookmark: ${hatenaBookmark.url}`, error);
@@ -139,43 +153,64 @@ export class HatenaBookmarkImporter {
             continue;
           }
           
-          if (totalImported >= targetCount) {
+          if (imported + updated >= targetCount) {
             break;
           }
           
           try {
             const result = await this.importSingleBookmark(hatenaBookmark, user.id);
-            if (result !== 'skipped') {
-              totalImported++;
-              
-              if (totalImported % 10 === 0) {
-                const actualProgress = skipCount > 0 ? totalImported + skipCount : totalImported;
+            if (result === 'imported') {
+              imported++;
+            } else if (result === 'updated') {
+              updated++;
+            } else {
+              skippedCount++;
+            }
+
+            const changed = imported + updated;
+            if (changed % 10 === 0) {
+                const actualProgress = skipCount > 0 ? changed + skipCount : changed;
                 const actualTarget = skipCount > 0 && targetCount !== Number.MAX_SAFE_INTEGER 
                   ? targetCount + skipCount 
                   : targetCount === Number.MAX_SAFE_INTEGER 
                     ? 'all' 
                     : targetCount;
-                console.log(`Imported ${actualProgress}/${actualTarget} bookmarks (${totalImported} newly imported)...`);
+                console.log(`Processed ${actualProgress}/${actualTarget} bookmarks (imported=${imported}, updated=${updated}, skipped=${skippedCount})...`);
               }
-            }
           } catch (error) {
             console.error(`Error importing bookmark: ${hatenaBookmark.url}`, error);
           }
         }
       }
 
-      console.log(`Import completed. Total bookmarks imported: ${totalImported}`);
-      return totalImported;
+      console.log(`Import completed. imported=${imported}, updated=${updated}, skipped=${skippedCount}`);
+      return { imported, updated, skipped: skippedCount };
     } catch (error) {
       console.error('Import failed:', error);
       throw error;
     }
   }
 
-  private async importSingleBookmark(hatenaBookmark: HatenaBookmark, userId: string): Promise<'imported' | 'skipped'> {
+  private async importSingleBookmark(
+    hatenaBookmark: HatenaBookmark,
+    userId: string
+  ): Promise<'imported' | 'updated' | 'skipped'> {
     // Extract domain from URL
     const domain = new URL(hatenaBookmark.url).hostname;
     const canonicalUrl = hatenaBookmark.entry.canonical_url;
+    const desiredBookmark = {
+      comment: hatenaBookmark.comment || '',
+      description: hatenaBookmark.comment_expanded || '',
+      url: hatenaBookmark.url,
+      domain,
+      bookmarkedAt: new Date(hatenaBookmark.created),
+      bookmarkUrl: `https://b.hatena.ne.jp/entry/${hatenaBookmark.location_id}`,
+      title: hatenaBookmark.entry.title,
+      canonicalUrl,
+      rootUrl: hatenaBookmark.entry.root_url,
+      summary: hatenaBookmark.entry.summary || '',
+      normalizedDomain: normalizeDomain(canonicalUrl),
+    } as const;
 
     // Check if bookmark already exists
     const existingBookmark = await db.query.bookmarks.findFirst({
@@ -186,50 +221,135 @@ export class HatenaBookmarkImporter {
     });
 
     if (existingBookmark) {
-      console.log(`[${new Date().toISOString()}] Bookmark already exists: ${hatenaBookmark.url}`);
+      const needsUpdate =
+        existingBookmark.comment !== desiredBookmark.comment ||
+        existingBookmark.description !== desiredBookmark.description ||
+        existingBookmark.domain !== desiredBookmark.domain ||
+        existingBookmark.bookmarkedAt.getTime() !== desiredBookmark.bookmarkedAt.getTime() ||
+        existingBookmark.bookmarkUrl !== desiredBookmark.bookmarkUrl ||
+        existingBookmark.title !== desiredBookmark.title ||
+        existingBookmark.canonicalUrl !== desiredBookmark.canonicalUrl ||
+        existingBookmark.rootUrl !== desiredBookmark.rootUrl ||
+        existingBookmark.summary !== desiredBookmark.summary ||
+        existingBookmark.normalizedDomain !== desiredBookmark.normalizedDomain;
+
+      let updatedBookmark = false;
+      if (needsUpdate) {
+        await db
+          .update(bookmarks)
+          .set({
+            ...desiredBookmark,
+            updatedAt: new Date(),
+          })
+          .where(eq(bookmarks.id, existingBookmark.id));
+        updatedBookmark = true;
+      }
+
+      const tagsChanged = await this.syncBookmarkTags(
+        existingBookmark.id,
+        userId,
+        hatenaBookmark.tags
+      );
+
+      if (updatedBookmark || tagsChanged) {
+        return 'updated';
+      }
+
       return 'skipped';
     }
 
     // Create bookmark with all entry data
     const [newBookmark] = await db.insert(bookmarks).values({
-      comment: hatenaBookmark.comment || '',
-      description: hatenaBookmark.comment_expanded || '',
-      url: hatenaBookmark.url,
-      domain,
-      bookmarkedAt: new Date(hatenaBookmark.created),
-      bookmarkUrl: `https://b.hatena.ne.jp/entry/${hatenaBookmark.location_id}`,
       userId,
-      // Entry data now part of bookmark
-      title: hatenaBookmark.entry.title,
-      canonicalUrl: canonicalUrl,
-      rootUrl: hatenaBookmark.entry.root_url,
-      summary: hatenaBookmark.entry.summary || '',
-      normalizedDomain: normalizeDomain(canonicalUrl),
+      ...desiredBookmark,
     }).returning();
 
-    // Process tags
-    for (const tagLabel of hatenaBookmark.tags) {
-      // Get or create tag
-      let tag = await db.query.tags.findFirst({
-        where: eq(tags.label, tagLabel),
-      });
-
-      if (!tag) {
-        const [newTag] = await db.insert(tags).values({
-          label: tagLabel,
-        }).returning();
-        tag = newTag;
-      }
-
-      // Create bookmark-tag relationship
-      await db.insert(bookmarkTags).values({
-        bookmarkId: newBookmark.id,
-        tagId: tag.id,
-        userId,
-      }).onConflictDoNothing();
-    }
+    await this.syncBookmarkTags(newBookmark.id, userId, hatenaBookmark.tags);
     
     return 'imported';
+  }
+
+  private async getOrCreateTagId(tagLabel: string): Promise<string> {
+    const cached = this.tagIdCache.get(tagLabel);
+    if (cached) return cached;
+
+    const existing = await db.query.tags.findFirst({
+      where: eq(tags.label, tagLabel),
+    });
+    if (existing) {
+      this.tagIdCache.set(tagLabel, existing.id);
+      return existing.id;
+    }
+
+    const [created] = await db
+      .insert(tags)
+      .values({ label: tagLabel })
+      .onConflictDoNothing()
+      .returning();
+
+    const createdId = created?.id;
+    if (createdId) {
+      this.tagIdCache.set(tagLabel, createdId);
+      return createdId;
+    }
+
+    // If we lost a race to another inserter, fetch again.
+    const after = await db.query.tags.findFirst({
+      where: eq(tags.label, tagLabel),
+    });
+    if (!after) {
+      throw new Error(`Failed to create or fetch tag: ${tagLabel}`);
+    }
+    this.tagIdCache.set(tagLabel, after.id);
+    return after.id;
+  }
+
+  private async syncBookmarkTags(
+    bookmarkId: string,
+    userId: string,
+    desiredTagLabels: string[]
+  ): Promise<boolean> {
+    const desired = Array.from(new Set(desiredTagLabels.filter(Boolean)));
+
+    const existing = await db
+      .select({ tagId: tags.id, label: tags.label })
+      .from(bookmarkTags)
+      .innerJoin(tags, eq(bookmarkTags.tagId, tags.id))
+      .where(and(eq(bookmarkTags.bookmarkId, bookmarkId), eq(bookmarkTags.userId, userId)));
+
+    const existingLabels = new Set(existing.map((t) => t.label));
+    const desiredLabels = new Set(desired);
+
+    const labelsToAdd = desired.filter((l) => !existingLabels.has(l));
+    const labelsToRemove = existing
+      .filter((t) => !desiredLabels.has(t.label))
+      .map((t) => t.tagId);
+
+    if (labelsToAdd.length === 0 && labelsToRemove.length === 0) {
+      return false;
+    }
+
+    for (const label of labelsToAdd) {
+      const tagId = await this.getOrCreateTagId(label);
+      await db
+        .insert(bookmarkTags)
+        .values({ bookmarkId, tagId, userId })
+        .onConflictDoNothing();
+    }
+
+    if (labelsToRemove.length > 0) {
+      await db
+        .delete(bookmarkTags)
+        .where(
+          and(
+            eq(bookmarkTags.bookmarkId, bookmarkId),
+            eq(bookmarkTags.userId, userId),
+            inArray(bookmarkTags.tagId, labelsToRemove)
+          )
+        );
+    }
+
+    return true;
   }
 
   async importLatestBookmarks(hatenaId: string, sinceDate?: Date) {
