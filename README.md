@@ -29,6 +29,10 @@ HATENA_USER_ID=your_hatena_user_id
 CRON_SECRET=your_random_secret_string
 CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
 CLOUDFLARE_API_TOKEN=your_cloudflare_api_token
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_FILE_SEARCH_STORE_NAME=fileSearchStores/your-store-name
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_DEEP_RESEARCH_AGENT=deep-research-pro-preview-12-2025
 ```
 
 To generate a secure `CRON_SECRET`:
@@ -166,7 +170,7 @@ This application provides an MCP server that allows AI assistants like Claude De
    
    **Option A: Direct Streamable HTTP (if supported by your Claude Code version)**:
    ```bash
-   # Add MCP server with HTTP transport (default for @vercel/mcp-adapter)
+   # Add MCP server with HTTP transport (default for mcp-handler)
    claude mcp add --transport http bookmark-agent http://localhost:3000/api/mcp
    
    # For production deployment
@@ -189,7 +193,7 @@ This application provides an MCP server that allows AI assistants like Claude De
    ```
 
    **Why use mcp-remote?**
-   - The @vercel/mcp-adapter uses Streamable HTTP transport by default (newer protocol)
+   - The mcp-handler uses Streamable HTTP transport by default (newer protocol)
    - Claude Code may only support older SSE transport, which requires Redis configuration
    - mcp-remote acts as a proxy to bridge the compatibility gap
    - This approach works with all MCP clients regardless of their transport support
@@ -373,6 +377,22 @@ For production use, replace `http://localhost:3000` with your deployed applicati
 }
 ```
 
+## Gemini File Search / Deep Research
+
+This project can index your entire bookmark database into Gemini File Search, then answer natural-language questions by retrieving relevant bookmark chunks.
+
+1. Create a FileSearchStore:
+```bash
+pnpm gemini:create-store --name bookmark-agent
+```
+
+2. Set `GEMINI_FILE_SEARCH_STORE_NAME` from the output, then upload your bookmark index:
+```bash
+pnpm gemini:index-bookmarks
+```
+
+3. Open `http://localhost:3000/ai` (or call `POST /api/gemini/ask` with `{ "question": "..." }`).
+
 ## Technologies
 
 - Next.js 15 (App Router)
@@ -382,7 +402,7 @@ For production use, replace `http://localhost:3000` with your deployed applicati
 - shadcn/ui components
 - React Hook Form
 - Zod validation
-- **MCP (Model Context Protocol)** with @vercel/mcp-adapter
+- **MCP (Model Context Protocol)** with mcp-handler
 
 ## Deployment
 

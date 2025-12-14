@@ -1,4 +1,4 @@
-import { createMcpHandler } from "@vercel/mcp-adapter";
+import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
 import { getBookmarks, getDomains, getTags, getUsers, getBookmarkById } from "@/app/actions/bookmark-actions";
 import { getOrFetchMarkdownContent } from "@/app/actions/markdown-actions";
