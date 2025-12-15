@@ -23,6 +23,11 @@ export const bookmarks = pgTable('bookmarks', {
   bookmarkUrl: text('bookmark_url').notNull(),
   markdownContent: text('markdown_content'),
   markdownFetchedAt: timestamp('markdown_fetched_at'),
+  // Gemini File Search (1 bookmark = 1 document)
+  geminiFileSearchStoreName: text('gemini_file_search_store_name'),
+  geminiDocumentName: text('gemini_document_name'),
+  geminiContentHash: text('gemini_content_hash'),
+  geminiIndexedAt: timestamp('gemini_indexed_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   userId: uuid('user_id').notNull().references(() => users.id),

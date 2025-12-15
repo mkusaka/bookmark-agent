@@ -31,8 +31,8 @@ CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
 CLOUDFLARE_API_TOKEN=your_cloudflare_api_token
 GEMINI_API_KEY=your_gemini_api_key
 GEMINI_FILE_SEARCH_STORE_NAME=fileSearchStores/your-store-name
-GEMINI_MODEL=gemini-2.5-flash
-GEMINI_DEEP_RESEARCH_AGENT=deep-research-pro-preview-12-2025
+GEMINI_MODEL=models/gemini-2.5-pro
+GEMINI_DEEP_RESEARCH_AGENT=models/deep-research-pro-preview-12-2025
 ```
 
 To generate a secure `CRON_SECRET`:
@@ -391,7 +391,12 @@ pnpm gemini:create-store --name bookmark-agent
 pnpm gemini:index-bookmarks
 ```
 
-3. Open `http://localhost:3000/ai` (or call `POST /api/gemini/ask` with `{ "question": "..." }`).
+3. For the current incremental-sync implementation (1 bookmark = 1 document), you can also force reindex all existing bookmarks:
+```bash
+pnpm gemini:reindex-all
+```
+
+4. Open `http://localhost:3000/ai` (or call `POST /api/gemini/ask` with `{ "question": "..." }`).
 
 ## Technologies
 

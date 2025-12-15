@@ -4,6 +4,7 @@ import { HatenaBookmarkClient } from './client';
 import { HatenaBookmark } from './types';
 import { and, eq, inArray } from 'drizzle-orm';
 import { normalizeDomain } from '@/lib/domain-normalizer';
+import { syncBookmarkToGeminiFileSearchStore } from '@/lib/gemini/bookmark-sync';
 
 export class HatenaBookmarkImporter {
   private client: HatenaBookmarkClient;
@@ -21,6 +22,10 @@ export class HatenaBookmarkImporter {
     skip?: number
   ): Promise<{ imported: number; updated: number; skipped: number }> {
     try {
+      if (!process.env.GEMINI_API_KEY || !process.env.GEMINI_FILE_SEARCH_STORE_NAME) {
+        throw new Error('GEMINI_API_KEY and GEMINI_FILE_SEARCH_STORE_NAME are required for import');
+      }
+
       // Get or create user
       let user = await db.query.users.findFirst({
         where: eq(users.hatenaId, hatenaId),
@@ -252,6 +257,7 @@ export class HatenaBookmarkImporter {
       );
 
       if (updatedBookmark || tagsChanged) {
+        await this.syncGeminiIndexIfEnabled(existingBookmark.id);
         return 'updated';
       }
 
@@ -265,8 +271,13 @@ export class HatenaBookmarkImporter {
     }).returning();
 
     await this.syncBookmarkTags(newBookmark.id, userId, hatenaBookmark.tags);
+    await this.syncGeminiIndexIfEnabled(newBookmark.id);
     
     return 'imported';
+  }
+
+  private async syncGeminiIndexIfEnabled(bookmarkId: string) {
+    await syncBookmarkToGeminiFileSearchStore(bookmarkId);
   }
 
   private async getOrCreateTagId(tagLabel: string): Promise<string> {

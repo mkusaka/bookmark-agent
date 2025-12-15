@@ -8,7 +8,8 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    exclude: ['**/node_modules/**', '**/dist/**', '**/*.config.{js,ts}'],
+    fileParallelism: false,
+    exclude: ['**/node_modules/**', '**/dist/**', '**/*.config.{js,ts}', '**/.git/**'],
   },
   resolve: {
     alias: {

@@ -329,6 +329,58 @@ export async function getBookmarkById(bookmarkId: string): Promise<Bookmark | nu
   }
 }
 
+export async function getBookmarksByIds(bookmarkIds: string[], limit: number = 20): Promise<Bookmark[]> {
+  if (bookmarkIds.length === 0) return [];
+
+  const uniqueIds = Array.from(new Set(bookmarkIds)).slice(0, limit);
+
+  const results = await db
+    .select({
+      bookmark: bookmarks,
+      user: users,
+    })
+    .from(bookmarks)
+    .leftJoin(users, eq(bookmarks.userId, users.id))
+    .where(inArray(bookmarks.id, uniqueIds));
+
+  const tagsData = await db
+    .select({
+      bookmarkId: bookmarkTags.bookmarkId,
+      tag: tags,
+    })
+    .from(bookmarkTags)
+    .leftJoin(tags, eq(bookmarkTags.tagId, tags.id))
+    .where(inArray(bookmarkTags.bookmarkId, uniqueIds));
+
+  const tagsByBookmark = tagsData.reduce((acc, { bookmarkId, tag }) => {
+    if (!acc[bookmarkId]) acc[bookmarkId] = [];
+    if (tag) acc[bookmarkId].push(tag);
+    return acc;
+  }, {} as Record<string, typeof tags.$inferSelect[]>);
+
+  const byId = new Map(
+    results.map(({ bookmark, user }) => [
+      bookmark.id,
+      {
+        ...bookmark,
+        user: user!,
+        entry: {
+          id: bookmark.id,
+          title: bookmark.title,
+          canonicalUrl: bookmark.canonicalUrl,
+          rootUrl: bookmark.rootUrl,
+          summary: bookmark.summary,
+          domain: bookmark.domain,
+          normalizedDomain: bookmark.normalizedDomain,
+        },
+        tags: tagsByBookmark[bookmark.id] || [],
+      } satisfies Bookmark,
+    ])
+  );
+
+  return uniqueIds.map((id) => byId.get(id)).filter(Boolean) as Bookmark[];
+}
+
 export async function getSimilarBookmarks(bookmarkId: string, limit: number = 10): Promise<Bookmark[]> {
   try {
     // Get the bookmark

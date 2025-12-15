@@ -23,6 +23,7 @@
     "db:check-domain-updates": "tsx src/scripts/check-domain-updates-needed.ts",
     "gemini:create-store": "tsx src/scripts/gemini-create-file-search-store.ts",
     "gemini:index-bookmarks": "tsx src/scripts/gemini-index-bookmarks.ts",
+    "gemini:reindex-all": "tsx src/scripts/gemini-reindex-all-bookmarks.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:unit": "vitest --config vitest.config.unit.ts"

@@ -3,7 +3,11 @@ import path from 'path';
 import { parseArgs } from 'util';
 
 // Load environment variables from the project root
-config({ path: path.resolve(process.cwd(), '.env') });
+// Prefer .env.local, then fall back to .env
+const envLocal = path.resolve(process.cwd(), '.env.local');
+const env = path.resolve(process.cwd(), '.env');
+config({ path: envLocal });
+config({ path: env });
 
 async function main() {
   const hatenaUserId = process.env.HATENA_USER_ID;
