@@ -10,6 +10,8 @@ const AskRequestSchema = z.object({
   question: z.string().trim().min(1),
   limit: z.coerce.number().int().min(1).max(50).optional(),
   topK: z.coerce.number().int().min(1).max(50).optional(),
+  // thinkingBudget: -1 = dynamic (default), 0 = disabled, 128-32768 = fixed budget
+  thinkingBudget: z.coerce.number().int().min(-1).max(32768).optional(),
 });
 
 function extractBookmarkIdsFromText(text: string): string[] {
@@ -46,14 +48,33 @@ export async function POST(req: Request) {
     const model = process.env.GEMINI_MODEL ?? 'models/gemini-2.5-pro';
     const topK = parsed.data.topK ?? 10;
     const limit = parsed.data.limit ?? 10;
+    // Default to dynamic thinking (-1) for 2.5 Pro's reasoning capabilities
+    const thinkingBudget = parsed.data.thinkingBudget ?? -1;
 
-    const prompt = [
-      'あなたはユーザーの「保存済みブックマーク」コーパスから情報を見つけるアシスタントです。',
-      'ファイル検索で得られた根拠（ブックマーク）に基づいて日本語で回答してください。',
-      '可能なら、どのブックマークが根拠か分かるように、関連ブックマークのURLやIDも本文中に含めてください。',
-      '',
-      `質問: ${question}`,
-    ].join('\n');
+    const prompt = `<role>
+ユーザーの保存済みブックマークコーパスから情報を検索・要約するアシスタント
+</role>
+
+<task>
+ファイル検索ツールを使用して関連ブックマークを検索し、その内容に基づいて質問に回答してください。
+</task>
+
+<constraints>
+- 回答は日本語で行う
+- ファイル検索で得られた情報のみを根拠として使用する
+- 根拠となったブックマークのIDを必ず明記する（形式: ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx）
+- 複数のブックマークが関連する場合は、それぞれのIDを列挙する
+- 検索結果が見つからない場合は、その旨を正直に伝える
+</constraints>
+
+<output_format>
+1. 質問への回答（根拠に基づく要約・説明）
+2. 参照したブックマーク一覧（各ブックマークのIDを行頭に記載）
+</output_format>
+
+<question>
+${question}
+</question>`;
 
     const response = await ai.models.generateContent({
       model,
@@ -67,6 +88,12 @@ export async function POST(req: Request) {
             },
           },
         ],
+        // Enable thinking for Gemini 2.5 Pro's enhanced reasoning
+        ...(thinkingBudget !== 0 && {
+          thinkingConfig: {
+            thinkingBudget: thinkingBudget === -1 ? undefined : thinkingBudget,
+          },
+        }),
       },
     });
 

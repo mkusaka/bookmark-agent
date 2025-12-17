@@ -35,8 +35,30 @@ export async function POST(req: Request) {
     }
 
     const ai = createGeminiClient();
+
+    // Structured prompt for Deep Research agent
+    const structuredInput = `<context>
+ユーザーの保存済みブックマークコーパスにアクセス可能です。
+ファイル検索ツールを使用して、ユーザーのブックマークから関連情報を取得できます。
+</context>
+
+<task>
+以下の調査テーマについて、ブックマークコーパスとWeb検索を活用して包括的なレポートを作成してください。
+</task>
+
+<constraints>
+- 回答は日本語で行う
+- ブックマークから得た情報とWeb検索から得た情報を区別して提示する
+- 根拠となる情報源（ブックマークID、URL等）を明記する
+- 複数の視点や意見がある場合は、それぞれを公平に提示する
+</constraints>
+
+<research_topic>
+${input}
+</research_topic>`;
+
     const interaction = await ai.interactions.create({
-      input,
+      input: structuredInput,
       agent,
       background: true,
       tools: [{ type: 'file_search', file_search_store_names: [storeName] }],
