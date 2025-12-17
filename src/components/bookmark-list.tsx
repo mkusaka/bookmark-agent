@@ -148,60 +148,60 @@ export function BookmarkList({
             <TableHeader>
               <TableRow>
                 <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[40px] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">
-                  <SelectAllCheckbox 
-                    bookmarkIds={bookmarks.map(b => b.id)} 
+                  <SelectAllCheckbox
+                    bookmarkIds={bookmarks.map(b => b.id)}
                     bookmarkCount={bookmarks.length}
                   />
                 </TableHead>
                 <TableHead className="h-10 px-2 text-left align-middle font-medium">
-                <BookmarkSortLink
-                  href={
-                    currentSort.field === 'title'
-                      ? currentSort.order === 'asc'
-                        ? buildSortUrl('title', 'desc')
-                        : buildSortUrl()  // Reset to default (no sort)
-                      : buildSortUrl('title', 'asc')
-                  }
-                  sortState={currentSort.field === 'title' ? currentSort.order as 'asc' | 'desc' : null}
-                >
-                  Bookmark
-                </BookmarkSortLink>
-              </TableHead>
-              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[70px]">
-                <BookmarkSortLink
-                  href={
-                    currentSort.field === 'bookmarkedAt'
-                      ? currentSort.order === 'desc'
-                        ? buildSortUrl('bookmarkedAt', 'asc')
-                        : buildSortUrl()  // Reset to default (no sort)
-                      : buildSortUrl('bookmarkedAt', 'desc')
-                  }
-                  sortState={currentSort.field === 'bookmarkedAt' ? currentSort.order as 'asc' | 'desc' : null}
-                >
-                  Date
-                </BookmarkSortLink>
-              </TableHead>
-              <TableHead className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap w-[40px]"></TableHead>
+                  <div className="flex items-center gap-4">
+                    <BookmarkSortLink
+                      href={
+                        currentSort.field === 'title'
+                          ? currentSort.order === 'asc'
+                            ? buildSortUrl('title', 'desc')
+                            : buildSortUrl()  // Reset to default (no sort)
+                          : buildSortUrl('title', 'asc')
+                      }
+                      sortState={currentSort.field === 'title' ? currentSort.order as 'asc' | 'desc' : null}
+                    >
+                      Bookmark
+                    </BookmarkSortLink>
+                    <BookmarkSortLink
+                      href={
+                        currentSort.field === 'bookmarkedAt'
+                          ? currentSort.order === 'desc'
+                            ? buildSortUrl('bookmarkedAt', 'asc')
+                            : buildSortUrl()  // Reset to default (no sort)
+                          : buildSortUrl('bookmarkedAt', 'desc')
+                      }
+                      sortState={currentSort.field === 'bookmarkedAt' ? currentSort.order as 'asc' | 'desc' : null}
+                    >
+                      Date
+                    </BookmarkSortLink>
+                  </div>
+                </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {bookmarks.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={2} className="h-24 text-center">
                   No bookmarks found
                 </TableCell>
               </TableRow>
             ) : (
               bookmarks.map((bookmark) => (
                 <TableRow key={bookmark.id}>
-                  <TableCell className="p-2 align-middle whitespace-nowrap w-[40px] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">
-                    <BookmarkCheckbox 
-                      bookmarkId={bookmark.id} 
+                  <TableCell className="p-2 align-top whitespace-nowrap w-[40px] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">
+                    <BookmarkCheckbox
+                      bookmarkId={bookmark.id}
                     />
                   </TableCell>
                   <TableCell className="p-2 align-middle">
                     <div className="flex flex-col gap-1">
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
+                      {/* Header row: domain, date, and actions */}
+                      <div className="flex items-center gap-2">
                         <FilterLink
                           type="domains"
                           value={bookmark.entry.normalizedDomain}
@@ -209,56 +209,59 @@ export function BookmarkList({
                           isSelected={currentFilters.domains.includes(bookmark.entry.normalizedDomain)}
                           currentParams={currentParams}
                         />
-                        <div className="flex-1 min-w-0">
-                          <BookmarkTitle 
-                            title={bookmark.entry.title} 
-                            url={bookmark.url}
-                            bookmarkId={bookmark.id}
+                        <span className="text-muted-foreground">·</span>
+                        <span className="text-sm text-muted-foreground">
+                          <BookmarkDate
+                            date={bookmark.bookmarkedAt}
+                            displayDate={formatDate(bookmark.bookmarkedAt)}
                           />
+                        </span>
+                        <div className="ml-auto">
+                          <BookmarkActions url={bookmark.url} bookmarkId={bookmark.id} />
                         </div>
                       </div>
+                      {/* Title */}
+                      <div className="min-w-0">
+                        <BookmarkTitle
+                          title={bookmark.entry.title}
+                          url={bookmark.url}
+                          bookmarkId={bookmark.id}
+                        />
+                      </div>
+                      {/* Summary, comment, and tags */}
                       {(bookmark.entry.summary || bookmark.comment || bookmark.tags.length > 0) && (
                         <div className="flex flex-col gap-1 min-w-0">
                           {(bookmark.entry.summary || bookmark.comment) && (
-                            <BookmarkSummary 
-                              summary={bookmark.entry.summary} 
-                              comment={bookmark.comment} 
+                            <BookmarkSummary
+                              summary={bookmark.entry.summary}
+                              comment={bookmark.comment}
                             />
                           )}
-                        {bookmark.tags.length > 0 && (
-                          <div className="flex gap-1 flex-wrap">
-                            {bookmark.tags.slice(0, 3).map((tag) => (
-                              <FilterLink
-                                key={tag.id}
-                                type="tags"
-                                value={tag.id}
-                                label={tag.label}
-                                isSelected={currentFilters.tags.includes(tag.id)}
-                                currentParams={currentParams}
-                              />
-                            ))}
-                            {bookmark.tags.length > 3 && (
-                              <BookmarkExtraTags
-                                extraCount={bookmark.tags.length - 3}
-                                extraTags={bookmark.tags.slice(3)}
-                                selectedTags={currentFilters.tags}
-                                currentParams={currentParams}
-                              />
-                            )}
-                          </div>
-                        )}
+                          {bookmark.tags.length > 0 && (
+                            <div className="flex gap-1 flex-wrap">
+                              {bookmark.tags.slice(0, 3).map((tag) => (
+                                <FilterLink
+                                  key={tag.id}
+                                  type="tags"
+                                  value={tag.id}
+                                  label={tag.label}
+                                  isSelected={currentFilters.tags.includes(tag.id)}
+                                  currentParams={currentParams}
+                                />
+                              ))}
+                              {bookmark.tags.length > 3 && (
+                                <BookmarkExtraTags
+                                  extraCount={bookmark.tags.length - 3}
+                                  extraTags={bookmark.tags.slice(3)}
+                                  selectedTags={currentFilters.tags}
+                                  currentParams={currentParams}
+                                />
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  </TableCell>
-                  <TableCell className="p-2 align-middle whitespace-nowrap text-sm text-muted-foreground">
-                    <BookmarkDate 
-                      date={bookmark.bookmarkedAt}
-                      displayDate={formatDate(bookmark.bookmarkedAt)}
-                    />
-                  </TableCell>
-                  <TableCell className="p-2 align-middle whitespace-nowrap">
-                    <BookmarkActions url={bookmark.url} bookmarkId={bookmark.id} />
                   </TableCell>
                 </TableRow>
               ))
