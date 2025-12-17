@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -26,6 +27,7 @@ export function AiBookmarkSearch() {
   const [answer, setAnswer] = useState('');
   const [model, setModel] = useState<string | null>(null);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [copied, setCopied] = useState(false);
 
   const canSubmit = useMemo(() => question.trim().length > 0 && !loading, [question, loading]);
 
@@ -100,6 +102,13 @@ export function AiBookmarkSearch() {
     [canSubmit, onAsk]
   );
 
+  const handleCopy = useCallback(async () => {
+    if (!answer) return;
+    await navigator.clipboard.writeText(answer);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [answer]);
+
   return (
     <div className="flex flex-col gap-4">
       <Card className="p-4 flex flex-col gap-3">
@@ -121,8 +130,26 @@ export function AiBookmarkSearch() {
       </Card>
 
       {(answer || loading) && (
-        <Card className="p-4 flex flex-col gap-2">
-          {model && <div className="text-sm text-muted-foreground">Model: {model}</div>}
+        <Card className="p-4 flex flex-col gap-2 relative">
+          <div className="flex items-center justify-between">
+            {model && <div className="text-sm text-muted-foreground">Model: {model}</div>}
+            {!model && <div />}
+            {answer && !loading && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleCopy}
+                title="回答をコピー"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-600" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+          </div>
           <div className="whitespace-pre-wrap text-sm">
             {answer}
             {loading && <span className="animate-pulse">▌</span>}
