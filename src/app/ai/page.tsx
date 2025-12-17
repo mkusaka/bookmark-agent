@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PageLayout } from '@/components/page-layout';
 import { Button } from '@/components/ui/button';
-import { Search, BarChart3 } from 'lucide-react';
+import { Search, BarChart3, Database } from 'lucide-react';
 import { AiBookmarkSearch } from '@/components/ai-bookmark-search';
 import { AiDeepResearch } from '@/components/ai-deep-research';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,6 +15,12 @@ export default function AiPage() {
       description="Gemini File Searchでブックマーク全文から関連情報を探して回答します"
       actions={
         <>
+          <Link href="/ai/store">
+            <Button variant="outline" size="sm">
+              <Database className="h-4 w-4 mr-2" />
+              Store
+            </Button>
+          </Link>
           <Link href="/search">
             <Button variant="outline" size="sm">
               <Search className="h-4 w-4 mr-2" />

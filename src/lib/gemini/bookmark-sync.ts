@@ -154,6 +154,10 @@ export async function syncBookmarkToGeminiFileSearchStore(bookmarkId: string) {
         { key: 'url', stringValue: bookmark.url },
         { key: 'userId', stringValue: user.id },
         { key: 'normalizedDomain', stringValue: bookmark.normalizedDomain },
+        { key: 'bookmarkedAt', stringValue: bookmark.bookmarkedAt.toISOString() },
+        ...(tagRows.length > 0
+          ? [{ key: 'tags', stringListValue: { values: tagRows.map((t) => t.label) } }]
+          : []),
       ],
     },
   });
