@@ -79,17 +79,9 @@ export async function listGeminiStoreDocuments(
       });
     }
 
-    // Get nextPageToken from sdkHttpResponse.json()
-    let nextPageToken: string | null = null;
-    const httpResponse = pager.sdkHttpResponse;
-    if (httpResponse) {
-      try {
-        const body = await httpResponse.json() as { nextPageToken?: string };
-        nextPageToken = body.nextPageToken ?? null;
-      } catch {
-        // Ignore JSON parse errors
-      }
-    }
+    // pager.params contains the pageToken for the NEXT page request
+    // After the first page is loaded, params.config.pageToken is set for the next page
+    const nextPageToken = pager.params.config?.pageToken ?? null;
 
     return {
       success: true,
