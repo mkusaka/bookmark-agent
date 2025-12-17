@@ -7,7 +7,7 @@ import { SearchPageClient } from '@/components/search-page-client';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, Sparkles } from 'lucide-react';
 import { SyncNowButton } from '@/components/sync-now-button';
 
 // This page uses server-side database queries, so it should not be statically generated
@@ -57,6 +57,12 @@ export default async function SearchPage({
         description="Search and manage bookmarks with advanced filtering"
         actions={
           <div className="flex items-center gap-2 flex-wrap">
+            <Link href="/ai">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                <span className="hidden sm:inline">AI</span>
+              </Button>
+            </Link>
             <Link href="/stats">
               <Button variant="outline" size="sm" className="gap-2">
                 <BarChart3 className="h-4 w-4" />

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search } from 'lucide-react';
+import { Search, Sparkles } from 'lucide-react';
 import { OverviewTab } from '@/components/stats/overview-tab';
 import { TimelineTabWrapper } from '@/components/stats/timeline-tab-wrapper';
 import { DomainsTab } from '@/components/stats/domains-tab';
@@ -33,12 +33,20 @@ export default function StatsPage() {
       }
       description="Analyze your bookmarking patterns and trends"
       actions={
-        <Link href="/search">
-          <Button variant="outline" size="sm">
-            <Search className="h-4 w-4 mr-2" />
-            Search
-          </Button>
-        </Link>
+        <>
+          <Link href="/ai">
+            <Button variant="outline" size="sm">
+              <Sparkles className="h-4 w-4 mr-2" />
+              AI
+            </Button>
+          </Link>
+          <Link href="/search">
+            <Button variant="outline" size="sm">
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
+          </Link>
+        </>
       }
     >
       <StatsTabsWrapper>
