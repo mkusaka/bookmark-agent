@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -35,7 +35,27 @@ export function AiDeepResearch() {
     };
   }, []);
 
-  async function start() {
+  const pollOnce = useCallback(async function pollOnce(id: string) {
+    try {
+      const res = await fetch(`/api/gemini/deep-research?id=${encodeURIComponent(id)}`);
+      const json = (await res.json()) as DeepResearchGetResponse & { error?: string };
+      if (!res.ok) throw new Error(json?.error ?? 'Polling failed');
+
+      setStatus(json.status);
+      if (typeof json.latestText === 'string') setLatestText(json.latestText);
+
+      if (json.status === 'completed' || json.status === 'failed' || json.status === 'cancelled') {
+        if (pollTimer.current) window.clearInterval(pollTimer.current);
+        pollTimer.current = null;
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unknown error');
+      if (pollTimer.current) window.clearInterval(pollTimer.current);
+      pollTimer.current = null;
+    }
+  }, []);
+
+  const start = useCallback(async () => {
     setLoading(true);
     setError(null);
     setLatestText(null);
@@ -62,27 +82,17 @@ export function AiDeepResearch() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [input, pollOnce]);
 
-  async function pollOnce(id: string) {
-    try {
-      const res = await fetch(`/api/gemini/deep-research?id=${encodeURIComponent(id)}`);
-      const json = (await res.json()) as DeepResearchGetResponse & { error?: string };
-      if (!res.ok) throw new Error(json?.error ?? 'Polling failed');
-
-      setStatus(json.status);
-      if (typeof json.latestText === 'string') setLatestText(json.latestText);
-
-      if (json.status === 'completed' || json.status === 'failed' || json.status === 'cancelled') {
-        if (pollTimer.current) window.clearInterval(pollTimer.current);
-        pollTimer.current = null;
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && canStart) {
+        e.preventDefault();
+        start();
       }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Unknown error');
-      if (pollTimer.current) window.clearInterval(pollTimer.current);
-      pollTimer.current = null;
-    }
-  }
+    },
+    [canStart, start]
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -92,12 +102,14 @@ export function AiDeepResearch() {
           className="min-h-28 w-full rounded-md border bg-background px-3 py-2 text-sm"
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="例: 自分のブックマークも参照しつつ、Next.js 15のキャッシュ戦略の要点を比較検討してレポートにして"
         />
         <div className="flex items-center gap-2">
           <Button onClick={start} disabled={!canStart}>
             {loading ? 'Starting…' : 'Start Deep Research'}
           </Button>
+          <span className="text-xs text-muted-foreground">⌘+Enter で送信</span>
           {error && <span className="text-sm text-red-600">{error}</span>}
         </div>
         {interactionId && (
