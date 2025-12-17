@@ -7,48 +7,27 @@ import { GeminiStoreDocumentList } from '@/components/gemini-store-document-list
 
 export const dynamic = 'force-dynamic';
 
-type SearchParams = Promise<{ pageToken?: string; history?: string }>;
+type SearchParams = Promise<{ pageToken?: string; prevPageToken?: string }>;
 
 function buildNextPageUrl(
   nextPageToken: string,
-  currentHistory: string[],
   currentPageToken?: string
 ): string {
-  // Add current page token to history (for going back)
-  const newHistory = currentPageToken
-    ? [...currentHistory, currentPageToken]
-    : currentHistory;
-
   const params = new URLSearchParams();
   params.set('pageToken', nextPageToken);
-  if (newHistory.length > 0) {
-    params.set('history', newHistory.join(','));
+  if (currentPageToken) {
+    params.set('prevPageToken', currentPageToken);
   }
   return `/ai/store?${params.toString()}`;
 }
 
-function buildPrevPageUrl(tokenHistory: string[]): string {
-  if (tokenHistory.length === 0) {
+function buildPrevPageUrl(prevPageToken?: string): string {
+  if (!prevPageToken) {
     return '/ai/store';
   }
-
-  const newHistory = tokenHistory.slice(0, -1);
-  const prevPageToken = tokenHistory[tokenHistory.length - 1];
-
-  if (newHistory.length === 0 && !prevPageToken) {
-    return '/ai/store';
-  }
-
   const params = new URLSearchParams();
-  if (prevPageToken) {
-    params.set('pageToken', prevPageToken);
-  }
-  if (newHistory.length > 0) {
-    params.set('history', newHistory.join(','));
-  }
-
-  const queryString = params.toString();
-  return queryString ? `/ai/store?${queryString}` : '/ai/store';
+  params.set('pageToken', prevPageToken);
+  return `/ai/store?${params.toString()}`;
 }
 
 export default async function GeminiStorePage({
@@ -56,12 +35,10 @@ export default async function GeminiStorePage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { pageToken, history } = await searchParams;
+  const { pageToken, prevPageToken } = await searchParams;
   const result = await listGeminiStoreDocuments(pageToken);
 
-  // Parse history: comma-separated list of previous page tokens
-  const tokenHistory = history ? history.split(',').filter(Boolean) : [];
-  const currentPageIndex = tokenHistory.length;
+  const hasPrevPage = !!prevPageToken || !!pageToken;
 
   return (
     <PageLayout
@@ -86,8 +63,8 @@ export default async function GeminiStorePage({
 
           <div className="flex items-center justify-between">
             <div>
-              {currentPageIndex > 0 && (
-                <Link href={buildPrevPageUrl(tokenHistory)}>
+              {hasPrevPage && (
+                <Link href={buildPrevPageUrl(prevPageToken)}>
                   <Button variant="outline" size="sm">
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Previous
@@ -95,12 +72,10 @@ export default async function GeminiStorePage({
                 </Link>
               )}
             </div>
-            <div className="text-sm text-muted-foreground">
-              Page {currentPageIndex + 1}
-            </div>
+            <div />
             <div>
               {result.nextPageToken && (
-                <Link href={buildNextPageUrl(result.nextPageToken, tokenHistory, pageToken)}>
+                <Link href={buildNextPageUrl(result.nextPageToken, pageToken)}>
                   <Button variant="outline" size="sm">
                     Next
                     <ChevronRight className="h-4 w-4 ml-1" />
