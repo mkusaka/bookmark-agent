@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     }
     const { input } = parsed.data;
 
-    const agent = process.env.GEMINI_DEEP_RESEARCH_AGENT ?? 'models/deep-research-pro-preview-12-2025';
+    const agent = process.env.GEMINI_DEEP_RESEARCH_AGENT ?? 'deep-research-pro-preview-12-2025';
     const storeName = process.env.GEMINI_FILE_SEARCH_STORE_NAME;
     if (!storeName) {
       return NextResponse.json(
