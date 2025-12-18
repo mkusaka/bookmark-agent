@@ -143,6 +143,10 @@ export async function syncBookmarkToGeminiFileSearchStore(bookmarkId: string) {
   }
 
   const displayName = `bookmark-${bookmark.id}.md`;
+
+  // Gemini customMetadata stringValue has 256 char limit
+  const truncate = (s: string, max: number) => (s.length > max ? s.slice(0, max) : s);
+
   const operation = await ai.fileSearchStores.uploadToFileSearchStore({
     fileSearchStoreName,
     file: new Blob([markdown], { type: 'text/markdown' }),
@@ -151,12 +155,12 @@ export async function syncBookmarkToGeminiFileSearchStore(bookmarkId: string) {
       mimeType: 'text/markdown',
       customMetadata: [
         { key: 'bookmarkId', stringValue: bookmark.id },
-        { key: 'url', stringValue: bookmark.url },
+        { key: 'url', stringValue: truncate(bookmark.url, 256) },
         { key: 'userId', stringValue: user.id },
-        { key: 'normalizedDomain', stringValue: bookmark.normalizedDomain },
+        { key: 'normalizedDomain', stringValue: truncate(bookmark.normalizedDomain, 256) },
         { key: 'bookmarkedAt', stringValue: bookmark.bookmarkedAt.toISOString() },
         ...(tagRows.length > 0
-          ? [{ key: 'tags', stringListValue: { values: tagRows.map((t) => t.label) } }]
+          ? [{ key: 'tags', stringListValue: { values: tagRows.map((t) => truncate(t.label, 256)) } }]
           : []),
       ],
     },

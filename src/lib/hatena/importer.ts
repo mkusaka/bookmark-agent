@@ -5,6 +5,7 @@ import { HatenaBookmark } from './types';
 import { and, eq, inArray } from 'drizzle-orm';
 import { normalizeDomain } from '@/lib/domain-normalizer';
 import { syncBookmarkToGeminiFileSearchStore } from '@/lib/gemini/bookmark-sync';
+import { fetchMarkdownFromCloudflare } from '@/lib/cloudflare/markdown';
 
 export class HatenaBookmarkImporter {
   private client: HatenaBookmarkClient;
@@ -256,8 +257,25 @@ export class HatenaBookmarkImporter {
         hatenaBookmark.tags
       );
 
-      if (updatedBookmark || tagsChanged) {
+      // Fetch markdown if missing
+      let markdownFetched = false;
+      if (!existingBookmark.markdownContent) {
+        markdownFetched = await this.fetchAndSaveMarkdownIfMissing(existingBookmark.id, existingBookmark.url);
+      }
+
+      // Sync to Gemini if bookmark/tags changed, markdown fetched, or not yet indexed
+      const needsGeminiSync = updatedBookmark || tagsChanged || markdownFetched || !existingBookmark.geminiDocumentName;
+
+      if (needsGeminiSync) {
         await this.syncGeminiIndexIfEnabled(existingBookmark.id);
+      }
+
+      if (updatedBookmark || tagsChanged || markdownFetched) {
+        return 'updated';
+      }
+
+      // If only Gemini sync was needed (bookmark unchanged but missing from File Store)
+      if (!existingBookmark.geminiDocumentName) {
         return 'updated';
       }
 
@@ -271,13 +289,52 @@ export class HatenaBookmarkImporter {
     }).returning();
 
     await this.syncBookmarkTags(newBookmark.id, userId, hatenaBookmark.tags);
+
+    // Fetch markdown content if not already present
+    await this.fetchAndSaveMarkdownIfMissing(newBookmark.id, newBookmark.url);
+
     await this.syncGeminiIndexIfEnabled(newBookmark.id);
-    
+
     return 'imported';
   }
 
   private async syncGeminiIndexIfEnabled(bookmarkId: string) {
     await syncBookmarkToGeminiFileSearchStore(bookmarkId);
+  }
+
+  private async fetchAndSaveMarkdownIfMissing(bookmarkId: string, url: string): Promise<boolean> {
+    // Check if Cloudflare credentials are configured
+    if (!process.env.CLOUDFLARE_ACCOUNT_ID || !process.env.CLOUDFLARE_API_TOKEN) {
+      console.log(`  Skipping markdown fetch: Cloudflare credentials not configured`);
+      return false;
+    }
+
+    try {
+      // Add small delay to avoid rate limiting (Cloudflare browser rendering has limits)
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      console.log(`  Fetching markdown for: ${url}`);
+      const markdownContent = await fetchMarkdownFromCloudflare(url);
+
+      if (markdownContent) {
+        console.log(`  Markdown fetched (${markdownContent.length} chars), saving to DB...`);
+        await db
+          .update(bookmarks)
+          .set({
+            markdownContent,
+            markdownFetchedAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(bookmarks.id, bookmarkId));
+        console.log(`  Markdown saved to DB`);
+        return true;
+      }
+      console.log(`  No markdown content returned from Cloudflare`);
+      return false;
+    } catch (error) {
+      console.error(`Failed to fetch markdown for ${url}:`, error);
+      return false;
+    }
   }
 
   private async getOrCreateTagId(tagLabel: string): Promise<string> {
