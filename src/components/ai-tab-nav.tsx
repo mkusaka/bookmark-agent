@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 const tabs = [
   { href: '/ai/ask', label: 'Ask' },
   { href: '/ai/deep-research', label: 'Deep Research' },
+  { href: '/ai/history', label: 'History' },
 ] as const;
 
 export function AiTabNav() {

@@ -1,16 +1,19 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createGeminiClient } from '@/lib/gemini/client';
+import { createAiSession, updateAiSession } from '@/app/actions/ai-session-actions';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const DeepResearchStartSchema = z.object({
   input: z.string().trim().min(1),
+  parentSessionId: z.string().uuid().optional(),
 });
 
 const DeepResearchGetSchema = z.object({
   id: z.string().trim().min(1),
+  sessionId: z.string().uuid().optional(),
 });
 
 export async function POST(req: Request) {
@@ -23,7 +26,7 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    const { input } = parsed.data;
+    const { input, parentSessionId } = parsed.data;
 
     const agent = process.env.GEMINI_DEEP_RESEARCH_AGENT ?? 'deep-research-pro-preview-12-2025';
     const storeName = process.env.GEMINI_FILE_SEARCH_STORE_NAME;
@@ -64,7 +67,19 @@ ${input}
       tools: [{ type: 'file_search', file_search_store_names: [storeName] }],
     });
 
-    return NextResponse.json({ id: interaction.id, status: interaction.status ?? 'pending' });
+    // Create session with external interaction ID
+    const { id: sessionId } = await createAiSession({
+      type: 'deep-research',
+      question: input,
+      parentSessionId,
+      externalInteractionId: interaction.id,
+    });
+
+    return NextResponse.json({
+      id: interaction.id,
+      sessionId,
+      status: interaction.status ?? 'pending',
+    });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Unknown error' },
@@ -76,14 +91,17 @@ ${input}
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
-    const parsed = DeepResearchGetSchema.safeParse({ id: url.searchParams.get('id') });
+    const parsed = DeepResearchGetSchema.safeParse({
+      id: url.searchParams.get('id'),
+      sessionId: url.searchParams.get('sessionId') || undefined,
+    });
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Invalid query params', details: parsed.error.flatten() },
         { status: 400 }
       );
     }
-    const { id } = parsed.data;
+    const { id, sessionId } = parsed.data;
 
     const ai = createGeminiClient();
     const interaction = await ai.interactions.get(id);
@@ -93,8 +111,19 @@ export async function GET(req: Request) {
       .filter((t): t is string => typeof t === 'string' && t.length > 0)
       .at(-1);
 
+    // Update session if terminal status and sessionId provided
+    if (sessionId && ['completed', 'failed', 'cancelled'].includes(interaction.status ?? '')) {
+      const status = interaction.status as 'completed' | 'failed' | 'cancelled';
+      await updateAiSession(sessionId, {
+        status,
+        responseText: latestText,
+        completedAt: new Date(),
+      });
+    }
+
     return NextResponse.json({
       id: interaction.id,
+      sessionId,
       status: interaction.status,
       outputs: interaction.outputs,
       latestText,

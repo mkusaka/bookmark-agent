@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, index, uniqueIndex, integer } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { relations, sql } from 'drizzle-orm';
 
@@ -93,6 +93,7 @@ export const bookmarksRelations = relations(bookmarks, ({ one, many }) => ({
     references: [users.id],
   }),
   bookmarkTags: many(bookmarkTags),
+  aiSessionBookmarks: many(aiSessionBookmarks),
 }));
 
 export const tagsRelations = relations(tags, ({ many }) => ({
@@ -114,6 +115,74 @@ export const bookmarkTagsRelations = relations(bookmarkTags, ({ one }) => ({
   }),
 }));
 
+// AI Sessions table
+export const aiSessions = pgTable('ai_sessions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  type: text('type').notNull(), // 'ask' | 'deep-research'
+  question: text('question').notNull(),
+  responseText: text('response_text'),
+  status: text('status').notNull().default('pending'), // 'pending' | 'streaming' | 'completed' | 'failed' | 'cancelled'
+  modelName: text('model_name'),
+  externalInteractionId: text('external_interaction_id'), // Deep Research用Gemini interaction ID
+  processingTimeMs: integer('processing_time_ms'),
+  startedAt: timestamp('started_at'),
+  completedAt: timestamp('completed_at'),
+  errorMessage: text('error_message'),
+  parentSessionId: uuid('parent_session_id'),
+  userId: uuid('user_id').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => [
+  index('ai_sessions_type_idx').on(table.type),
+  index('ai_sessions_status_idx').on(table.status),
+  index('ai_sessions_created_at_idx').on(table.createdAt.desc()),
+  index('ai_sessions_user_idx').on(table.userId),
+  index('ai_sessions_parent_idx').on(table.parentSessionId),
+  index('ai_sessions_created_at_id_idx').on(table.createdAt.desc(), table.id),
+  index('ai_sessions_question_trgm_idx').using('gin', sql`${table.question} gin_trgm_ops`),
+]);
+
+// AI Session Bookmarks join table
+export const aiSessionBookmarks = pgTable('ai_session_bookmarks', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  sessionId: uuid('session_id').notNull().references(() => aiSessions.id, { onDelete: 'cascade' }),
+  bookmarkId: uuid('bookmark_id').notNull().references(() => bookmarks.id, { onDelete: 'cascade' }),
+  sortOrder: integer('sort_order'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => [
+  index('ai_session_bookmarks_session_idx').on(table.sessionId),
+  index('ai_session_bookmarks_bookmark_idx').on(table.bookmarkId),
+  uniqueIndex('ai_session_bookmarks_unique').on(table.sessionId, table.bookmarkId),
+]);
+
+// AI Sessions relations
+export const aiSessionsRelations = relations(aiSessions, ({ one, many }) => ({
+  user: one(users, {
+    fields: [aiSessions.userId],
+    references: [users.id],
+  }),
+  parentSession: one(aiSessions, {
+    fields: [aiSessions.parentSessionId],
+    references: [aiSessions.id],
+    relationName: 'sessionContinuation',
+  }),
+  childSessions: many(aiSessions, {
+    relationName: 'sessionContinuation',
+  }),
+  sessionBookmarks: many(aiSessionBookmarks),
+}));
+
+export const aiSessionBookmarksRelations = relations(aiSessionBookmarks, ({ one }) => ({
+  session: one(aiSessions, {
+    fields: [aiSessionBookmarks.sessionId],
+    references: [aiSessions.id],
+  }),
+  bookmark: one(bookmarks, {
+    fields: [aiSessionBookmarks.bookmarkId],
+    references: [bookmarks.id],
+  }),
+}));
+
 // Zod schemas
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
@@ -128,6 +197,12 @@ export const selectTagSchema = createSelectSchema(tags);
 export const insertBookmarkTagSchema = createInsertSchema(bookmarkTags);
 export const selectBookmarkTagSchema = createSelectSchema(bookmarkTags);
 
+export const insertAiSessionSchema = createInsertSchema(aiSessions);
+export const selectAiSessionSchema = createSelectSchema(aiSessions);
+
+export const insertAiSessionBookmarkSchema = createInsertSchema(aiSessionBookmarks);
+export const selectAiSessionBookmarkSchema = createSelectSchema(aiSessionBookmarks);
+
 // Types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -141,3 +216,9 @@ export type NewTag = typeof tags.$inferInsert;
 
 export type BookmarkTag = typeof bookmarkTags.$inferSelect;
 export type NewBookmarkTag = typeof bookmarkTags.$inferInsert;
+
+export type AiSession = typeof aiSessions.$inferSelect;
+export type NewAiSession = typeof aiSessions.$inferInsert;
+
+export type AiSessionBookmark = typeof aiSessionBookmarks.$inferSelect;
+export type NewAiSessionBookmark = typeof aiSessionBookmarks.$inferInsert;

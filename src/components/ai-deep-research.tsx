@@ -1,16 +1,21 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
 type DeepResearchStartResponse = {
   id: string;
+  sessionId: string;
   status: string;
 };
 
 type DeepResearchGetResponse = {
   id: string;
+  sessionId?: string;
   status: string;
   outputs?: unknown[];
   latestText?: string;
@@ -18,10 +23,13 @@ type DeepResearchGetResponse = {
 };
 
 export function AiDeepResearch() {
+  const searchParams = useSearchParams();
+  const continueFromSession = searchParams.get('continue');
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [interactionId, setInteractionId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [latestText, setLatestText] = useState<string | null>(null);
 
@@ -35,9 +43,9 @@ export function AiDeepResearch() {
     };
   }, []);
 
-  const pollOnce = useCallback(async function pollOnce(id: string) {
+  const pollOnce = useCallback(async function pollOnce(id: string, sid: string) {
     try {
-      const res = await fetch(`/api/gemini/deep-research?id=${encodeURIComponent(id)}`);
+      const res = await fetch(`/api/gemini/deep-research?id=${encodeURIComponent(id)}&sessionId=${encodeURIComponent(sid)}`);
       const json = (await res.json()) as DeepResearchGetResponse & { error?: string };
       if (!res.ok) throw new Error(json?.error ?? 'Polling failed');
 
@@ -61,28 +69,33 @@ export function AiDeepResearch() {
     setLatestText(null);
     setStatus(null);
     setInteractionId(null);
+    setSessionId(null);
 
     try {
       const res = await fetch('/api/gemini/deep-research', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input }),
+        body: JSON.stringify({
+          input,
+          parentSessionId: continueFromSession || undefined,
+        }),
       });
       const json = (await res.json()) as DeepResearchStartResponse & { error?: string };
       if (!res.ok) throw new Error(json?.error ?? 'Request failed');
 
       setInteractionId(json.id);
+      setSessionId(json.sessionId);
       setStatus(json.status);
-      await pollOnce(json.id);
+      await pollOnce(json.id, json.sessionId);
 
       if (pollTimer.current) window.clearInterval(pollTimer.current);
-      pollTimer.current = window.setInterval(() => pollOnce(json.id), 5000);
+      pollTimer.current = window.setInterval(() => pollOnce(json.id, json.sessionId), 5000);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, [input, pollOnce]);
+  }, [input, continueFromSession, pollOnce]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -113,11 +126,30 @@ export function AiDeepResearch() {
           {error && <span className="text-sm text-red-600">{error}</span>}
         </div>
         {interactionId && (
-          <div className="text-xs text-muted-foreground break-all">
-            Interaction: {interactionId} {status ? `(${status})` : ''}
+          <div className="text-xs text-muted-foreground break-all flex items-center gap-2">
+            <span>Interaction: {interactionId} {status ? `(${status})` : ''}</span>
+            {sessionId && (
+              <Link
+                href={`/ai/session/${sessionId}`}
+                className="text-primary hover:underline flex items-center gap-1"
+              >
+                View session
+                <ExternalLink className="h-3 w-3" />
+              </Link>
+            )}
           </div>
         )}
       </Card>
+
+      {continueFromSession && (
+        <Card className="p-2 px-4 text-sm text-muted-foreground flex items-center gap-2">
+          <span>Continuing from session:</span>
+          <Link href={`/ai/session/${continueFromSession}`} className="text-primary hover:underline flex items-center gap-1">
+            {continueFromSession.slice(0, 8)}...
+            <ExternalLink className="h-3 w-3" />
+          </Link>
+        </Card>
+      )}
 
       {latestText && (
         <Card className="p-4 flex flex-col gap-2">

@@ -2,7 +2,8 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Copy, Check } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Copy, Check, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -17,15 +18,18 @@ type Bookmark = {
 
 type StreamEvent =
   | { type: 'text'; content: string }
-  | { type: 'done'; model: string; bookmarkIds: string[]; bookmarks: Bookmark[] }
-  | { type: 'error'; error: string };
+  | { type: 'done'; sessionId: string; model: string; bookmarkIds: string[]; bookmarks: Bookmark[] }
+  | { type: 'error'; sessionId?: string; error: string };
 
 export function AiBookmarkSearch() {
+  const searchParams = useSearchParams();
+  const continueFromSession = searchParams.get('continue');
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [answer, setAnswer] = useState('');
   const [model, setModel] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [copied, setCopied] = useState(false);
 
@@ -36,13 +40,17 @@ export function AiBookmarkSearch() {
     setError(null);
     setAnswer('');
     setModel(null);
+    setSessionId(null);
     setBookmarks([]);
 
     try {
       const res = await fetch('/api/gemini/ask-stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({
+          question,
+          parentSessionId: continueFromSession || undefined,
+        }),
       });
 
       if (!res.ok) {
@@ -76,6 +84,7 @@ export function AiBookmarkSearch() {
               setAnswer((prev) => prev + event.content);
             } else if (event.type === 'done') {
               setModel(event.model);
+              setSessionId(event.sessionId);
               setBookmarks(event.bookmarks);
             } else if (event.type === 'error') {
               setError(event.error);
@@ -90,7 +99,7 @@ export function AiBookmarkSearch() {
     } finally {
       setLoading(false);
     }
-  }, [question]);
+  }, [question, continueFromSession]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -129,11 +138,31 @@ export function AiBookmarkSearch() {
         </div>
       </Card>
 
+      {continueFromSession && (
+        <Card className="p-2 px-4 text-sm text-muted-foreground flex items-center gap-2">
+          <span>Continuing from session:</span>
+          <Link href={`/ai/session/${continueFromSession}`} className="text-primary hover:underline flex items-center gap-1">
+            {continueFromSession.slice(0, 8)}...
+            <ExternalLink className="h-3 w-3" />
+          </Link>
+        </Card>
+      )}
+
       {(answer || loading) && (
         <Card className="p-4 flex flex-col gap-2 relative">
           <div className="flex items-center justify-between">
-            {model && <div className="text-sm text-muted-foreground">Model: {model}</div>}
-            {!model && <div />}
+            <div className="flex items-center gap-3">
+              {model && <span className="text-sm text-muted-foreground">Model: {model}</span>}
+              {sessionId && !loading && (
+                <Link
+                  href={`/ai/session/${sessionId}`}
+                  className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                >
+                  View session
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              )}
+            </div>
             {answer && !loading && (
               <Button
                 variant="ghost"

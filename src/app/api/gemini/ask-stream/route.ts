@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { createGeminiClient } from '@/lib/gemini/client';
 import { getBookmarksByIds } from '@/app/actions/bookmark-actions';
+import { createAiSession, updateAiSession, addBookmarksToSession } from '@/app/actions/ai-session-actions';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -9,6 +10,7 @@ const AskRequestSchema = z.object({
   question: z.string().trim().min(1),
   topK: z.coerce.number().int().min(1).max(50).optional(),
   limit: z.coerce.number().int().min(1).max(50).optional(),
+  parentSessionId: z.string().uuid().optional(),
 });
 
 function extractBookmarkIdsFromText(text: string): string[] {
@@ -31,7 +33,15 @@ export async function POST(req: Request) {
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
-    const { question } = parsed.data;
+    const { question, parentSessionId } = parsed.data;
+    const startTime = Date.now();
+
+    // Create session
+    const { id: sessionId } = await createAiSession({
+      type: 'ask',
+      question,
+      parentSessionId,
+    });
 
     const storeName = process.env.GEMINI_FILE_SEARCH_STORE_NAME;
     if (!storeName) {
@@ -69,6 +79,9 @@ export async function POST(req: Request) {
       },
     });
 
+    // Update session status to streaming
+    await updateAiSession(sessionId, { status: 'streaming' });
+
     const encoder = new TextEncoder();
     let fullText = '';
     let groundingChunks: unknown[] = [];
@@ -105,11 +118,23 @@ export async function POST(req: Request) {
 
           const bookmarks = await getBookmarksByIds(bookmarkIds, limit);
 
+          // Update session with results
+          const processingTimeMs = Date.now() - startTime;
+          await updateAiSession(sessionId, {
+            status: 'completed',
+            responseText: fullText,
+            modelName: model,
+            processingTimeMs,
+            completedAt: new Date(),
+          });
+          await addBookmarksToSession(sessionId, bookmarkIds);
+
           // Send final metadata
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({
                 type: 'done',
+                sessionId,
                 model,
                 bookmarkIds,
                 bookmarks: bookmarks.map((b) => ({
@@ -126,10 +151,17 @@ export async function POST(req: Request) {
 
           controller.close();
         } catch (error) {
+          // Update session with error
+          await updateAiSession(sessionId, {
+            status: 'failed',
+            errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          });
+
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({
                 type: 'error',
+                sessionId,
                 error: error instanceof Error ? error.message : 'Unknown error',
               })}\n\n`
             )

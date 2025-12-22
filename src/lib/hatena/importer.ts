@@ -6,6 +6,9 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { normalizeDomain } from '@/lib/domain-normalizer';
 import { syncBookmarkToGeminiFileSearchStore } from '@/lib/gemini/bookmark-sync';
 import { fetchMarkdownFromCloudflare } from '@/lib/cloudflare/markdown';
+import PQueue from 'p-queue';
+
+const CONCURRENCY = 4;
 
 export class HatenaBookmarkImporter {
   private client: HatenaBookmarkClient;
@@ -109,7 +112,7 @@ export class HatenaBookmarkImporter {
         // Normal import from the beginning with optional skip
         const targetCount = limit || Number.MAX_SAFE_INTEGER;
         const skipCount = skip || 0;
-        
+
         if (skip && limit) {
           console.log(`Skipping ${skip} bookmarks, then importing ${limit} bookmarks`);
         } else if (skip) {
@@ -119,73 +122,82 @@ export class HatenaBookmarkImporter {
         } else {
           console.log('Importing all bookmarks');
         }
-        
-        // Use generator to fetch bookmarks page by page
-        const fetchBookmarksFromStart = async function* (this: HatenaBookmarkImporter) {
-          let page = 0;
-          
-          while (true) {
-            console.log(`Fetching page ${page}...`);
-            const response = await this.client.fetchUserBookmarks(hatenaId, page);
-            
-            if (response.item.bookmarks.length === 0) {
-              break;
-            }
-            
-            for (const bookmark of response.item.bookmarks) {
-              yield bookmark;
-            }
-            
-            page++;
-            
-            // Add delay to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-        }.bind(this);
-        
-        // Import bookmarks using the generator
-        const bookmarkGenerator = fetchBookmarksFromStart();
-        
+        console.log(`Using ${CONCURRENCY} concurrent workers`);
+
+        const queue = new PQueue({ concurrency: CONCURRENCY });
         let processedCount = 0;
-        
-        for await (const hatenaBookmark of bookmarkGenerator) {
-          processedCount++;
-          
-          // Skip the first N bookmarks without DB access
-          if (skipCount > 0 && processedCount <= skipCount) {
-            if (processedCount % 100 === 0) {
-              console.log(`Skipped ${processedCount}/${skipCount} bookmarks...`);
-            }
-            continue;
-          }
-          
-          if (imported + updated >= targetCount) {
+        let reachedLimit = false;
+        let page = 0;
+
+        while (!reachedLimit) {
+          console.log(`Fetching page ${page}...`);
+          const response = await this.client.fetchUserBookmarks(hatenaId, page);
+
+          if (response.item.bookmarks.length === 0) {
             break;
           }
-          
-          try {
-            const result = await this.importSingleBookmark(hatenaBookmark, user.id);
+
+          const bookmarksToProcess: HatenaBookmark[] = [];
+
+          for (const bookmark of response.item.bookmarks) {
+            processedCount++;
+
+            // Skip the first N bookmarks without DB access
+            if (skipCount > 0 && processedCount <= skipCount) {
+              if (processedCount % 100 === 0) {
+                console.log(`Skipped ${processedCount}/${skipCount} bookmarks...`);
+              }
+              continue;
+            }
+
+            if (imported + updated + bookmarksToProcess.length >= targetCount) {
+              reachedLimit = true;
+              break;
+            }
+
+            bookmarksToProcess.push(bookmark);
+          }
+
+          // Process page bookmarks in parallel
+          const results = await Promise.all(
+            bookmarksToProcess.map((hatenaBookmark) =>
+              queue.add(async () => {
+                try {
+                  return await this.importSingleBookmark(hatenaBookmark, user.id);
+                } catch (error) {
+                  console.error(`Error importing bookmark: ${hatenaBookmark.url}`, error);
+                  return 'error' as const;
+                }
+              })
+            )
+          );
+
+          for (const result of results) {
             if (result === 'imported') {
               imported++;
             } else if (result === 'updated') {
               updated++;
-            } else {
+            } else if (result === 'skipped') {
               skippedCount++;
             }
-
-            const changed = imported + updated;
-            if (changed % 10 === 0) {
-                const actualProgress = skipCount > 0 ? changed + skipCount : changed;
-                const actualTarget = skipCount > 0 && targetCount !== Number.MAX_SAFE_INTEGER 
-                  ? targetCount + skipCount 
-                  : targetCount === Number.MAX_SAFE_INTEGER 
-                    ? 'all' 
-                    : targetCount;
-                console.log(`Processed ${actualProgress}/${actualTarget} bookmarks (imported=${imported}, updated=${updated}, skipped=${skippedCount})...`);
-              }
-          } catch (error) {
-            console.error(`Error importing bookmark: ${hatenaBookmark.url}`, error);
           }
+
+          const changed = imported + updated;
+          const actualProgress = skipCount > 0 ? changed + skipCount : changed;
+          const actualTarget =
+            skipCount > 0 && targetCount !== Number.MAX_SAFE_INTEGER
+              ? targetCount + skipCount
+              : targetCount === Number.MAX_SAFE_INTEGER
+                ? 'all'
+                : targetCount;
+          console.log(
+            `Processed ${actualProgress}/${actualTarget} bookmarks (imported=${imported}, updated=${updated}, skipped=${skippedCount})...`
+          );
+
+          page++;
+
+          // Add delay to avoid Hatena API rate limiting
+          await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
 
@@ -310,9 +322,6 @@ export class HatenaBookmarkImporter {
     }
 
     try {
-      // Add small delay to avoid rate limiting (Cloudflare browser rendering has limits)
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
       console.log(`  Fetching markdown for: ${url}`);
       const markdownContent = await fetchMarkdownFromCloudflare(url);
 
