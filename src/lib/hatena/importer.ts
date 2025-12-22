@@ -8,7 +8,7 @@ import { syncBookmarkToGeminiFileSearchStore } from '@/lib/gemini/bookmark-sync'
 import { fetchMarkdownFromCloudflare } from '@/lib/cloudflare/markdown';
 import PQueue from 'p-queue';
 
-const CONCURRENCY = 4;
+const CONCURRENCY = 10;
 
 export class HatenaBookmarkImporter {
   private client: HatenaBookmarkClient;
