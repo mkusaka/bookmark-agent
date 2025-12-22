@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Check, Copy, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { MarkdownRenderer } from '@/components/markdown-renderer';
 
 type DeepResearchStartResponse = {
   id: string;
@@ -185,7 +186,7 @@ export function AiDeepResearch() {
               </Button>
             )}
           </div>
-          <div className="whitespace-pre-wrap text-sm">{latestText}</div>
+          <MarkdownRenderer content={latestText} />
         </Card>
       )}
     </div>
