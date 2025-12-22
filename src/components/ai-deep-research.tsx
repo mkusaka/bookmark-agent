@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ExternalLink } from 'lucide-react';
+import { Check, Copy, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -32,10 +32,16 @@ export function AiDeepResearch() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [latestText, setLatestText] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const pollTimer = useRef<number | null>(null);
 
-  const canStart = useMemo(() => input.trim().length > 0 && !loading, [input, loading]);
+  const isPolling = useMemo(
+    () => interactionId !== null && status !== null && !['completed', 'failed', 'cancelled'].includes(status),
+    [interactionId, status]
+  );
+
+  const canStart = useMemo(() => input.trim().length > 0 && !loading && !isPolling, [input, loading, isPolling]);
 
   useEffect(() => {
     return () => {
@@ -107,6 +113,13 @@ export function AiDeepResearch() {
     [canStart, start]
   );
 
+  const handleCopy = useCallback(async () => {
+    if (!latestText) return;
+    await navigator.clipboard.writeText(latestText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [latestText]);
+
   return (
     <div className="flex flex-col gap-4">
       <Card className="p-4 flex flex-col gap-3">
@@ -120,7 +133,8 @@ export function AiDeepResearch() {
         />
         <div className="flex items-center gap-2">
           <Button onClick={start} disabled={!canStart}>
-            {loading ? 'Starting…' : 'Start Deep Research'}
+            {(loading || isPolling) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading ? 'Starting…' : isPolling ? 'Researching…' : 'Start Deep Research'}
           </Button>
           <span className="text-xs text-muted-foreground">⌘+Enter で送信</span>
           {error && <span className="text-sm text-red-600">{error}</span>}
@@ -153,7 +167,24 @@ export function AiDeepResearch() {
 
       {latestText && (
         <Card className="p-4 flex flex-col gap-2">
-          <div className="text-sm font-medium">結果（最新）</div>
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-medium">結果（最新）</div>
+            {status === 'completed' && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleCopy}
+                title="結果をコピー"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-600" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+          </div>
           <div className="whitespace-pre-wrap text-sm">{latestText}</div>
         </Card>
       )}
