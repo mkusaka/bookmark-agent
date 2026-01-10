@@ -64,25 +64,25 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
-    "@serwist/next": "9.2.3",
-    "@tailwindcss/postcss": "4.1.17",
-    "@types/node": "24.10.3",
+    "@serwist/next": "9.5.0",
+    "@tailwindcss/postcss": "4.1.18",
+    "@types/node": "24.10.4",
     "@types/pg": "8.16.0",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.2",
-    "@vitest/ui": "4.0.15",
+    "@vitest/ui": "4.0.16",
     "dotenv": "17.2.3",
     "drizzle-kit": "0.31.8",
-    "knip": "5.73.3",
-    "oxlint": "1.32.0",
+    "knip": "5.80.0",
+    "oxlint": "1.38.0",
     "postcss": "8.5.6",
-    "postgres": "3.4.7",
-    "serwist": "9.2.3",
-    "tailwindcss": "4.1.17",
+    "postgres": "3.4.8",
+    "serwist": "9.5.0",
+    "tailwindcss": "4.1.18",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
-    "vitest": "4.0.15"
+    "vitest": "4.0.16"
   },
   "packageManager": "pnpm@10.27.0+sha512.72d699da16b1179c14ba9e64dc71c9a40988cbdc65c264cb0e489db7de917f20dcf4d64d8723625f2969ba52d4b7e2a1170682d9ac2a5dcaeaab732b7e16f04a"
 }
