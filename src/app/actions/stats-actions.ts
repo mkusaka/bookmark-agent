@@ -89,3 +89,24 @@ export async function getBookmarkGrowthStats() {
     cumulative: Number(stat.cumulative),
   }));
 }
+
+export async function getContributionData() {
+  // Get daily bookmark counts for the last year
+  const oneYearAgo = new Date();
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+  const dailyStats = await db
+    .select({
+      date: sql<string>`${bookmarks.bookmarkedAt}::date`,
+      count: sql<number>`count(*)`,
+    })
+    .from(bookmarks)
+    .where(sql`${bookmarks.bookmarkedAt} >= ${oneYearAgo.toISOString()}`)
+    .groupBy(sql`${bookmarks.bookmarkedAt}::date`)
+    .orderBy(sql`${bookmarks.bookmarkedAt}::date`);
+
+  return dailyStats.map(stat => ({
+    date: stat.date,
+    count: Number(stat.count),
+  }));
+}
