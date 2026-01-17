@@ -66,23 +66,23 @@
   "devDependencies": {
     "@serwist/next": "9.5.0",
     "@tailwindcss/postcss": "4.1.18",
-    "@types/node": "24.10.4",
+    "@types/node": "24.10.8",
     "@types/pg": "8.16.0",
-    "@types/react": "19.2.7",
+    "@types/react": "19.2.8",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.2",
-    "@vitest/ui": "4.0.16",
+    "@vitest/ui": "4.0.17",
     "dotenv": "17.2.3",
     "drizzle-kit": "0.31.8",
-    "knip": "5.80.0",
-    "oxlint": "1.38.0",
+    "knip": "5.81.0",
+    "oxlint": "1.39.0",
     "postcss": "8.5.6",
     "postgres": "3.4.8",
     "serwist": "9.5.0",
     "tailwindcss": "4.1.18",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
-    "vitest": "4.0.16"
+    "vitest": "4.0.17"
   },
   "packageManager": "pnpm@10.28.0+sha512.05df71d1421f21399e053fde567cea34d446fa02c76571441bfc1c7956e98e363088982d940465fd34480d4d90a0668bc12362f8aa88000a64e83d0b0e47be48"
 }
