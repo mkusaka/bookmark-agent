@@ -24,7 +24,10 @@ export default async function SessionDetailPage({ params }: PageProps) {
       title="Session Detail"
       description={`${session.type === 'ask' ? 'Ask' : 'Deep Research'} session`}
       actions={
-        <PageActionLink href="/ai/history" label="Back to History" icon={ArrowLeft} />
+        <PageActionLink href="/ai/history">
+          <ArrowLeft className="h-4 w-4" />
+          Back to History
+        </PageActionLink>
       }
     >
       <AiSessionDetail session={session} />

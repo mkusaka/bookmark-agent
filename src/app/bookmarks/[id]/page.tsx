@@ -30,8 +30,14 @@ export default async function BookmarkDetailPage({
       description={`Viewing bookmark for ${bookmark.entry.title}`}
       actions={
         <>
-          <PageActionLink href="/search" label="Search" icon={Search} />
-          <PageActionLink href="/stats" label="Stats" icon={BarChart3} />
+          <PageActionLink href="/search">
+            <Search className="h-4 w-4" />
+            Search
+          </PageActionLink>
+          <PageActionLink href="/stats">
+            <BarChart3 className="h-4 w-4" />
+            Stats
+          </PageActionLink>
         </>
       }
     >

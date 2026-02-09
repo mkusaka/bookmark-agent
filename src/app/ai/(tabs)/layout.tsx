@@ -10,9 +10,18 @@ export default function AiLayout({ children }: { children: React.ReactNode }) {
       description="Gemini File Searchでブックマーク全文から関連情報を探して回答します"
       actions={
         <>
-          <PageActionLink href="/ai/store" label="Store" icon={Database} />
-          <PageActionLink href="/search" label="Search" icon={Search} />
-          <PageActionLink href="/stats" label="Stats" icon={BarChart3} />
+          <PageActionLink href="/ai/store">
+            <Database className="h-4 w-4" />
+            Store
+          </PageActionLink>
+          <PageActionLink href="/search">
+            <Search className="h-4 w-4" />
+            Search
+          </PageActionLink>
+          <PageActionLink href="/stats">
+            <BarChart3 className="h-4 w-4" />
+            Stats
+          </PageActionLink>
         </>
       }
     >

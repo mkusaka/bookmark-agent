@@ -34,8 +34,14 @@ export default function StatsPage() {
       description="Analyze your bookmarking patterns and trends"
       actions={
         <>
-          <PageActionLink href="/ai" label="AI" icon={Sparkles} />
-          <PageActionLink href="/search" label="Search" icon={Search} />
+          <PageActionLink href="/ai">
+            <Sparkles className="h-4 w-4" />
+            AI
+          </PageActionLink>
+          <PageActionLink href="/search">
+            <Search className="h-4 w-4" />
+            Search
+          </PageActionLink>
         </>
       }
     >
