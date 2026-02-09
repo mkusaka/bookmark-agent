@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { PageLayout } from '@/components/page-layout';
 import { Button } from '@/components/ui/button';
+import { PageActionLink } from '@/components/page-action-link';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { listGeminiStoreDocuments } from '@/app/actions/gemini-store-actions';
 import { GeminiStoreDocumentList } from '@/components/gemini-store-document-list';
@@ -49,12 +50,7 @@ export default async function GeminiStorePage({
           : 'File Storeの内容を確認'
       }
       actions={
-        <Link href="/ai">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to AI
-          </Button>
-        </Link>
+        <PageActionLink href="/ai" label="Back to AI" icon={ArrowLeft} />
       }
     >
       {result.success ? (
