@@ -57,7 +57,7 @@ export default async function SearchPage({
         description="Search and manage bookmarks with advanced filtering"
         actions={
           <div className="flex items-center gap-2 flex-wrap">
-            <PageActionLink href="/ai">
+            <PageActionLink href="/ai/ask">
               <Sparkles className="h-4 w-4" />
               <span className="hidden sm:inline">AI</span>
             </PageActionLink>

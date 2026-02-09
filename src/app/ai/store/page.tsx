@@ -50,7 +50,7 @@ export default async function GeminiStorePage({
           : 'File Storeの内容を確認'
       }
       actions={
-        <PageActionLink href="/ai">
+        <PageActionLink href="/ai/ask">
           <ArrowLeft className="h-4 w-4" />
           Back to AI
         </PageActionLink>
