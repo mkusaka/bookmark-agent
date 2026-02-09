@@ -67,6 +67,8 @@ npx wrangler deploy --env staging
 
 ## Monitoring
 
+Observability is enabled in `wrangler.toml` via `[observability] enabled = true`.
+
 After deployment, you can monitor the worker execution:
 
 1. Log in to the [Cloudflare dashboard](https://dash.cloudflare.com)
