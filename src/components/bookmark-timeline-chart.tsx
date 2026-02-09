@@ -77,11 +77,25 @@ export function BookmarkTimelineChart({ data }: BookmarkTimelineChartProps) {
           labelStyle={{
             color: isDark ? '#e5e7eb' : '#111827',
           }}
-          formatter={(value: number) => [`${value.toLocaleString()} bookmarks`, 'Count']}
-          labelFormatter={(label: string) => {
+          formatter={(value) => {
+            const normalizedValue = typeof value === 'number' ? value : Number.parseFloat(String(value ?? 0));
+            const safeValue = Number.isFinite(normalizedValue) ? normalizedValue : 0;
+            return [`${safeValue.toLocaleString()} bookmarks`, 'Count'];
+          }}
+          labelFormatter={(label) => {
+            if (typeof label !== 'string') {
+              return label;
+            }
+
             const [year, month] = label.split('-');
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            return `${monthNames[parseInt(month) - 1]} ${year}`;
+            const monthIndex = Number.parseInt(month, 10) - 1;
+
+            if (!year || monthIndex < 0 || monthIndex >= monthNames.length) {
+              return label;
+            }
+
+            return `${monthNames[monthIndex]} ${year}`;
           }}
         />
         <Line 
