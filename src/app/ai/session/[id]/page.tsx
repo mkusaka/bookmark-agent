@@ -1,9 +1,8 @@
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { getAiSessionById } from '@/app/actions/ai-session-actions';
 import { AiSessionDetail } from '@/components/ai-session-detail';
 import { PageLayout } from '@/components/page-layout';
-import { Button } from '@/components/ui/button';
+import { PageActionLink } from '@/components/page-action-link';
 import { ArrowLeft } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -25,12 +24,10 @@ export default async function SessionDetailPage({ params }: PageProps) {
       title="Session Detail"
       description={`${session.type === 'ask' ? 'Ask' : 'Deep Research'} session`}
       actions={
-        <Link href="/ai/history">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to History
-          </Button>
-        </Link>
+        <PageActionLink href="/ai/history">
+          <ArrowLeft className="h-4 w-4" />
+          Back to History
+        </PageActionLink>
       }
     >
       <AiSessionDetail session={session} />

@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { TabsContent } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Sparkles } from 'lucide-react';
 import { OverviewTab } from '@/components/stats/overview-tab';
@@ -10,6 +9,7 @@ import { DomainsTab } from '@/components/stats/domains-tab';
 import { TagsTab } from '@/components/stats/tags-tab';
 import { StatsTabsWrapper } from '@/components/stats/stats-tabs-wrapper';
 import { PageLayout } from '@/components/page-layout';
+import { PageActionLink } from '@/components/page-action-link';
 
 // This page uses server-side database queries, so it should not be statically generated
 export const dynamic = 'force-dynamic';
@@ -34,18 +34,14 @@ export default function StatsPage() {
       description="Analyze your bookmarking patterns and trends"
       actions={
         <>
-          <Link href="/ai">
-            <Button variant="outline" size="sm">
-              <Sparkles className="h-4 w-4 mr-2" />
-              AI
-            </Button>
-          </Link>
-          <Link href="/search">
-            <Button variant="outline" size="sm">
-              <Search className="h-4 w-4 mr-2" />
-              Search
-            </Button>
-          </Link>
+          <PageActionLink href="/ai">
+            <Sparkles className="h-4 w-4" />
+            AI
+          </PageActionLink>
+          <PageActionLink href="/search">
+            <Search className="h-4 w-4" />
+            Search
+          </PageActionLink>
         </>
       }
     >
