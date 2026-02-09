@@ -2,7 +2,7 @@
 
 import { db } from '@/db';
 import { bookmarks, users, tags, bookmarkTags } from '@/db/schema';
-import { eq, and, or, ilike, desc, asc, gte, lte, sql, inArray } from 'drizzle-orm';
+import { eq, and, or, ilike, desc, asc, gte, lte, sql, inArray, exists } from 'drizzle-orm';
 import type { BookmarkFilters, BookmarkSort, Bookmark, PaginationInfo } from '@/types/bookmark';
 import { parseSearchQuery } from '@/lib/search-query-parser';
 
@@ -99,50 +99,37 @@ export async function getBookmarks(
       filterConditions.push(lte(bookmarks.bookmarkedAt, filters.dateRange.to));
     }
 
-    // Apply tag filter if needed - get bookmark IDs first
-    let bookmarkIdsWithTags: string[] = [];
+    // Tag filter: match bookmarks that have any selected tag
     if (filters.selectedTags && filters.selectedTags.length > 0) {
-      const tagResults = await db
-        .select({ bookmarkId: bookmarkTags.bookmarkId })
-        .from(bookmarkTags)
-        .where(inArray(bookmarkTags.tagId, filters.selectedTags))
-        .groupBy(bookmarkTags.bookmarkId);
-
-      bookmarkIdsWithTags = tagResults.map((b) => b.bookmarkId);
-      
-      if (bookmarkIdsWithTags.length === 0) {
-        // No bookmarks match the tag filter
-        return { 
-          bookmarks: [], 
-          total: 0,
-          pagination: {
-            hasNextPage: false,
-            hasPreviousPage: false,
-            nextCursor: undefined,
-            previousCursor: undefined,
-          }
-        };
-      }
-      
-      // Add tag filter to conditions
-      filterConditions.push(inArray(bookmarks.id, bookmarkIdsWithTags));
+      filterConditions.push(
+        exists(
+          db
+            .select({ bookmarkId: bookmarkTags.bookmarkId })
+            .from(bookmarkTags)
+            .where(
+              and(
+                eq(bookmarkTags.bookmarkId, bookmarks.id),
+                inArray(bookmarkTags.tagId, filters.selectedTags)
+              )
+            )
+        )
+      );
     }
 
-    // Combine filter conditions with cursor condition for query
-    const allConditions = [...filterConditions];
-    if (cursorCondition) {
-      allConditions.push(cursorCondition);
-    }
+    // Build where clauses
+    const filteredWhere = filterConditions.length > 0 ? and(...filterConditions) : undefined;
+    const allConditions = cursorCondition
+      ? and(...(filteredWhere ? [filteredWhere, cursorCondition] : [cursorCondition]))
+      : filteredWhere;
 
-    // Build the query - no more join with entries
-    const query = db
+    const resultsPromise = db
       .select({
         bookmark: bookmarks,
         user: users,
       })
       .from(bookmarks)
       .leftJoin(users, eq(bookmarks.userId, users.id))
-      .where(allConditions.length > 0 ? and(...allConditions) : undefined)
+      .where(allConditions)
       .orderBy(
         sort.order === 'desc' 
           ? desc(
@@ -158,8 +145,13 @@ export async function getBookmarks(
       )
       .limit(limit + 1); // Fetch one extra to check if there's a next page
 
-    // Execute the query
-    const results = await query;
+    const countPromise = db
+      .select({ count: sql<number>`count(*)` })
+      .from(bookmarks)
+      .where(filteredWhere);
+
+    // Execute the heavy queries in parallel
+    const [results, [{ count }]] = await Promise.all([resultsPromise, countPromise]);
 
     // Check if there's a next page
     const hasNextPage = results.length > limit;
@@ -167,14 +159,16 @@ export async function getBookmarks(
 
     // Get tags for each bookmark
     const bookmarkIds = actualResults.map((r) => r.bookmark.id);
-    const bookmarkTagsData = await db
-      .select({
-        bookmarkId: bookmarkTags.bookmarkId,
-        tag: tags,
-      })
-      .from(bookmarkTags)
-      .leftJoin(tags, eq(bookmarkTags.tagId, tags.id))
-      .where(inArray(bookmarkTags.bookmarkId, bookmarkIds));
+    const bookmarkTagsData = bookmarkIds.length === 0
+      ? []
+      : await db
+          .select({
+            bookmarkId: bookmarkTags.bookmarkId,
+            tag: tags,
+          })
+          .from(bookmarkTags)
+          .leftJoin(tags, eq(bookmarkTags.tagId, tags.id))
+          .where(inArray(bookmarkTags.bookmarkId, bookmarkIds));
 
     // Group tags by bookmark
     const tagsByBookmark = bookmarkTagsData.reduce((acc, { bookmarkId, tag }) => {
@@ -214,15 +208,6 @@ export async function getBookmarks(
       const firstBookmark = formattedBookmarks[0];
       previousCursor = `${firstBookmark.bookmarkedAt.toISOString()}_${firstBookmark.id}`;
     }
-
-    // Get total count (using only filter conditions, not cursor)
-    const countQuery = db
-      .select({ count: sql<number>`count(*)` })
-      .from(bookmarks)
-      .leftJoin(users, eq(bookmarks.userId, users.id))
-      .where(filterConditions.length > 0 ? and(...filterConditions) : undefined);
-
-    const [{ count }] = await countQuery;
 
     return {
       bookmarks: formattedBookmarks,

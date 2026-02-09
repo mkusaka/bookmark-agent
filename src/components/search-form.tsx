@@ -26,32 +26,36 @@ import { format } from 'date-fns';
 import { fuzzyMatch } from '@/lib/fuzzy-match';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useNavigationPending } from '@/contexts/navigation-context';
-import { BookmarkBulkActions } from './bookmark-bulk-actions';
-import { useSelection } from './search-page-client';
-import type { Bookmark } from '@/types/bookmark';
 
 interface SearchFormProps {
   domains: string[];
   tags: { id: string; label: string }[];
-  bookmarks: Bookmark[];
   initialValues: SearchFormValues;
 }
 
 export function SearchForm({
   domains,
   tags,
-  bookmarks,
   initialValues,
 }: SearchFormProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const { isPending: isNavigationPending, setIsPending } = useNavigationPending();
-  const { selectedBookmarks, clearSelection } = useSelection();
+  const queryUpdateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingQueryUpdateRef = useRef(false);
   
   useEffect(() => {
     setIsPending(isPending);
   }, [isPending, setIsPending]);
+
+  useEffect(() => {
+    return () => {
+      if (queryUpdateTimerRef.current) {
+        clearTimeout(queryUpdateTimerRef.current);
+      }
+    };
+  }, []);
 
   const form = useForm<SearchFormValues>({
     defaultValues: initialValues,
@@ -62,7 +66,7 @@ export function SearchForm({
   const formValues = watch();
 
   // Update URL when form changes
-  const updateURL = useCallback(() => {
+  const updateURL = useCallback((options?: { replace?: boolean }) => {
     const values = form.getValues();
     const params = new URLSearchParams();
     
@@ -79,11 +83,26 @@ export function SearchForm({
     // Don't include cursor - reset pagination on filter change
 
     startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`);
+      const queryString = params.toString();
+      const nextUrl = queryString ? `${pathname}?${queryString}` : pathname;
+      if (options?.replace) {
+        router.replace(nextUrl);
+      } else {
+        router.push(nextUrl);
+      }
     });
   }, [form, pathname, router]);
 
+  const cancelPendingQueryUpdate = useCallback(() => {
+    pendingQueryUpdateRef.current = false;
+    if (queryUpdateTimerRef.current) {
+      clearTimeout(queryUpdateTimerRef.current);
+      queryUpdateTimerRef.current = null;
+    }
+  }, []);
+
   const handleDomainToggle = useCallback((domain: string) => {
+    cancelPendingQueryUpdate();
     const current = form.getValues('domains');
     if (current.includes(domain)) {
       setValue('domains', current.filter(d => d !== domain));
@@ -91,9 +110,10 @@ export function SearchForm({
       setValue('domains', [...current, domain]);
     }
     updateURL();
-  }, [form, setValue, updateURL]);
+  }, [cancelPendingQueryUpdate, form, setValue, updateURL]);
 
   const handleTagToggle = useCallback((tagId: string) => {
+    cancelPendingQueryUpdate();
     const current = form.getValues('tags');
     if (current.includes(tagId)) {
       setValue('tags', current.filter(t => t !== tagId));
@@ -101,16 +121,18 @@ export function SearchForm({
       setValue('tags', [...current, tagId]);
     }
     updateURL();
-  }, [form, setValue, updateURL]);
+  }, [cancelPendingQueryUpdate, form, setValue, updateURL]);
 
 
   const handleDateRangeChange = useCallback((range: DateRange | undefined) => {
+    cancelPendingQueryUpdate();
     setValue('from', range?.from);
     setValue('to', range?.to);
     updateURL();
-  }, [setValue, updateURL]);
+  }, [cancelPendingQueryUpdate, setValue, updateURL]);
 
   const resetFilters = useCallback(() => {
+    cancelPendingQueryUpdate();
     reset({
       q: '',
       domains: [],
@@ -122,13 +144,14 @@ export function SearchForm({
       cursor: undefined,
     });
     updateURL();
-  }, [reset, updateURL]);
+  }, [cancelPendingQueryUpdate, reset, updateURL]);
 
   const handleRefresh = useCallback(() => {
+    cancelPendingQueryUpdate();
     startTransition(() => {
       router.refresh();
     });
-  }, [router]);
+  }, [cancelPendingQueryUpdate, router]);
 
   const dateRange: DateRange | undefined = formValues.from || formValues.to ? {
     from: formValues.from,
@@ -142,7 +165,18 @@ export function SearchForm({
         {...register('q')}
         onChange={(e) => {
           setValue('q', e.target.value);
-          updateURL();
+          pendingQueryUpdateRef.current = true;
+          if (queryUpdateTimerRef.current) {
+            clearTimeout(queryUpdateTimerRef.current);
+          }
+          queryUpdateTimerRef.current = setTimeout(() => {
+            if (!pendingQueryUpdateRef.current) {
+              return;
+            }
+            updateURL({ replace: true });
+            pendingQueryUpdateRef.current = false;
+            queryUpdateTimerRef.current = null;
+          }, 300);
         }}
         className="h-8 w-[150px] lg:w-[250px]"
       />
@@ -279,13 +313,6 @@ export function SearchForm({
         <RefreshCw className={`h-4 w-4 ${isPending || isNavigationPending ? 'animate-spin' : ''}`} />
         <span className="ml-2">Refresh</span>
       </Button>
-      
-      {/* Bulk Actions */}
-      <BookmarkBulkActions 
-        bookmarks={bookmarks} 
-        selectedBookmarks={selectedBookmarks}
-        onClearSelection={clearSelection}
-      />
     </div>
   );
 }
@@ -559,4 +586,3 @@ function TagSelector({
     </div>
   );
 }
-
