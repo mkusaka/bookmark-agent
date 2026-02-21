@@ -64,8 +64,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@serwist/next": "9.5.5",
-    "@tailwindcss/postcss": "4.1.18",
+    "@serwist/next": "9.5.6",
+    "@tailwindcss/postcss": "4.2.0",
     "@types/node": "25.2.3",
     "@types/pg": "8.16.0",
     "@types/react": "19.2.14",
@@ -74,12 +74,12 @@
     "@vitest/ui": "4.0.18",
     "dotenv": "17.3.1",
     "drizzle-kit": "0.31.9",
-    "knip": "5.83.1",
-    "oxlint": "1.47.0",
+    "knip": "5.84.1",
+    "oxlint": "1.48.0",
     "postcss": "8.5.6",
     "postgres": "3.4.8",
-    "serwist": "9.5.5",
-    "tailwindcss": "4.1.18",
+    "serwist": "9.5.6",
+    "tailwindcss": "4.2.0",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
     "vitest": "4.0.18"
