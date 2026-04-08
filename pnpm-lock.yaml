@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@google/genai':
         specifier: ^1.38.0
-        version: 1.47.0(@modelcontextprotocol/sdk@1.29.0(zod@4.3.6))
+        version: 1.48.0(@modelcontextprotocol/sdk@1.29.0(zod@4.3.6))
       '@modelcontextprotocol/sdk':
         specifier: ^1.25.3
         version: 1.29.0(zod@4.3.6)
@@ -70,7 +70,7 @@ importers:
         version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       p-queue:
         specifier: ^9.1.0
-        version: 9.1.0
+        version: 9.1.1
       pg:
         specifier: ^8.17.2
         version: 8.20.0
@@ -657,8 +657,8 @@ packages:
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
-  '@google/genai@1.47.0':
-    resolution: {integrity: sha512-0VV7AaXm5rQu3oRHNZNEubRAOL2lv5u+YA72eWnDwcOx3B1jFRbvtgL4drRHlocRHOnludvr3xmbQGbR+/RQAQ==}
+  '@google/genai@1.48.0':
+    resolution: {integrity: sha512-plonYK4ML2PrxsRD9SeqmFt76eREWkQdPCglOA6aYDzL1AAbE+7PUnT54SvpWGfws13L0AZEqGSpL7+1IPnTxQ==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       '@modelcontextprotocol/sdk': ^1.25.2
@@ -3384,8 +3384,8 @@ packages:
       oxlint-tsgolint:
         optional: true
 
-  p-queue@9.1.0:
-    resolution: {integrity: sha512-O/ZPaXuQV29uSLbxWBGGZO1mCQXV2BLIwUr59JUU9SoH76mnYvtms7aafH/isNSNGwuEfP6W/4xD0/TJXxrizw==}
+  p-queue@9.1.1:
+    resolution: {integrity: sha512-yQS1vV2V7Q14MQrgD8jMNY5owPuGgVHVdSK8NqmKpOVajnjbaeMa6uLOzTALPtvJ7Vo4bw0BGsw7qfUT8z24Ig==}
     engines: {node: '>=20'}
 
   p-retry@4.6.2:
@@ -4450,7 +4450,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@google/genai@1.47.0(@modelcontextprotocol/sdk@1.29.0(zod@4.3.6))':
+  '@google/genai@1.48.0(@modelcontextprotocol/sdk@1.29.0(zod@4.3.6))':
     dependencies:
       google-auth-library: 10.6.2
       p-retry: 4.6.2
@@ -7018,7 +7018,7 @@ snapshots:
       '@oxlint/binding-win32-ia32-msvc': 1.53.0
       '@oxlint/binding-win32-x64-msvc': 1.53.0
 
-  p-queue@9.1.0:
+  p-queue@9.1.1:
     dependencies:
       eventemitter3: 5.0.4
       p-timeout: 7.0.1
