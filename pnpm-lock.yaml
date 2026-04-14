@@ -70,7 +70,7 @@ importers:
         version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       p-queue:
         specifier: ^9.1.0
-        version: 9.1.1
+        version: 9.1.2
       pg:
         specifier: ^8.17.2
         version: 8.20.0
@@ -3384,8 +3384,8 @@ packages:
       oxlint-tsgolint:
         optional: true
 
-  p-queue@9.1.1:
-    resolution: {integrity: sha512-yQS1vV2V7Q14MQrgD8jMNY5owPuGgVHVdSK8NqmKpOVajnjbaeMa6uLOzTALPtvJ7Vo4bw0BGsw7qfUT8z24Ig==}
+  p-queue@9.1.2:
+    resolution: {integrity: sha512-ktsDOALzTYTWWF1PbkNVg2rOt+HaOaMWJMUnt7T3qf5tvZ1L8dBW3tObzprBcXNMKkwj+yFSLqHso0x+UFcJXw==}
     engines: {node: '>=20'}
 
   p-retry@4.6.2:
@@ -7018,7 +7018,7 @@ snapshots:
       '@oxlint/binding-win32-ia32-msvc': 1.53.0
       '@oxlint/binding-win32-x64-msvc': 1.53.0
 
-  p-queue@9.1.1:
+  p-queue@9.1.2:
     dependencies:
       eventemitter3: 5.0.4
       p-timeout: 7.0.1
