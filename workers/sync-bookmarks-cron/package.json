@@ -8,8 +8,8 @@
     "test-scheduled": "wrangler dev --test-scheduled"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20260310.1",
+    "@cloudflare/workers-types": "4.20260412.1",
     "typescript": "6.0.2",
-    "wrangler": "4.72.0"
+    "wrangler": "4.81.1"
   }
 }
