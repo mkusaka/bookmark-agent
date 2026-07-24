@@ -58,7 +58,7 @@ importers:
         version: 0.8.3(drizzle-orm@0.45.2(@neondatabase/serverless@1.1.0)(@types/pg@8.18.0)(pg@8.22.0)(postgres@3.4.8))(zod@4.4.3)
       lucide-react:
         specifier: ^1.0.0
-        version: 1.24.0(react@19.2.7)
+        version: 1.25.0(react@19.2.7)
       mcp-handler:
         specifier: ^1.0.7
         version: 1.1.0(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(next@16.2.11(react-dom@19.2.7(react@19.2.7))(react@19.2.7))
@@ -3050,8 +3050,8 @@ packages:
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
-  lucide-react@1.24.0:
-    resolution: {integrity: sha512-YT6mBD8lGKkg4nM39enlm94/sfJIiW0YKUT60fBy4YK8tai31ylg1VhGNWxkpSKHo9UagfnZqwIff3HTDQwXeA==}
+  lucide-react@1.25.0:
+    resolution: {integrity: sha512-/mdJTRbiwcLOQ1NZZK1amZF9rIZyvO18D6r9TngE6TG1NmqHgFuT4eE7Xrkm9UsXMbBJD1NlfwHVltCDWHrOTw==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -6370,7 +6370,7 @@ snapshots:
 
   lru-cache@10.4.3: {}
 
-  lucide-react@1.24.0(react@19.2.7):
+  lucide-react@1.25.0(react@19.2.7):
     dependencies:
       react: 19.2.7
 
