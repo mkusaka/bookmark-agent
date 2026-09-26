@@ -72,7 +72,7 @@
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.1",
     "@vitest/ui": "5.0.1",
-    "dotenv": "17.3.1",
+    "dotenv": "18.0.3",
     "drizzle-kit": "0.31.9",
     "knip": "6.27.0",
     "oxlint": "1.53.0",
