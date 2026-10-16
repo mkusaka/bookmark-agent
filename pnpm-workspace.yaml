@@ -15,8 +15,8 @@ allowBuilds:
 minimumReleaseAgeExclude:
   # Renovate security update: vite@8.0.16
   - vite@8.0.16
-  # Next.js July 2026 security release
-  - next@16.2.11
+  # Next.js July 2026 security release || 16.3.8
+  - next@16.2.11 || 16.3.8
   - '@next/env@16.2.11'
   - '@next/swc-darwin-arm64@16.2.11'
   - '@next/swc-darwin-x64@16.2.11'
