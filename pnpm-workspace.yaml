@@ -30,3 +30,5 @@ minimumReleaseAgeExclude:
   - postcss@8.5.18 || 8.5.23
   # Renovate security update: vitest@4.1.11
   - vitest@4.1.11
+  # Renovate security update: @modelcontextprotocol/sdk@1.32.0
+  - "@modelcontextprotocol/sdk@1.32.0"
