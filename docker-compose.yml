@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:18-alpine@sha256:88f300be8635fe8a9ed4c18a68ba497fb6df1215fd2b074895afd027bd3e1006
+    image: postgres:18-alpine@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e6024532edadfb5
     container_name: bookmark-agent-db
     environment:
       POSTGRES_USER: postgres
