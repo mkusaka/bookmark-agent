@@ -10,10 +10,10 @@ importers:
     dependencies:
       '@google/genai':
         specifier: ^1.38.0
-        version: 1.52.0(@modelcontextprotocol/sdk@1.30.0(zod@4.6.5))
+        version: 1.52.0(@modelcontextprotocol/sdk@1.30.0(zod@4.6.6))
       '@modelcontextprotocol/sdk':
         specifier: ^1.25.3
-        version: 1.30.0(zod@4.6.5)
+        version: 1.30.0(zod@4.6.6)
       '@neondatabase/serverless':
         specifier: ^1.0.2
         version: 1.1.0
@@ -55,13 +55,13 @@ importers:
         version: 0.45.2(@neondatabase/serverless@1.1.0)(@types/pg@8.18.0)(pg@8.23.0)(postgres@3.4.8)
       drizzle-zod:
         specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.45.2(@neondatabase/serverless@1.1.0)(@types/pg@8.18.0)(pg@8.23.0)(postgres@3.4.8))(zod@4.6.5)
+        version: 0.8.3(drizzle-orm@0.45.2(@neondatabase/serverless@1.1.0)(@types/pg@8.18.0)(pg@8.23.0)(postgres@3.4.8))(zod@4.6.6)
       lucide-react:
         specifier: ^1.0.0
         version: 1.47.0(react@19.3.0)
       mcp-handler:
         specifier: ^1.0.7
-        version: 1.1.0(@modelcontextprotocol/sdk@1.30.0(zod@4.6.5))(next@16.3.5(@types/node@25.4.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))
+        version: 1.1.0(@modelcontextprotocol/sdk@1.30.0(zod@4.6.6))(next@16.3.5(@types/node@25.4.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))
       next:
         specifier: 16.3.5
         version: 16.3.5(@types/node@25.4.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -106,7 +106,7 @@ importers:
         version: 3.7.0
       zod:
         specifier: ^4.3.6
-        version: 4.6.5
+        version: 4.6.6
     devDependencies:
       '@serwist/next':
         specifier: 9.5.6
@@ -4066,8 +4066,8 @@ packages:
   zod@4.3.6:
     resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
-  zod@4.6.5:
-    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
+  zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -4377,14 +4377,14 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@google/genai@1.52.0(@modelcontextprotocol/sdk@1.30.0(zod@4.6.5))':
+  '@google/genai@1.52.0(@modelcontextprotocol/sdk@1.30.0(zod@4.6.6))':
     dependencies:
       google-auth-library: 10.6.2
       p-retry: 4.6.2
       protobufjs: 7.6.1
       ws: 8.21.0
     optionalDependencies:
-      '@modelcontextprotocol/sdk': 1.30.0(zod@4.6.5)
+      '@modelcontextprotocol/sdk': 1.30.0(zod@4.6.6)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -4531,7 +4531,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@modelcontextprotocol/sdk@1.30.0(zod@4.6.5)':
+  '@modelcontextprotocol/sdk@1.30.0(zod@4.6.6)':
     dependencies:
       '@hono/node-server': 2.0.12(hono@4.12.32)
       ajv: 8.20.0
@@ -4548,8 +4548,8 @@ snapshots:
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
       raw-body: 3.0.2
-      zod: 4.6.5
-      zod-to-json-schema: 3.25.2(zod@4.6.5)
+      zod: 4.6.6
+      zod-to-json-schema: 3.25.2(zod@4.6.6)
     transitivePeerDependencies:
       - supports-color
 
@@ -5787,10 +5787,10 @@ snapshots:
       pg: 8.23.0
       postgres: 3.4.8
 
-  drizzle-zod@0.8.3(drizzle-orm@0.45.2(@neondatabase/serverless@1.1.0)(@types/pg@8.18.0)(pg@8.23.0)(postgres@3.4.8))(zod@4.6.5):
+  drizzle-zod@0.8.3(drizzle-orm@0.45.2(@neondatabase/serverless@1.1.0)(@types/pg@8.18.0)(pg@8.23.0)(postgres@3.4.8))(zod@4.6.6):
     dependencies:
       drizzle-orm: 0.45.2(@neondatabase/serverless@1.1.0)(@types/pg@8.18.0)(pg@8.23.0)(postgres@3.4.8)
-      zod: 4.6.5
+      zod: 4.6.6
 
   dunder-proto@1.0.1:
     dependencies:
@@ -6255,7 +6255,7 @@ snapshots:
       tinyglobby: 0.2.17
       unbash: 4.0.3
       yaml: 2.9.0
-      zod: 4.6.5
+      zod: 4.6.6
 
   kolorist@1.8.0: {}
 
@@ -6381,9 +6381,9 @@ snapshots:
 
   math-intrinsics@1.1.0: {}
 
-  mcp-handler@1.1.0(@modelcontextprotocol/sdk@1.30.0(zod@4.6.5))(next@16.3.5(@types/node@25.4.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)):
+  mcp-handler@1.1.0(@modelcontextprotocol/sdk@1.30.0(zod@4.6.6))(next@16.3.5(@types/node@25.4.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)):
     dependencies:
-      '@modelcontextprotocol/sdk': 1.30.0(zod@4.6.5)
+      '@modelcontextprotocol/sdk': 1.30.0(zod@4.6.6)
       chalk: 5.6.2
       commander: 11.1.0
       redis: 4.7.1
@@ -7653,12 +7653,12 @@ snapshots:
 
   yaml@2.9.0: {}
 
-  zod-to-json-schema@3.25.2(zod@4.6.5):
+  zod-to-json-schema@3.25.2(zod@4.6.6):
     dependencies:
-      zod: 4.6.5
+      zod: 4.6.6
 
   zod@4.3.6: {}
 
-  zod@4.6.5: {}
+  zod@4.6.6: {}
 
   zwitch@2.0.4: {}
